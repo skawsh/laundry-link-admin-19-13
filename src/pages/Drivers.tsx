@@ -72,6 +72,7 @@ const sampleTasks: Task[] = [
     type: 'collect',
     orderId: 'ORD-5680',
     customerName: 'Vikram Patel',
+    customerAddress: '123 Main Street, Koramangala, Bangalore', // Added the missing customerAddress property
     studioName: 'Fresh Fold Services',
     studioAddress: '567 MG Road, Bangalore',
     status: 'pending',
