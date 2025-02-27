@@ -196,6 +196,31 @@ const StudioDetails: React.FC = () => {
     setIsEditing(false);
   };
 
+  // Function to render wash category display
+  const renderWashCategoryDisplay = () => {
+    if (!studio) return null;
+    
+    if (studio.washCategory === 'both') {
+      return (
+        <div className="flex items-center space-x-2">
+          <div className="flex items-center">
+            <span className="inline-flex items-center px-2.5 py-1 rounded-l-md bg-blue-100 text-blue-800 text-xs font-medium">
+              Standard
+            </span>
+            <span className="inline-flex items-center px-2.5 py-1 rounded-r-md bg-purple-100 text-purple-800 text-xs font-medium">
+              Express
+            </span>
+          </div>
+          <div className="w-6 h-6 rounded-full bg-gradient-to-r from-blue-500 to-purple-500 flex items-center justify-center text-white text-xs">
+            ✓
+          </div>
+        </div>
+      );
+    }
+    
+    return <p className="text-base capitalize">{studio.washCategory || 'N/A'}</p>;
+  };
+
   if (isLoading) {
     return (
       <AdminLayout>
@@ -648,7 +673,7 @@ const StudioDetails: React.FC = () => {
                       </RadioGroup>
                     </div>
                   ) : (
-                    <p className="text-base capitalize">{studio.washCategory || 'N/A'}</p>
+                    renderWashCategoryDisplay()
                   )}
                 </div>
               </div>
