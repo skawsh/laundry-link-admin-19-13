@@ -203,16 +203,15 @@ const StudioDetails: React.FC = () => {
     if (studio.washCategory === 'both') {
       return (
         <div className="flex items-center space-x-2">
-          <div className="flex items-center">
-            <span className="inline-flex items-center px-2.5 py-1 rounded-l-md bg-blue-100 text-blue-800 text-xs font-medium">
-              Standard
-            </span>
-            <span className="inline-flex items-center px-2.5 py-1 rounded-r-md bg-purple-100 text-purple-800 text-xs font-medium">
-              Express
-            </span>
-          </div>
-          <div className="w-6 h-6 rounded-full bg-gradient-to-r from-blue-500 to-purple-500 flex items-center justify-center text-white text-xs">
-            ✓
+          <div className="flex flex-col space-y-1">
+            <div className="flex items-center space-x-1">
+              <span className="h-2 w-2 rounded-full bg-gray-600"></span>
+              <span className="text-sm">Standard Wash</span>
+            </div>
+            <div className="flex items-center space-x-1">
+              <span className="h-2 w-2 rounded-full bg-gray-600"></span>
+              <span className="text-sm">Express Wash</span>
+            </div>
           </div>
         </div>
       );
