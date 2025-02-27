@@ -1,6 +1,6 @@
 
 import React, { useState, useEffect, useRef } from 'react';
-import { Plus, Edit, Eye, ChevronDown, Search, Filter, Star, MoreHorizontal, X, ArrowUpDown, CheckCircle, CreditCard, Settings, Package, Trash2 } from 'lucide-react';
+import { Plus, ChevronDown, Search, Filter, Star, MoreHorizontal, X, ArrowUpDown, CreditCard, Settings, Package, Trash2 } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import AdminLayout from '../components/layout/AdminLayout';
 import PageHeader from '../components/ui/PageHeader';
@@ -12,7 +12,7 @@ import { useToast } from "@/hooks/use-toast";
 // Studio data type
 interface Studio {
   id: number;
-  studioId: string; // Added studioId field
+  studioId: string; 
   name: string;
   ownerName: string;
   contactNumber: string;
@@ -24,7 +24,7 @@ interface Studio {
   joinedDate?: string;
   totalOrders?: number;
   revenue?: number;
-  avgSackValue?: number; // Added avgSackValue field
+  avgSackValue?: number;
   serviceTimes?: {
     type: string;
     time: string;
@@ -228,6 +228,7 @@ const Studios: React.FC = () => {
   const [filterRating, setFilterRating] = useState<number | null>(null);
   const [showStatusFilter, setShowStatusFilter] = useState(false);
   const [showRatingFilter, setShowRatingFilter] = useState(false);
+  const [activeDropdownId, setActiveDropdownId] = useState<number | null>(null);
   const [newStudioForm, setNewStudioForm] = useState<NewStudioFormData>({
     name: '',
     ownerName: '',
@@ -240,6 +241,7 @@ const Studios: React.FC = () => {
   const searchRef = useRef<HTMLDivElement>(null);
   const statusFilterRef = useRef<HTMLDivElement>(null);
   const ratingFilterRef = useRef<HTMLDivElement>(null);
+  const dropdownRefs = useRef<{ [key: number]: HTMLDivElement | null }>({});
   const { toast } = useToast();
   const navigate = useNavigate();
 
@@ -255,13 +257,27 @@ const Studios: React.FC = () => {
       if (ratingFilterRef.current && !ratingFilterRef.current.contains(event.target as Node)) {
         setShowRatingFilter(false);
       }
+      
+      // Handle three dots menu dropdown
+      if (activeDropdownId !== null) {
+        const activeDropdownRef = dropdownRefs.current[activeDropdownId];
+        if (activeDropdownRef && !activeDropdownRef.contains(event.target as Node)) {
+          setActiveDropdownId(null);
+        }
+      }
     }
 
     document.addEventListener('mousedown', handleClickOutside);
     return () => {
       document.removeEventListener('mousedown', handleClickOutside);
     };
-  }, []);
+  }, [activeDropdownId]);
+
+  // Toggle dropdown menu
+  const toggleDropdown = (id: number, event: React.MouseEvent) => {
+    event.stopPropagation();
+    setActiveDropdownId(activeDropdownId === id ? null : id);
+  };
 
   // Apply filters
   useEffect(() => {
@@ -596,73 +612,81 @@ const Studios: React.FC = () => {
     {
       header: 'Actions',
       accessor: (row: Studio) => (
-        <div className="flex space-x-2">
-          <button
-            onClick={() => viewStudioDetails(row)}
-            className="p-1 text-gray-500 hover:text-admin-primary transition-colors"
-            aria-label="View studio details"
+        <div className="flex justify-center">
+          <div 
+            className="relative"
+            ref={el => dropdownRefs.current[row.id] = el}
           >
-            <Eye className="h-4 w-4" />
-          </button>
-          <button
-            onClick={() => editStudio(row)}
-            className="p-1 text-gray-500 hover:text-admin-primary transition-colors"
-            aria-label="Edit studio"
-          >
-            <Edit className="h-4 w-4" />
-          </button>
-          <div className="relative group">
             <button
-              className="p-1 text-gray-500 hover:text-admin-primary transition-colors"
+              className="p-2 rounded-full text-gray-500 hover:text-admin-primary hover:bg-gray-100 transition-colors"
               aria-label="More options"
+              onClick={(e) => toggleDropdown(row.id, e)}
             >
-              <MoreHorizontal className="h-4 w-4" />
+              <MoreHorizontal className="h-5 w-5" />
             </button>
-            <div className="absolute right-0 mt-1 bg-white border border-gray-200 rounded-md shadow-lg py-1 w-48 hidden group-hover:block z-10">
-              <button 
-                onClick={() => navigateToStudioPayments(row.id, row.name)}
-                className="flex items-center w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
-              >
-                <CreditCard className="h-4 w-4 mr-2 text-gray-500" />
-                <span>Payments</span>
-              </button>
-              
-              <button 
-                onClick={() => navigateToStudioDetails(row.id)}
-                className="flex items-center w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
-              >
-                <Settings className="h-4 w-4 mr-2 text-gray-500" />
-                <span>View/Edit Details</span>
-              </button>
-              
-              <button 
-                onClick={() => navigateToStudioServices(row.id)}
-                className="flex items-center w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
-              >
-                <Package className="h-4 w-4 mr-2 text-gray-500" />
-                <span>View/Edit Services</span>
-              </button>
-              
-              <button 
-                onClick={() => openStudioAnalytics(row.id)}
-                className="flex items-center w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
-              >
-                <ChevronDown className="h-4 w-4 mr-2 text-gray-500" />
-                <span>View Analytics</span>
-              </button>
-              
-              <button 
-                className="flex items-center w-full text-left px-4 py-2 text-sm text-red-600 hover:bg-gray-100"
-                onClick={() => deleteStudio(row.id, row.name)}
-              >
-                <Trash2 className="h-4 w-4 mr-2 text-red-500" />
-                <span>Delete Studio</span>
-              </button>
-            </div>
+            {activeDropdownId === row.id && (
+              <div className="absolute right-0 mt-2 bg-white border border-gray-200 rounded-md shadow-lg py-1 w-52 z-10">
+                <button 
+                  onClick={() => viewStudioDetails(row)}
+                  className="flex items-center w-full text-left px-4 py-2.5 text-sm text-gray-700 hover:bg-gray-100"
+                >
+                  <Settings className="h-4 w-4 mr-2 text-gray-500" />
+                  <span>View Studio Details</span>
+                </button>
+                
+                <button 
+                  onClick={() => editStudio(row)}
+                  className="flex items-center w-full text-left px-4 py-2.5 text-sm text-gray-700 hover:bg-gray-100"
+                >
+                  <Settings className="h-4 w-4 mr-2 text-gray-500" />
+                  <span>Edit Studio</span>
+                </button>
+                
+                <button 
+                  onClick={() => navigateToStudioPayments(row.id, row.name)}
+                  className="flex items-center w-full text-left px-4 py-2.5 text-sm text-gray-700 hover:bg-gray-100"
+                >
+                  <CreditCard className="h-4 w-4 mr-2 text-gray-500" />
+                  <span>Payments</span>
+                </button>
+                
+                <button 
+                  onClick={() => navigateToStudioDetails(row.id)}
+                  className="flex items-center w-full text-left px-4 py-2.5 text-sm text-gray-700 hover:bg-gray-100"
+                >
+                  <Settings className="h-4 w-4 mr-2 text-gray-500" />
+                  <span>View/Edit Details</span>
+                </button>
+                
+                <button 
+                  onClick={() => navigateToStudioServices(row.id)}
+                  className="flex items-center w-full text-left px-4 py-2.5 text-sm text-gray-700 hover:bg-gray-100"
+                >
+                  <Package className="h-4 w-4 mr-2 text-gray-500" />
+                  <span>View/Edit Services</span>
+                </button>
+                
+                <button 
+                  onClick={() => openStudioAnalytics(row.id)}
+                  className="flex items-center w-full text-left px-4 py-2.5 text-sm text-gray-700 hover:bg-gray-100"
+                >
+                  <ChevronDown className="h-4 w-4 mr-2 text-gray-500" />
+                  <span>View Analytics</span>
+                </button>
+                
+                <button 
+                  className="flex items-center w-full text-left px-4 py-2.5 text-sm text-red-600 hover:bg-gray-100"
+                  onClick={() => deleteStudio(row.id, row.name)}
+                >
+                  <Trash2 className="h-4 w-4 mr-2 text-red-500" />
+                  <span>Delete Studio</span>
+                </button>
+              </div>
+            )}
           </div>
         </div>
       ),
-      width: '120px'
+      width: '80px'
     }
   ];
 
