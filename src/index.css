@@ -1,3 +1,6 @@
+
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
@@ -13,7 +16,7 @@
     --popover: 0 0% 100%;
     --popover-foreground: 222.2 84% 4.9%;
 
-    --primary: 222.2 47.4% 11.2%;
+    --primary: 221 83% 28%;
     --primary-foreground: 210 40% 98%;
 
     --secondary: 210 40% 96.1%;
@@ -35,19 +38,12 @@
     --radius: 0.5rem;
 
     --sidebar-background: 0 0% 98%;
-
     --sidebar-foreground: 240 5.3% 26.1%;
-
-    --sidebar-primary: 240 5.9% 10%;
-
+    --sidebar-primary: 221 83% 28%;
     --sidebar-primary-foreground: 0 0% 98%;
-
     --sidebar-accent: 240 4.8% 95.9%;
-
     --sidebar-accent-foreground: 240 5.9% 10%;
-
     --sidebar-border: 220 13% 91%;
-
     --sidebar-ring: 217.2 91.2% 59.8%;
   }
 
@@ -61,7 +57,7 @@
     --popover: 222.2 84% 4.9%;
     --popover-foreground: 210 40% 98%;
 
-    --primary: 210 40% 98%;
+    --primary: 217.2 91.2% 59.8%;
     --primary-foreground: 222.2 47.4% 11.2%;
 
     --secondary: 217.2 32.6% 17.5%;
@@ -88,14 +84,106 @@
     --sidebar-border: 240 3.7% 15.9%;
     --sidebar-ring: 217.2 91.2% 59.8%;
   }
-}
 
-@layer base {
   * {
     @apply border-border;
   }
 
   body {
-    @apply bg-background text-foreground;
+    @apply bg-gray-50 text-foreground font-sans;
+  }
+
+  /* Custom scrollbar */
+  ::-webkit-scrollbar {
+    width: 8px;
+    height: 8px;
+  }
+
+  ::-webkit-scrollbar-track {
+    background: rgba(0, 0, 0, 0.05);
+    border-radius: 4px;
+  }
+
+  ::-webkit-scrollbar-thumb {
+    background: rgba(0, 0, 0, 0.2);
+    border-radius: 4px;
+  }
+
+  ::-webkit-scrollbar-thumb:hover {
+    background: rgba(0, 0, 0, 0.3);
+  }
+
+  /* Layout transitions */
+  .page-transition-enter {
+    opacity: 0;
+    transform: translateY(4px);
+  }
+  
+  .page-transition-enter-active {
+    opacity: 1;
+    transform: translateY(0);
+    transition: opacity 300ms, transform 300ms;
+  }
+  
+  .page-transition-exit {
+    opacity: 1;
+    transform: translateY(0);
+  }
+  
+  .page-transition-exit-active {
+    opacity: 0;
+    transform: translateY(4px);
+    transition: opacity 300ms, transform 300ms;
+  }
+}
+
+/* Component-specific styles */
+@layer components {
+  .admin-card {
+    @apply bg-white rounded-lg shadow-subtle transition-all duration-300 hover:shadow-card;
+  }
+  
+  .admin-button-primary {
+    @apply bg-admin-primary hover:bg-opacity-90 text-white rounded-md px-4 py-2 transition-all;
+  }
+  
+  .admin-button-secondary {
+    @apply bg-admin-secondary hover:bg-opacity-90 text-admin-accent rounded-md px-4 py-2 transition-all;
+  }
+  
+  .admin-input {
+    @apply border border-gray-200 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-primary/30 transition-all;
+  }
+  
+  .admin-table-header {
+    @apply bg-gray-50 text-gray-700 font-medium text-left py-3 px-4;
+  }
+  
+  .admin-table-cell {
+    @apply border-t border-gray-100 py-3 px-4;
+  }
+  
+  .admin-badge {
+    @apply inline-flex items-center py-1 px-2 rounded-full text-xs font-medium;
+  }
+  
+  .admin-badge-success {
+    @apply admin-badge bg-green-100 text-green-800;
+  }
+  
+  .admin-badge-warning {
+    @apply admin-badge bg-yellow-100 text-yellow-800;
+  }
+  
+  .admin-badge-danger {
+    @apply admin-badge bg-red-100 text-red-800;
+  }
+  
+  .admin-badge-info {
+    @apply admin-badge bg-blue-100 text-blue-800;
+  }
+  
+  .admin-badge-neutral {
+    @apply admin-badge bg-gray-100 text-gray-800;
   }
 }
