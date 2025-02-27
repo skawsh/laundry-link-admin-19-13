@@ -215,9 +215,23 @@ const StudioDetails: React.FC = () => {
           </div>
         </div>
       );
+    } else if (studio.washCategory === 'standard') {
+      return (
+        <div className="flex items-center space-x-1">
+          <span className="h-2 w-2 rounded-full bg-gray-600"></span>
+          <span className="text-sm">Standard Wash</span>
+        </div>
+      );
+    } else if (studio.washCategory === 'express') {
+      return (
+        <div className="flex items-center space-x-1">
+          <span className="h-2 w-2 rounded-full bg-gray-600"></span>
+          <span className="text-sm">Express Wash</span>
+        </div>
+      );
     }
     
-    return <p className="text-base capitalize">{studio.washCategory || 'N/A'}</p>;
+    return <p className="text-base">N/A</p>;
   };
 
   if (isLoading) {
@@ -649,7 +663,7 @@ const StudioDetails: React.FC = () => {
                 </div>
                 
                 <div className="space-y-2">
-                  <label className="text-sm font-medium text-gray-700">Select Wash Category</label>
+                  <label className="text-sm font-medium text-gray-700">{isEditing ? "Select Wash Category" : "Selected Wash Category"}</label>
                   {isEditing ? (
                     <div className="flex space-x-4 mt-2">
                       <RadioGroup
