@@ -152,24 +152,24 @@ const OnboardingRequests: React.FC = () => {
   const columns = [
     {
       header: 'ID',
-      accessor: 'id',
+      accessor: 'id' as keyof OnboardingRequest,
       width: '70px'
     },
     {
       header: 'Studio Name',
-      accessor: 'studioName',
+      accessor: 'studioName' as keyof OnboardingRequest,
     },
     {
       header: 'Owner Name',
-      accessor: 'ownerName',
+      accessor: 'ownerName' as keyof OnboardingRequest,
     },
     {
       header: 'Contact',
-      accessor: 'contactNumber',
+      accessor: 'contactNumber' as keyof OnboardingRequest,
     },
     {
       header: 'Email',
-      accessor: 'email',
+      accessor: 'email' as keyof OnboardingRequest,
     },
     {
       header: 'Submitted Date',

@@ -127,11 +127,11 @@ const StudioPayments: React.FC = () => {
   const unpaidColumns = [
     {
       header: 'Order ID',
-      accessor: 'id',
+      accessor: 'id' as keyof UnpaidOrder,
     },
     {
       header: 'Studio Name',
-      accessor: 'studioName',
+      accessor: 'studioName' as keyof UnpaidOrder,
     },
     {
       header: 'Order Date',
@@ -159,15 +159,15 @@ const StudioPayments: React.FC = () => {
   const historyColumns = [
     {
       header: 'Payment ID',
-      accessor: 'id',
+      accessor: 'id' as keyof PaymentRecord,
     },
     {
       header: 'Studio Name',
-      accessor: 'studioName',
+      accessor: 'studioName' as keyof PaymentRecord,
     },
     {
       header: 'Order ID',
-      accessor: 'orderId',
+      accessor: 'orderId' as keyof PaymentRecord,
     },
     {
       header: 'Amount',
@@ -179,7 +179,7 @@ const StudioPayments: React.FC = () => {
     },
     {
       header: 'Reference No.',
-      accessor: 'referenceNumber',
+      accessor: 'referenceNumber' as keyof PaymentRecord,
     }
   ];
 

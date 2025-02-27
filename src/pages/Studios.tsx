@@ -141,24 +141,24 @@ const Studios: React.FC = () => {
   const columns = [
     {
       header: 'S.NO',
-      accessor: 'id',
+      accessor: 'id' as keyof Studio,
       width: '70px'
     },
     {
       header: 'Studio Name',
-      accessor: 'name',
+      accessor: 'name' as keyof Studio,
     },
     {
       header: 'Owner Name',
-      accessor: 'ownerName',
+      accessor: 'ownerName' as keyof Studio,
     },
     {
       header: 'Primary Contact',
-      accessor: 'contactNumber',
+      accessor: 'contactNumber' as keyof Studio,
     },
     {
       header: 'Services',
-      accessor: 'services',
+      accessor: 'services' as keyof Studio,
       width: '100px'
     },
     {
