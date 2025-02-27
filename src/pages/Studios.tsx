@@ -1,6 +1,6 @@
 
 import React, { useState, useEffect, useRef } from 'react';
-import { Plus, Edit, Eye, ChevronDown, Search, Filter, Star, MoreHorizontal, X, ArrowUpDown, CheckCircle } from 'lucide-react';
+import { Plus, Edit, Eye, ChevronDown, Search, Filter, Star, MoreHorizontal, X, ArrowUpDown, CheckCircle, CreditCard, Settings, Package, Trash2 } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import AdminLayout from '../components/layout/AdminLayout';
 import PageHeader from '../components/ui/PageHeader';
@@ -340,6 +340,36 @@ const Studios: React.FC = () => {
     });
   };
 
+  // Navigate to studio payments
+  const navigateToStudioPayments = (studioId: number, studioName: string) => {
+    navigate(`/studios/payments/${studioId}`);
+    toast({
+      title: "Payments",
+      description: `Viewing payment history for ${studioName}`,
+      duration: 3000,
+    });
+  };
+
+  // Navigate to studio details
+  const navigateToStudioDetails = (studioId: number) => {
+    navigate(`/studios/details/${studioId}`);
+    toast({
+      title: "Studio Details",
+      description: "View and edit studio details",
+      duration: 3000,
+    });
+  };
+
+  // Navigate to studio services
+  const navigateToStudioServices = (studioId: number) => {
+    navigate(`/studios/services/${studioId}`);
+    toast({
+      title: "Services",
+      description: "Manage studio services",
+      duration: 3000,
+    });
+  };
+
   // Edit studio
   const editStudio = (studio: Studio) => {
     setSelectedStudio(studio);
@@ -425,6 +455,16 @@ const Studios: React.FC = () => {
     toast({
       title: "Studio added",
       description: `${newStudio.name} has been added successfully`,
+      duration: 3000,
+    });
+  };
+
+  // Delete studio
+  const deleteStudio = (studioId: number, studioName: string) => {
+    setStudios(studios.filter(s => s.id !== studioId));
+    toast({
+      title: "Studio deleted",
+      description: `${studioName} has been removed`,
       duration: 3000,
     });
   };
@@ -580,29 +620,43 @@ const Studios: React.FC = () => {
             </button>
             <div className="absolute right-0 mt-1 bg-white border border-gray-200 rounded-md shadow-lg py-1 w-48 hidden group-hover:block z-10">
               <button 
+                onClick={() => navigateToStudioPayments(row.id, row.name)}
+                className="flex items-center w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
+              >
+                <CreditCard className="h-4 w-4 mr-2 text-gray-500" />
+                <span>Payments</span>
+              </button>
+              
+              <button 
+                onClick={() => navigateToStudioDetails(row.id)}
+                className="flex items-center w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
+              >
+                <Settings className="h-4 w-4 mr-2 text-gray-500" />
+                <span>View/Edit Details</span>
+              </button>
+              
+              <button 
+                onClick={() => navigateToStudioServices(row.id)}
+                className="flex items-center w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
+              >
+                <Package className="h-4 w-4 mr-2 text-gray-500" />
+                <span>View/Edit Services</span>
+              </button>
+              
+              <button 
                 onClick={() => openStudioAnalytics(row.id)}
-                className="block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
+                className="flex items-center w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
               >
-                View Analytics
+                <ChevronDown className="h-4 w-4 mr-2 text-gray-500" />
+                <span>View Analytics</span>
               </button>
+              
               <button 
-                className="block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
-                onClick={() => navigate('/studios/payments')}
+                className="flex items-center w-full text-left px-4 py-2 text-sm text-red-600 hover:bg-gray-100"
+                onClick={() => deleteStudio(row.id, row.name)}
               >
-                Payment History
-              </button>
-              <button 
-                className="block w-full text-left px-4 py-2 text-sm text-red-600 hover:bg-gray-100"
-                onClick={() => {
-                  setStudios(studios.filter(s => s.id !== row.id));
-                  toast({
-                    title: "Studio deleted",
-                    description: `${row.name} has been removed`,
-                    duration: 3000,
-                  });
-                }}
-              >
-                Delete Studio
+                <Trash2 className="h-4 w-4 mr-2 text-red-500" />
+                <span>Delete Studio</span>
               </button>
             </div>
           </div>
