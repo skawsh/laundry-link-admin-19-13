@@ -9,6 +9,7 @@ import Studios from "./pages/Studios";
 import StudioPayments from "./pages/StudioPayments";
 import OnboardingRequests from "./pages/OnboardingRequests";
 import StudioAnalytics from "./pages/StudioAnalytics";
+import StudioDetails from "./pages/StudioDetails";
 import Drivers from "./pages/Drivers";
 import NotFound from "./pages/NotFound";
 
@@ -24,8 +25,10 @@ const App = () => (
           <Route path="/" element={<Dashboard />} />
           <Route path="/studios" element={<Studios />} />
           <Route path="/studios/payments" element={<StudioPayments />} />
+          <Route path="/studios/payments/:studioId" element={<StudioPayments />} />
           <Route path="/studios/onboarding" element={<OnboardingRequests />} />
           <Route path="/studios/analytics/:studioId" element={<StudioAnalytics />} />
+          <Route path="/studios/details/:studioId" element={<StudioDetails />} />
           <Route path="/drivers" element={<Drivers />} />
           
           {/* Placeholder routes for other sections */}
