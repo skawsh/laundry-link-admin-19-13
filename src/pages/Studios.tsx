@@ -866,64 +866,13 @@ const Studios: React.FC = () => {
       </div>
       
       {/* Studios table */}
-      <div className="bg-white rounded-lg shadow-subtle overflow-hidden">
-        <div className="overflow-x-auto">
-          <table className="min-w-full divide-y divide-gray-100">
-            <thead>
-              <tr className="bg-gray-50">
-                {columns.map((column, index) => (
-                  <th
-                    key={index}
-                    scope="col"
-                    className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
-                    style={{ width: column.width }}
-                  >
-                    {typeof column.accessor === 'string' ? (
-                      <button 
-                        className="flex items-center"
-                        onClick={() => column.accessor !== 'id' ? handleSort(column.accessor as keyof Studio) : null}
-                      >
-                        {column.header}
-                        {sortField === column.accessor && (
-                          <ChevronDown 
-                            className={`ml-1 h-4 w-4 transition-transform ${sortDirection === 'desc' ? 'transform rotate-180' : ''}`} 
-                          />
-                        )}
-                      </button>
-                    ) : (
-                      column.header
-                    )}
-                  </th>
-                ))}
-              </tr>
-            </thead>
-            <tbody className="bg-white divide-y divide-gray-100">
-              {filteredStudios.length > 0 ? (
-                filteredStudios.map((row) => (
-                  <tr key={row.id} className="hover:bg-gray-50 transition-colors">
-                    {columns.map((column, index) => (
-                      <td key={index} className="px-4 py-3 text-sm text-gray-700">
-                        {typeof column.accessor === 'function'
-                          ? column.accessor(row)
-                          : row[column.accessor] as React.ReactNode}
-                      </td>
-                    ))}
-                  </tr>
-                ))
-              ) : (
-                <tr>
-                  <td
-                    colSpan={columns.length}
-                    className="px-4 py-8 text-sm text-center text-gray-400"
-                  >
-                    No laundry studios found
-                  </td>
-                </tr>
-              )}
-            </tbody>
-          </table>
-        </div>
-      </div>
+      <DataTable
+        columns={columns}
+        data={filteredStudios}
+        keyField="id"
+        searchPlaceholder="Search studios..."
+        emptyMessage="No studios found"
+      />
       
       {/* Add New Studio Modal */}
       {isAddStudioModalOpen && (
