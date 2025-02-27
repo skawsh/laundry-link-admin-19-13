@@ -12,6 +12,7 @@ import { useToast } from "@/hooks/use-toast";
 // Studio data type
 interface Studio {
   id: number;
+  studioId: string; // Added studioId field
   name: string;
   ownerName: string;
   contactNumber: string;
@@ -23,6 +24,7 @@ interface Studio {
   joinedDate?: string;
   totalOrders?: number;
   revenue?: number;
+  avgSackValue?: number; // Added avgSackValue field
   serviceTimes?: {
     type: string;
     time: string;
@@ -33,6 +35,7 @@ interface Studio {
 const initialStudios: Studio[] = [
   {
     id: 1,
+    studioId: "STU10001",
     name: 'Saiteja Laundry',
     ownerName: 'Saiteja',
     contactNumber: '8099830308',
@@ -44,6 +47,7 @@ const initialStudios: Studio[] = [
     joinedDate: '2022-04-15',
     totalOrders: 325,
     revenue: 125800,
+    avgSackValue: 387, // 125800/325
     serviceTimes: [
       { type: 'Standard Wash', time: '2h 30min' },
       { type: 'Express Wash', time: '1h 15min' },
@@ -52,6 +56,7 @@ const initialStudios: Studio[] = [
   },
   {
     id: 2,
+    studioId: "STU10002",
     name: 'Sparkle Clean Laundry',
     ownerName: 'Ravi Kumar',
     contactNumber: '9876543210',
@@ -63,6 +68,7 @@ const initialStudios: Studio[] = [
     joinedDate: '2022-05-20',
     totalOrders: 287,
     revenue: 109500,
+    avgSackValue: 381, // 109500/287
     serviceTimes: [
       { type: 'Standard Wash', time: '3h' },
       { type: 'Express Wash', time: '1h 30min' },
@@ -71,6 +77,7 @@ const initialStudios: Studio[] = [
   },
   {
     id: 3,
+    studioId: "STU10003",
     name: 'Fresh Fold Services',
     ownerName: 'Anjali Patel',
     contactNumber: '7654321890',
@@ -82,6 +89,7 @@ const initialStudios: Studio[] = [
     joinedDate: '2022-03-10',
     totalOrders: 216,
     revenue: 85600,
+    avgSackValue: 396, // 85600/216
     serviceTimes: [
       { type: 'Standard Wash', time: '2h' },
       { type: 'Express Wash', time: '1h' },
@@ -90,6 +98,7 @@ const initialStudios: Studio[] = [
   },
   {
     id: 4,
+    studioId: "STU10004",
     name: 'Royal Wash',
     ownerName: 'Vikram Singh',
     contactNumber: '9988776655',
@@ -101,6 +110,7 @@ const initialStudios: Studio[] = [
     joinedDate: '2022-06-05',
     totalOrders: 298,
     revenue: 118200,
+    avgSackValue: 397, // 118200/298
     serviceTimes: [
       { type: 'Standard Wash', time: '2h 45min' },
       { type: 'Express Wash', time: '1h 15min' },
@@ -109,6 +119,7 @@ const initialStudios: Studio[] = [
   },
   {
     id: 5,
+    studioId: "STU10005",
     name: 'Urban Laundromat',
     ownerName: 'Dheeraj Mehta',
     contactNumber: '8765432109',
@@ -120,6 +131,7 @@ const initialStudios: Studio[] = [
     joinedDate: '2022-02-15',
     totalOrders: 176,
     revenue: 68900,
+    avgSackValue: 392, // 68900/176
     serviceTimes: [
       { type: 'Standard Wash', time: '3h' },
       { type: 'Express Wash', time: '1h 30min' },
@@ -128,6 +140,7 @@ const initialStudios: Studio[] = [
   },
   {
     id: 6,
+    studioId: "STU10006",
     name: 'Quick & Clean',
     ownerName: 'Priya Sharma',
     contactNumber: '9123456780',
@@ -139,6 +152,7 @@ const initialStudios: Studio[] = [
     joinedDate: '2022-07-10',
     totalOrders: 210,
     revenue: 89300,
+    avgSackValue: 425, // 89300/210
     serviceTimes: [
       { type: 'Standard Wash', time: '2h' },
       { type: 'Express Wash', time: '45min' },
@@ -147,6 +161,7 @@ const initialStudios: Studio[] = [
   },
   {
     id: 7,
+    studioId: "STU10007",
     name: 'Wash Masters',
     ownerName: 'Ajay Verma',
     contactNumber: '8877665544',
@@ -158,6 +173,7 @@ const initialStudios: Studio[] = [
     joinedDate: '2022-08-20',
     totalOrders: 265,
     revenue: 103200,
+    avgSackValue: 390, // 103200/265
     serviceTimes: [
       { type: 'Standard Wash', time: '2h 15min' },
       { type: 'Express Wash', time: '1h' },
@@ -166,6 +182,7 @@ const initialStudios: Studio[] = [
   },
   {
     id: 8,
+    studioId: "STU10008",
     name: 'Pristine Garments',
     ownerName: 'Meena Shah',
     contactNumber: '9876123450',
@@ -177,6 +194,7 @@ const initialStudios: Studio[] = [
     joinedDate: '2022-01-05',
     totalOrders: 154,
     revenue: 61800,
+    avgSackValue: 401, // 61800/154
     serviceTimes: [
       { type: 'Standard Wash', time: '3h 30min' },
       { type: 'Express Wash', time: '1h 45min' },
@@ -265,7 +283,8 @@ const Studios: React.FC = () => {
         studio =>
           studio.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
           studio.ownerName.toLowerCase().includes(searchQuery.toLowerCase()) ||
-          studio.contactNumber.includes(searchQuery)
+          studio.contactNumber.includes(searchQuery) ||
+          studio.studioId.toLowerCase().includes(searchQuery.toLowerCase())
       );
     }
 
@@ -364,9 +383,13 @@ const Studios: React.FC = () => {
       return;
     }
     
+    // Generate a new studio ID
+    const studioId = `STU${(10000 + studios.length + 1).toString()}`;
+    
     // Create new studio object
     const newStudio: Studio = {
       id: Math.max(...studios.map(s => s.id)) + 1,
+      studioId,
       name: newStudioForm.name,
       ownerName: newStudioForm.ownerName,
       contactNumber: newStudioForm.contactNumber,
@@ -378,6 +401,7 @@ const Studios: React.FC = () => {
       joinedDate: new Date().toISOString().split('T')[0],
       totalOrders: 0,
       revenue: 0,
+      avgSackValue: 0,
       serviceTimes: [
         { type: 'Standard Wash', time: '3h' },
         { type: 'Express Wash', time: '1h 30min' }
@@ -419,7 +443,8 @@ const Studios: React.FC = () => {
       studio =>
         studio.name.toLowerCase().includes(query.toLowerCase()) ||
         studio.ownerName.toLowerCase().includes(query.toLowerCase()) ||
-        studio.contactNumber.includes(query)
+        studio.contactNumber.includes(query) ||
+        studio.studioId.toLowerCase().includes(query.toLowerCase())
     ).slice(0, 5); // Limit to 5 results for dropdown
     
     setSearchResults(results);
@@ -473,12 +498,23 @@ const Studios: React.FC = () => {
     });
   };
 
+  // Calculate average sack value across all studios
+  const calculateAvgSackValue = () => {
+    const totalSackValue = studios.reduce((sum, studio) => sum + (studio.avgSackValue || 0), 0);
+    return (totalSackValue / studios.length).toFixed(0);
+  };
+
   // Table columns configuration
   const columns = [
     {
       header: 'S.NO',
       accessor: 'id' as keyof Studio,
       width: '70px'
+    },
+    {
+      header: 'Studio ID',
+      accessor: 'studioId' as keyof Studio,
+      width: '120px'
     },
     {
       header: 'Studio Name',
@@ -619,10 +655,9 @@ const Studios: React.FC = () => {
           </p>
         </div>
         <div className="bg-white p-4 rounded-lg shadow-subtle">
-          <p className="text-sm text-gray-500">Avg. Rating</p>
+          <p className="text-sm text-gray-500">Avg. Sack Value</p>
           <div className="flex items-center mt-1">
-            <p className="text-2xl font-semibold">{(studios.reduce((sum, studio) => sum + studio.rating, 0) / studios.length).toFixed(1)}</p>
-            <span className="ml-1 text-yellow-500 text-xl">★</span>
+            <p className="text-2xl font-semibold">₹{calculateAvgSackValue()}</p>
           </div>
         </div>
       </div>
@@ -736,7 +771,7 @@ const Studios: React.FC = () => {
             </div>
             <input
               type="text"
-              placeholder="Search by studio name, owner or contact..."
+              placeholder="Search by studio ID, name, owner or contact..."
               value={searchQuery}
               onChange={(e) => handleSearch(e.target.value)}
               className="block w-full sm:w-64 bg-white border border-gray-200 rounded-md py-2 pl-10 pr-10 text-sm placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-transparent"
@@ -763,7 +798,7 @@ const Studios: React.FC = () => {
                   >
                     <div className="font-medium">{studio.name}</div>
                     <div className="text-xs text-gray-500 flex justify-between">
-                      <span>{studio.ownerName}</span>
+                      <span>{studio.studioId}</span>
                       <span>{studio.contactNumber}</span>
                     </div>
                   </button>
@@ -962,6 +997,7 @@ const Studios: React.FC = () => {
                 <h2 className="text-xl font-semibold">{selectedStudio.name}</h2>
                 <StatusBadge status={selectedStudio.status} />
               </div>
+              <p className="text-sm text-gray-500 mt-1">ID: {selectedStudio.studioId}</p>
               <p className="text-sm text-gray-500 mt-1">{selectedStudio.address}</p>
             </div>
             
@@ -993,18 +1029,15 @@ const Studios: React.FC = () => {
                 </div>
                 <div className="bg-gray-50 p-3 rounded">
                   <p className="text-sm text-gray-500">Total Revenue</p>
-                  <p className="text-lg font-semibold">${selectedStudio.revenue?.toLocaleString() || "0"}</p>
+                  <p className="text-lg font-semibold">₹{selectedStudio.revenue?.toLocaleString() || "0"}</p>
                 </div>
                 <div className="bg-gray-50 p-3 rounded">
                   <p className="text-sm text-gray-500">Services Offered</p>
                   <p className="text-lg font-semibold">{selectedStudio.services}</p>
                 </div>
                 <div className="bg-gray-50 p-3 rounded">
-                  <p className="text-sm text-gray-500">Rating</p>
-                  <div className="flex items-center">
-                    <p className="text-lg font-semibold">{selectedStudio.rating}</p>
-                    <span className="ml-1 text-yellow-500">★</span>
-                  </div>
+                  <p className="text-sm text-gray-500">Avg. Sack Value</p>
+                  <p className="text-lg font-semibold">₹{selectedStudio.avgSackValue || "0"}</p>
                 </div>
               </div>
             </div>
@@ -1059,6 +1092,18 @@ const Studios: React.FC = () => {
             </div>
             
             <div className="space-y-4">
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  Studio ID
+                </label>
+                <input
+                  type="text"
+                  value={selectedStudio.studioId}
+                  disabled
+                  className="block w-full border border-gray-200 rounded-md py-2 px-3 text-sm placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-primary/20 bg-gray-50"
+                />
+              </div>
+              
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">
                   Studio Name
@@ -1156,6 +1201,19 @@ const Studios: React.FC = () => {
                     <span className="ml-2 text-sm text-gray-700">Inactive</span>
                   </label>
                 </div>
+              </div>
+              
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  Average Sack Value
+                </label>
+                <input
+                  type="number"
+                  value={selectedStudio.avgSackValue || 0}
+                  onChange={(e) => setSelectedStudio({...selectedStudio, avgSackValue: parseInt(e.target.value) || 0})}
+                  className="block w-full border border-gray-200 rounded-md py-2 px-3 text-sm placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-primary/20"
+                  min="0"
+                />
               </div>
             </div>
             
