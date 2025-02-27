@@ -9,6 +9,7 @@ import Studios from "./pages/Studios";
 import StudioPayments from "./pages/StudioPayments";
 import OnboardingRequests from "./pages/OnboardingRequests";
 import StudioAnalytics from "./pages/StudioAnalytics";
+import Drivers from "./pages/Drivers";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -25,9 +26,9 @@ const App = () => (
           <Route path="/studios/payments" element={<StudioPayments />} />
           <Route path="/studios/onboarding" element={<OnboardingRequests />} />
           <Route path="/studios/analytics/:studioId" element={<StudioAnalytics />} />
+          <Route path="/drivers" element={<Drivers />} />
           
           {/* Placeholder routes for other sections */}
-          <Route path="/drivers" element={<NotFound />} />
           <Route path="/orders" element={<NotFound />} />
           <Route path="/revenue" element={<NotFound />} />
           <Route path="/tickets" element={<NotFound />} />
