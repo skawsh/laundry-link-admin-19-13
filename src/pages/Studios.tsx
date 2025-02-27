@@ -627,22 +627,6 @@ const Studios: React.FC = () => {
             {activeDropdownId === row.id && (
               <div className="absolute right-0 mt-2 bg-white border border-gray-200 rounded-md shadow-lg py-1 w-52 z-10">
                 <button 
-                  onClick={() => viewStudioDetails(row)}
-                  className="flex items-center w-full text-left px-4 py-2.5 text-sm text-gray-700 hover:bg-gray-100"
-                >
-                  <Settings className="h-4 w-4 mr-2 text-gray-500" />
-                  <span>View Studio Details</span>
-                </button>
-                
-                <button 
-                  onClick={() => editStudio(row)}
-                  className="flex items-center w-full text-left px-4 py-2.5 text-sm text-gray-700 hover:bg-gray-100"
-                >
-                  <Settings className="h-4 w-4 mr-2 text-gray-500" />
-                  <span>Edit Studio</span>
-                </button>
-                
-                <button 
                   onClick={() => navigateToStudioPayments(row.id, row.name)}
                   className="flex items-center w-full text-left px-4 py-2.5 text-sm text-gray-700 hover:bg-gray-100"
                 >
@@ -655,7 +639,7 @@ const Studios: React.FC = () => {
                   className="flex items-center w-full text-left px-4 py-2.5 text-sm text-gray-700 hover:bg-gray-100"
                 >
                   <Settings className="h-4 w-4 mr-2 text-gray-500" />
-                  <span>View/Edit Details</span>
+                  <span>View/Edit Studio Details</span>
                 </button>
                 
                 <button 
