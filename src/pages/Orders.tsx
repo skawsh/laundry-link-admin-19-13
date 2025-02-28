@@ -322,7 +322,7 @@ const Orders: React.FC = () => {
   const columns = [
     {
       header: "Order ID",
-      accessor: "id",
+      accessor: (row: Order) => row.id,
       width: "130px",
     },
     {
@@ -332,7 +332,7 @@ const Orders: React.FC = () => {
     },
     {
       header: "Customer",
-      accessor: "customer",
+      accessor: (row: Order) => row.customer,
     },
     {
       header: "Status",
@@ -345,7 +345,7 @@ const Orders: React.FC = () => {
     },
     {
       header: "Studio",
-      accessor: "studio",
+      accessor: (row: Order) => row.studio,
     },
     {
       header: "Driver",
