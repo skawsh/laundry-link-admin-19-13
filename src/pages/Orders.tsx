@@ -55,9 +55,33 @@ const ORDER_STATUS = {
   picked_up: { label: 'Picked Up', color: 'bg-indigo-500' },
 };
 
+// Define types for better type safety
+interface OrderItem {
+  id: string;
+  name: string;
+  quantity: number;
+  price: string;
+  service: string;
+}
+
+interface Order {
+  id: string;
+  date: string;
+  customer: string;
+  address: string;
+  status: keyof typeof ORDER_STATUS;
+  studio: string;
+  items: OrderItem[];
+  total: string;
+  driver: string | null;
+  paymentMethod: string;
+  estimatedCompletion: string;
+  notes: string;
+}
+
 // Mock data for orders
-const generateMockOrders = () => {
-  const statuses = Object.keys(ORDER_STATUS);
+const generateMockOrders = (): Order[] => {
+  const statuses = Object.keys(ORDER_STATUS) as Array<keyof typeof ORDER_STATUS>;
   const studios = [
     "Clean Express", "Laundry Masters", "Fresh Fold", "Wash & Go", 
     "Premium Cleaners", "City Laundry", "SparkleWash", "Quick Clean",
@@ -83,20 +107,20 @@ const generateMockOrders = () => {
     "606 Walnut St", "707 Cherry Ave", "808 Aspen Dr", "909 Willow Ln"
   ];
 
-  const getRandomDate = (start, end) => {
+  const getRandomDate = (start: Date, end: Date): Date => {
     return new Date(start.getTime() + Math.random() * (end.getTime() - start.getTime()));
   };
 
-  const calculateTotal = (items) => {
-    return items.reduce((sum, item) => sum + item.price * item.quantity, 0).toFixed(2);
+  const calculateTotal = (items: OrderItem[]): string => {
+    return items.reduce((sum, item) => sum + parseFloat(item.price) * item.quantity, 0).toFixed(2);
   };
 
-  const orders = [];
+  const orders: Order[] = [];
 
   // Generate 100 orders with realistic data
   for (let i = 1; i <= 100; i++) {
     const orderDate = getRandomDate(new Date(2023, 0, 1), new Date());
-    const items = [];
+    const items: OrderItem[] = [];
     const itemCount = Math.floor(Math.random() * 5) + 1;
     
     for (let j = 1; j <= itemCount; j++) {
@@ -137,13 +161,13 @@ const generateMockOrders = () => {
 
 const mockOrders = generateMockOrders();
 
-const Orders = () => {
-  const [selectedTab, setSelectedTab] = useState('all');
-  const [orderDetailsOpen, setOrderDetailsOpen] = useState(false);
-  const [selectedOrder, setSelectedOrder] = useState(null);
-  const [searchQuery, setSearchQuery] = useState('');
-  const [filtersOpen, setFiltersOpen] = useState(false);
-  const [statusFilters, setStatusFilters] = useState({
+const Orders: React.FC = () => {
+  const [selectedTab, setSelectedTab] = useState<string>('all');
+  const [orderDetailsOpen, setOrderDetailsOpen] = useState<boolean>(false);
+  const [selectedOrder, setSelectedOrder] = useState<Order | null>(null);
+  const [searchQuery, setSearchQuery] = useState<string>('');
+  const [filtersOpen, setFiltersOpen] = useState<boolean>(false);
+  const [statusFilters, setStatusFilters] = useState<Record<string, boolean>>({
     pending: true,
     in_progress: true,
     completed: true,
@@ -160,8 +184,8 @@ const Orders = () => {
     min: '',
     max: ''
   });
-  const [selectedStudio, setSelectedStudio] = useState('');
-  const [selectedDriver, setSelectedDriver] = useState('');
+  const [selectedStudio, setSelectedStudio] = useState<string>('');
+  const [selectedDriver, setSelectedDriver] = useState<string>('');
 
   // Calculate statistics
   const stats = useMemo(() => {
@@ -261,19 +285,19 @@ const Orders = () => {
   }, [mockOrders]);
 
   const uniqueDrivers = useMemo(() => {
-    return [...new Set(mockOrders.filter(order => order.driver).map(order => order.driver))];
+    return [...new Set(mockOrders.filter(order => order.driver).map(order => order.driver || ''))];
   }, [mockOrders]);
 
   // Calculate order status distribution for the chart
   const statusDistribution = useMemo(() => {
-    const distribution = {};
+    const distribution: Record<string, number> = {};
     Object.keys(ORDER_STATUS).forEach(status => {
       distribution[status] = mockOrders.filter(order => order.status === status).length;
     });
     return distribution;
   }, [mockOrders]);
 
-  const handleOrderClick = (order) => {
+  const handleOrderClick = (order: Order) => {
     setSelectedOrder(order);
     setOrderDetailsOpen(true);
   };
@@ -303,7 +327,7 @@ const Orders = () => {
     },
     {
       header: "Date",
-      accessor: (row) => new Date(row.date).toLocaleDateString(),
+      accessor: (row: Order) => new Date(row.date).toLocaleDateString(),
       width: "120px",
     },
     {
@@ -312,7 +336,7 @@ const Orders = () => {
     },
     {
       header: "Status",
-      accessor: (row) => (
+      accessor: (row: Order) => (
         <div className="flex items-center space-x-2">
           <div className={`w-2 h-2 rounded-full ${ORDER_STATUS[row.status].color}`}></div>
           <span>{ORDER_STATUS[row.status].label}</span>
@@ -325,16 +349,16 @@ const Orders = () => {
     },
     {
       header: "Driver",
-      accessor: (row) => row.driver || "—",
+      accessor: (row: Order) => row.driver || "—",
     },
     {
       header: "Total",
-      accessor: (row) => `$${row.total}`,
+      accessor: (row: Order) => `$${row.total}`,
       width: "100px",
     },
     {
       header: "Actions",
-      accessor: (row) => (
+      accessor: (row: Order) => (
         <Button
           size="sm"
           variant="outline"
@@ -602,8 +626,8 @@ const Orders = () => {
                 {Object.entries(statusDistribution).map(([status, count]) => (
                   <div key={status} className="flex items-center justify-between">
                     <div className="flex items-center space-x-2">
-                      <div className={`w-3 h-3 rounded-full ${ORDER_STATUS[status].color}`}></div>
-                      <span className="text-sm font-medium">{ORDER_STATUS[status].label}</span>
+                      <div className={`w-3 h-3 rounded-full ${ORDER_STATUS[status as keyof typeof ORDER_STATUS].color}`}></div>
+                      <span className="text-sm font-medium">{ORDER_STATUS[status as keyof typeof ORDER_STATUS].label}</span>
                     </div>
                     <div className="flex items-center space-x-2">
                       <span className="text-sm font-medium">{count}</span>
@@ -683,7 +707,7 @@ const Orders = () => {
                       <div className="text-right">
                         <div className="text-sm font-medium">{driver.count} orders</div>
                         <div className="text-xs text-gray-500">
-                          {driver.completed} completed ({((driver.completed / driver.count) * 100).toFixed()}%)
+                          {driver.completed} completed ({((driver.completed / driver.count) * 100).toFixed(0)}%)
                         </div>
                       </div>
                     </div>
@@ -699,7 +723,7 @@ const Orders = () => {
           <h2 className="text-lg font-medium mb-4">Recent Activity</h2>
           <div className="space-y-4">
             {mockOrders
-              .sort((a, b) => new Date(b.date) - new Date(a.date))
+              .sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime())
               .slice(0, 5)
               .map((order) => (
                 <div key={order.id} className="flex items-start space-x-3 pb-4 border-b border-gray-100 last:border-0">
