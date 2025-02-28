@@ -1,7 +1,7 @@
 
 import React, { useState } from 'react';
 import AdminLayout from '@/components/layout/AdminLayout';
-import { Search, User, Package, Clock, Info, MapPin, Calendar, Truck } from 'lucide-react';
+import { Search, User, Package, Clock, Info, MoreVertical, Phone, Calendar, Truck, UserCog, XCircle } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import {
   Dialog,
@@ -14,9 +14,16 @@ import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/comp
 import { Badge } from '@/components/ui/badge';
 import { Separator } from '@/components/ui/separator';
 import StatsCard from '@/components/ui/StatsCard';
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 
 const Drivers = () => {
   const [orderDetailsOpen, setOrderDetailsOpen] = useState(false);
+  const [driverProfileOpen, setDriverProfileOpen] = useState(false);
   const [selectedDriver, setSelectedDriver] = useState<null | {
     name: string;
     totalOrders: number;
@@ -24,6 +31,16 @@ const Drivers = () => {
     currentOrder: string;
     location: string;
     assignedOrders: string[];
+    phone?: string;
+    rating?: number;
+    joinDate?: string;
+    status?: string;
+    lastActive?: string;
+    email?: string;
+    address?: string;
+    emergencyContact?: string;
+    vehicleInfo?: string;
+    licenseNumber?: string;
   }>(null);
 
   const mockDrivers = [
@@ -31,7 +48,6 @@ const Drivers = () => {
       id: 1,
       name: 'John Doe',
       status: 'active',
-      completedOrders: 143,
       assignedOrders: ['ORD-1234', 'ORD-5678', 'ORD-9012'],
       currentOrder: 'ORD-1234',
       currentTask: 'pickup',
@@ -40,13 +56,17 @@ const Drivers = () => {
       totalOrders: 205,
       rating: 4.8,
       lastActive: '2 minutes ago',
-      joinDate: 'Jan 15, 2023'
+      joinDate: 'Jan 15, 2023',
+      email: 'john.doe@example.com',
+      address: '1234 Market St, San Francisco, CA',
+      emergencyContact: '+1 (555) 987-1234',
+      vehicleInfo: 'Toyota Corolla (2020), White, License: ABC123',
+      licenseNumber: 'DL98765432'
     },
     {
       id: 2,
       name: 'Jane Smith',
       status: 'inactive',
-      completedOrders: 98,
       assignedOrders: ['ORD-3456', 'ORD-7890'],
       currentOrder: 'ORD-3456',
       currentTask: 'deliver',
@@ -55,13 +75,17 @@ const Drivers = () => {
       totalOrders: 121,
       rating: 4.6,
       lastActive: '1 hour ago',
-      joinDate: 'Mar 22, 2023'
+      joinDate: 'Mar 22, 2023',
+      email: 'jane.smith@example.com',
+      address: '567 Mission St, San Francisco, CA',
+      emergencyContact: '+1 (555) 345-6789',
+      vehicleInfo: 'Honda Civic (2019), Silver, License: XYZ789',
+      licenseNumber: 'DL12345678'
     },
     {
       id: 3,
       name: 'Mike Johnson',
       status: 'active',
-      completedOrders: 211,
       assignedOrders: ['ORD-2345', 'ORD-6789', 'ORD-0123', 'ORD-4567'],
       currentOrder: 'ORD-2345',
       currentTask: 'collect',
@@ -70,7 +94,145 @@ const Drivers = () => {
       totalOrders: 298,
       rating: 4.9,
       lastActive: '5 minutes ago',
-      joinDate: 'Nov 3, 2022'
+      joinDate: 'Nov 3, 2022',
+      email: 'mike.johnson@example.com',
+      address: '890 Howard St, San Francisco, CA',
+      emergencyContact: '+1 (555) 678-9012',
+      vehicleInfo: 'Ford Focus (2021), Blue, License: DEF456',
+      licenseNumber: 'DL56781234'
+    },
+    {
+      id: 4,
+      name: 'Sarah Williams',
+      status: 'active',
+      assignedOrders: ['ORD-8765', 'ORD-4321'],
+      currentOrder: 'ORD-8765',
+      currentTask: 'drop',
+      location: '123 Valencia St, San Francisco, CA',
+      phone: '+1 (555) 234-5678',
+      totalOrders: 175,
+      rating: 4.7,
+      lastActive: '15 minutes ago',
+      joinDate: 'Feb 8, 2023',
+      email: 'sarah.williams@example.com',
+      address: '123 Valencia St, San Francisco, CA',
+      emergencyContact: '+1 (555) 123-7890',
+      vehicleInfo: 'Nissan Altima (2018), Black, License: GHI789',
+      licenseNumber: 'DL34567890'
+    },
+    {
+      id: 5,
+      name: 'David Lee',
+      status: 'active',
+      assignedOrders: ['ORD-7654', 'ORD-3210', 'ORD-9876'],
+      currentOrder: 'ORD-7654',
+      currentTask: 'pickup',
+      location: '456 Folsom St, San Francisco, CA',
+      phone: '+1 (555) 345-6789',
+      totalOrders: 231,
+      rating: 4.5,
+      lastActive: '30 minutes ago',
+      joinDate: 'Apr 12, 2023',
+      email: 'david.lee@example.com',
+      address: '456 Folsom St, San Francisco, CA',
+      emergencyContact: '+1 (555) 456-1234',
+      vehicleInfo: 'Hyundai Elantra (2022), Red, License: JKL012',
+      licenseNumber: 'DL90123456'
+    },
+    {
+      id: 6,
+      name: 'Emily Chen',
+      status: 'inactive',
+      assignedOrders: [],
+      currentOrder: '',
+      currentTask: '',
+      location: '789 Bryant St, San Francisco, CA',
+      phone: '+1 (555) 567-8901',
+      totalOrders: 89,
+      rating: 4.4,
+      lastActive: '2 days ago',
+      joinDate: 'May 19, 2023',
+      email: 'emily.chen@example.com',
+      address: '789 Bryant St, San Francisco, CA',
+      emergencyContact: '+1 (555) 789-0123',
+      vehicleInfo: 'Toyota Prius (2017), Green, License: MNO345',
+      licenseNumber: 'DL78901234'
+    },
+    {
+      id: 7,
+      name: 'Robert Taylor',
+      status: 'active',
+      assignedOrders: ['ORD-5432', 'ORD-1098', 'ORD-7654'],
+      currentOrder: 'ORD-5432',
+      currentTask: 'deliver',
+      location: '321 Harrison St, San Francisco, CA',
+      phone: '+1 (555) 678-9012',
+      totalOrders: 156,
+      rating: 4.9,
+      lastActive: '10 minutes ago',
+      joinDate: 'Jun 5, 2023',
+      email: 'robert.taylor@example.com',
+      address: '321 Harrison St, San Francisco, CA',
+      emergencyContact: '+1 (555) 890-1234',
+      vehicleInfo: 'Honda Accord (2020), White, License: PQR678',
+      licenseNumber: 'DL23456789'
+    },
+    {
+      id: 8,
+      name: 'Lisa Wang',
+      status: 'active',
+      assignedOrders: ['ORD-2109', 'ORD-8765'],
+      currentOrder: 'ORD-2109',
+      currentTask: 'collect',
+      location: '654 Brannan St, San Francisco, CA',
+      phone: '+1 (555) 789-0123',
+      totalOrders: 134,
+      rating: 4.6,
+      lastActive: '45 minutes ago',
+      joinDate: 'Jul 17, 2023',
+      email: 'lisa.wang@example.com',
+      address: '654 Brannan St, San Francisco, CA',
+      emergencyContact: '+1 (555) 012-3456',
+      vehicleInfo: 'Mazda 3 (2019), Gray, License: STU901',
+      licenseNumber: 'DL67890123'
+    },
+    {
+      id: 9,
+      name: 'Michael Brown',
+      status: 'inactive',
+      assignedOrders: ['ORD-3456'],
+      currentOrder: 'ORD-3456',
+      currentTask: 'drop',
+      location: '987 Townsend St, San Francisco, CA',
+      phone: '+1 (555) 890-1234',
+      totalOrders: 78,
+      rating: 4.3,
+      lastActive: '1 day ago',
+      joinDate: 'Aug 29, 2023',
+      email: 'michael.brown@example.com',
+      address: '987 Townsend St, San Francisco, CA',
+      emergencyContact: '+1 (555) 234-5678',
+      vehicleInfo: 'Kia Forte (2018), Black, License: VWX234',
+      licenseNumber: 'DL45678901'
+    },
+    {
+      id: 10,
+      name: 'Amanda Garcia',
+      status: 'active',
+      assignedOrders: ['ORD-6543', 'ORD-2109', 'ORD-7890'],
+      currentOrder: 'ORD-6543',
+      currentTask: 'pickup',
+      location: '210 King St, San Francisco, CA',
+      phone: '+1 (555) 012-3456',
+      totalOrders: 189,
+      rating: 4.8,
+      lastActive: '7 minutes ago',
+      joinDate: 'Sep 10, 2023',
+      email: 'amanda.garcia@example.com',
+      address: '210 King St, San Francisco, CA',
+      emergencyContact: '+1 (555) 345-6789',
+      vehicleInfo: 'Subaru Impreza (2021), Blue, License: YZA567',
+      licenseNumber: 'DL89012345'
     }
   ];
 
@@ -81,9 +243,18 @@ const Drivers = () => {
       currentTask: driver.currentTask,
       currentOrder: driver.currentOrder,
       location: driver.location,
-      assignedOrders: driver.assignedOrders
+      assignedOrders: driver.assignedOrders,
+      phone: driver.phone,
+      rating: driver.rating,
+      joinDate: driver.joinDate,
+      status: driver.status
     });
     setOrderDetailsOpen(true);
+  };
+
+  const handleOpenDriverProfile = (driver: any) => {
+    setSelectedDriver(driver);
+    setDriverProfileOpen(true);
   };
 
   return (
@@ -138,7 +309,7 @@ const Drivers = () => {
                     Status
                   </th>
                   <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    Completed Orders
+                    Phone Number
                   </th>
                   <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                     Assigned Orders
@@ -171,7 +342,7 @@ const Drivers = () => {
                       </Badge>
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                      {driver.completedOrders}
+                      {driver.phone}
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
                       {driver.assignedOrders.length}
@@ -203,24 +374,42 @@ const Drivers = () => {
                         <TooltipProvider>
                           <Tooltip>
                             <TooltipTrigger asChild>
-                              <Button size="sm" variant="outline">
-                                <MapPin className="h-4 w-4" />
+                              <Button 
+                                size="sm" 
+                                variant="outline"
+                                onClick={() => handleOpenDriverProfile(driver)}
+                              >
+                                <User className="h-4 w-4" />
                               </Button>
                             </TooltipTrigger>
                             <TooltipContent>
-                              <p>Track Location</p>
+                              <p>Driver Profile</p>
                             </TooltipContent>
                           </Tooltip>
                         </TooltipProvider>
                         <TooltipProvider>
                           <Tooltip>
                             <TooltipTrigger asChild>
-                              <Button size="sm" variant="outline">
-                                <User className="h-4 w-4" />
-                              </Button>
+                              <DropdownMenu>
+                                <DropdownMenuTrigger asChild>
+                                  <Button size="sm" variant="outline">
+                                    <MoreVertical className="h-4 w-4" />
+                                  </Button>
+                                </DropdownMenuTrigger>
+                                <DropdownMenuContent align="end">
+                                  <DropdownMenuItem className="flex items-center">
+                                    <UserCog className="mr-2 h-4 w-4" />
+                                    <span>Change Status</span>
+                                  </DropdownMenuItem>
+                                  <DropdownMenuItem className="flex items-center text-red-600">
+                                    <XCircle className="mr-2 h-4 w-4" />
+                                    <span>Remove Driver</span>
+                                  </DropdownMenuItem>
+                                </DropdownMenuContent>
+                              </DropdownMenu>
                             </TooltipTrigger>
                             <TooltipContent>
-                              <p>Driver Profile</p>
+                              <p>More Actions</p>
                             </TooltipContent>
                           </Tooltip>
                         </TooltipProvider>
@@ -263,18 +452,10 @@ const Drivers = () => {
             
             <div>
               <h3 className="text-sm font-medium text-gray-700 mb-2 flex items-center">
-                <MapPin className="h-4 w-4 mr-2" />
-                Current Location
-              </h3>
-              <p className="text-sm text-gray-600">{selectedDriver?.location}</p>
-            </div>
-            
-            <div>
-              <h3 className="text-sm font-medium text-gray-700 mb-2 flex items-center">
                 <Package className="h-4 w-4 mr-2" />
-                Assigned Orders
+                Assigned Orders ({selectedDriver?.assignedOrders.length})
               </h3>
-              <div className="grid grid-cols-2 gap-2 mt-2">
+              <div className="grid grid-cols-3 gap-2 mt-2">
                 {selectedDriver?.assignedOrders.map((order, index) => (
                   <div key={index} className="bg-gray-50 p-2 rounded text-sm">
                     {order}
@@ -294,8 +475,99 @@ const Drivers = () => {
                 <p className="text-xs text-gray-500">Active Since</p>
                 <p className="text-sm font-medium">
                   <Calendar className="h-3 w-3 inline mr-1" />
-                  {mockDrivers.find(d => d.name === selectedDriver?.name)?.joinDate}
+                  {selectedDriver?.joinDate}
                 </p>
+              </div>
+            </div>
+          </div>
+        </DialogContent>
+      </Dialog>
+
+      <Dialog open={driverProfileOpen} onOpenChange={setDriverProfileOpen}>
+        <DialogContent className="max-w-lg">
+          <DialogHeader>
+            <DialogTitle>Driver Profile</DialogTitle>
+            <DialogDescription>
+              Detailed information about {selectedDriver?.name}
+            </DialogDescription>
+          </DialogHeader>
+          
+          <div className="space-y-4 mt-4">
+            <div className="flex items-center">
+              <div className="h-16 w-16 bg-gray-200 rounded-full flex items-center justify-center mr-4">
+                <User className="h-8 w-8 text-gray-500" />
+              </div>
+              <div>
+                <h3 className="text-lg font-semibold">{selectedDriver?.name}</h3>
+                <div className="flex items-center mt-1">
+                  <Badge variant={selectedDriver?.status === 'active' ? 'default' : 'secondary'} className="mr-2">
+                    {selectedDriver?.status === 'active' ? 'Active' : 'Inactive'}
+                  </Badge>
+                  <span className="text-sm text-gray-500">Last active: {selectedDriver?.lastActive}</span>
+                </div>
+              </div>
+            </div>
+            
+            <Separator />
+            
+            <div className="grid grid-cols-2 gap-4">
+              <div>
+                <h4 className="text-sm font-medium text-gray-500 mb-1 flex items-center">
+                  <Phone className="h-3.5 w-3.5 mr-1" />
+                  Phone Number
+                </h4>
+                <p className="text-sm">{selectedDriver?.phone}</p>
+              </div>
+              <div>
+                <h4 className="text-sm font-medium text-gray-500 mb-1 flex items-center">
+                  <Calendar className="h-3.5 w-3.5 mr-1" />
+                  Joined
+                </h4>
+                <p className="text-sm">{selectedDriver?.joinDate}</p>
+              </div>
+            </div>
+            
+            <div>
+              <h4 className="text-sm font-medium text-gray-500 mb-1">Email Address</h4>
+              <p className="text-sm">{selectedDriver?.email}</p>
+            </div>
+            
+            <div>
+              <h4 className="text-sm font-medium text-gray-500 mb-1">Home Address</h4>
+              <p className="text-sm">{selectedDriver?.address}</p>
+            </div>
+            
+            <Separator />
+            
+            <div>
+              <h4 className="text-sm font-medium text-gray-500 mb-1">Vehicle Information</h4>
+              <p className="text-sm">{selectedDriver?.vehicleInfo}</p>
+            </div>
+            
+            <div>
+              <h4 className="text-sm font-medium text-gray-500 mb-1">License Number</h4>
+              <p className="text-sm">{selectedDriver?.licenseNumber}</p>
+            </div>
+            
+            <div>
+              <h4 className="text-sm font-medium text-gray-500 mb-1">Emergency Contact</h4>
+              <p className="text-sm">{selectedDriver?.emergencyContact}</p>
+            </div>
+            
+            <Separator />
+            
+            <div className="grid grid-cols-3 gap-4">
+              <div className="bg-gray-50 p-3 rounded-lg text-center">
+                <p className="text-sm font-medium text-gray-900">{selectedDriver?.totalOrders}</p>
+                <p className="text-xs text-gray-500">Total Orders</p>
+              </div>
+              <div className="bg-gray-50 p-3 rounded-lg text-center">
+                <p className="text-sm font-medium text-gray-900">{selectedDriver?.rating} ★</p>
+                <p className="text-xs text-gray-500">Rating</p>
+              </div>
+              <div className="bg-gray-50 p-3 rounded-lg text-center">
+                <p className="text-sm font-medium text-gray-900">{selectedDriver?.assignedOrders?.length || 0}</p>
+                <p className="text-xs text-gray-500">Current Orders</p>
               </div>
             </div>
           </div>
