@@ -1,5 +1,5 @@
 
-import React, { useState } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { Search } from 'lucide-react';
 
 interface TableColumn<T> {
@@ -15,6 +15,10 @@ interface DataTableProps<T> {
   searchPlaceholder?: string;
   onSearch?: (query: string) => void;
   emptyMessage?: string;
+  initialSearchQuery?: string;
+  searchSuggestions?: boolean;
+  onSuggestionClick?: (value: string) => void;
+  searchFields?: Array<keyof T>;
 }
 
 function DataTable<T>({
@@ -23,9 +27,43 @@ function DataTable<T>({
   keyField,
   searchPlaceholder = 'Search...',
   onSearch,
-  emptyMessage = 'No data available'
+  emptyMessage = 'No data available',
+  initialSearchQuery = '',
+  searchSuggestions = false,
+  onSuggestionClick,
+  searchFields = []
 }: DataTableProps<T>) {
-  const [searchQuery, setSearchQuery] = useState('');
+  const [searchQuery, setSearchQuery] = useState(initialSearchQuery);
+  const [showSuggestions, setShowSuggestions] = useState(false);
+  const [suggestions, setSuggestions] = useState<string[]>([]);
+
+  // Filter data based on search fields and query
+  const getSuggestions = (query: string): string[] => {
+    if (!query || query.length < 2 || !searchFields.length) return [];
+    
+    const suggestionSet = new Set<string>();
+    
+    data.forEach(item => {
+      searchFields.forEach(field => {
+        const value = item[field];
+        if (typeof value === 'string' && value.toLowerCase().includes(query.toLowerCase())) {
+          suggestionSet.add(value);
+        }
+      });
+    });
+    
+    return Array.from(suggestionSet).slice(0, 5); // Return top 5 suggestions
+  };
+
+  useEffect(() => {
+    if (searchQuery && searchQuery.length >= 2 && searchSuggestions) {
+      const newSuggestions = getSuggestions(searchQuery);
+      setSuggestions(newSuggestions);
+      setShowSuggestions(newSuggestions.length > 0);
+    } else {
+      setShowSuggestions(false);
+    }
+  }, [searchQuery, data, searchSuggestions]);
 
   const handleSearch = (e: React.ChangeEvent<HTMLInputElement>) => {
     const query = e.target.value;
@@ -33,6 +71,24 @@ function DataTable<T>({
     if (onSearch) {
       onSearch(query);
     }
+  };
+
+  const handleSuggestionClick = (suggestion: string) => {
+    setSearchQuery(suggestion);
+    setShowSuggestions(false);
+    if (onSearch) {
+      onSearch(suggestion);
+    }
+    if (onSuggestionClick) {
+      onSuggestionClick(suggestion);
+    }
+  };
+
+  const handleBlur = () => {
+    // Small delay to allow click events on suggestions to fire
+    setTimeout(() => {
+      setShowSuggestions(false);
+    }, 200);
   };
 
   return (
@@ -48,8 +104,26 @@ function DataTable<T>({
               placeholder={searchPlaceholder}
               value={searchQuery}
               onChange={handleSearch}
+              onFocus={() => searchQuery.length >= 2 && setSuggestions(getSuggestions(searchQuery))}
+              onBlur={handleBlur}
               className="block w-full bg-gray-50 border border-gray-200 rounded-md py-2 pl-10 pr-4 text-sm placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-transparent"
             />
+            
+            {showSuggestions && searchSuggestions && suggestions.length > 0 && (
+              <div className="absolute z-10 w-full mt-1 bg-white border border-gray-200 rounded-md shadow-lg">
+                <ul className="py-1 text-sm text-gray-700 max-h-60 overflow-auto">
+                  {suggestions.map((suggestion, index) => (
+                    <li 
+                      key={index}
+                      className="px-4 py-2 hover:bg-gray-100 cursor-pointer"
+                      onClick={() => handleSuggestionClick(suggestion)}
+                    >
+                      {suggestion}
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            )}
           </div>
         </div>
       )}

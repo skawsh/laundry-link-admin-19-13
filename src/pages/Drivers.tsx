@@ -1,7 +1,10 @@
 
-import React, { useState } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import AdminLayout from '@/components/layout/AdminLayout';
-import { Search, User, Package, Clock, Info, MoreVertical, Phone, Calendar, Truck, UserCog, XCircle } from 'lucide-react';
+import { 
+  Search, User, Package, Clock, Info, MoreVertical, 
+  Phone, Calendar, Truck, UserCog, XCircle, Filter
+} from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import {
   Dialog,
@@ -20,10 +23,31 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import { Input } from "@/components/ui/input";
+import DataTable from '@/components/ui/DataTable';
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/components/ui/popover";
+import { Checkbox } from "@/components/ui/checkbox";
 
 const Drivers = () => {
   const [orderDetailsOpen, setOrderDetailsOpen] = useState(false);
   const [driverProfileOpen, setDriverProfileOpen] = useState(false);
+  const [searchQuery, setSearchQuery] = useState('');
+  const [filtersOpen, setFiltersOpen] = useState(false);
+  const [filters, setFilters] = useState({
+    status: {
+      active: true,
+      inactive: true
+    },
+    orders: {
+      any: true,
+      none: true,
+      multiple: true
+    }
+  });
   const [selectedDriver, setSelectedDriver] = useState<null | {
     name: string;
     totalOrders: number;
@@ -233,8 +257,220 @@ const Drivers = () => {
       emergencyContact: '+1 (555) 345-6789',
       vehicleInfo: 'Subaru Impreza (2021), Blue, License: YZA567',
       licenseNumber: 'DL89012345'
+    },
+    {
+      id: 11,
+      name: 'Daniel Chen',
+      status: 'active',
+      assignedOrders: ['ORD-9876', 'ORD-5432'],
+      currentOrder: 'ORD-9876',
+      currentTask: 'deliver',
+      location: '123 Main St, San Francisco, CA',
+      phone: '+1 (555) 234-5678',
+      totalOrders: 157,
+      rating: 4.7,
+      lastActive: '23 minutes ago',
+      joinDate: 'Jan 5, 2023',
+      email: 'daniel.chen@example.com',
+      address: '123 Main St, San Francisco, CA',
+      emergencyContact: '+1 (555) 432-1098',
+      vehicleInfo: 'Chevrolet Cruze (2019), Silver, License: BCD123',
+      licenseNumber: 'DL12309876'
+    },
+    {
+      id: 12,
+      name: 'Rachel Park',
+      status: 'active',
+      assignedOrders: ['ORD-4321', 'ORD-8765', 'ORD-1234'],
+      currentOrder: 'ORD-4321',
+      currentTask: 'collect',
+      location: '456 Oak St, San Francisco, CA',
+      phone: '+1 (555) 876-5432',
+      totalOrders: 211,
+      rating: 4.9,
+      lastActive: '12 minutes ago',
+      joinDate: 'Feb 15, 2023',
+      email: 'rachel.park@example.com',
+      address: '456 Oak St, San Francisco, CA',
+      emergencyContact: '+1 (555) 210-9876',
+      vehicleInfo: 'Honda Accord (2021), White, License: EFG456',
+      licenseNumber: 'DL87654321'
+    },
+    {
+      id: 13,
+      name: 'Thomas Wilson',
+      status: 'inactive',
+      assignedOrders: [],
+      currentOrder: '',
+      currentTask: '',
+      location: '789 Pine St, San Francisco, CA',
+      phone: '+1 (555) 543-2109',
+      totalOrders: 93,
+      rating: 4.2,
+      lastActive: '3 days ago',
+      joinDate: 'Mar 21, 2023',
+      email: 'thomas.wilson@example.com',
+      address: '789 Pine St, San Francisco, CA',
+      emergencyContact: '+1 (555) 109-8765',
+      vehicleInfo: 'Toyota Camry (2018), Black, License: HIJ789',
+      licenseNumber: 'DL54321098'
+    },
+    {
+      id: 14,
+      name: 'Jessica Kim',
+      status: 'active',
+      assignedOrders: ['ORD-7890', 'ORD-2345'],
+      currentOrder: 'ORD-7890',
+      currentTask: 'pickup',
+      location: '321 Elm St, San Francisco, CA',
+      phone: '+1 (555) 321-0987',
+      totalOrders: 178,
+      rating: 4.8,
+      lastActive: '35 minutes ago',
+      joinDate: 'Apr 7, 2023',
+      email: 'jessica.kim@example.com',
+      address: '321 Elm St, San Francisco, CA',
+      emergencyContact: '+1 (555) 098-7654',
+      vehicleInfo: 'Nissan Sentra (2020), Red, License: KLM012',
+      licenseNumber: 'DL21098765'
+    },
+    {
+      id: 15,
+      name: 'James Rodriguez',
+      status: 'active',
+      assignedOrders: ['ORD-5678', 'ORD-1234', 'ORD-9012'],
+      currentOrder: 'ORD-5678',
+      currentTask: 'deliver',
+      location: '654 Cedar St, San Francisco, CA',
+      phone: '+1 (555) 210-9876',
+      totalOrders: 224,
+      rating: 4.6,
+      lastActive: '18 minutes ago',
+      joinDate: 'May 12, 2023',
+      email: 'james.rodriguez@example.com',
+      address: '654 Cedar St, San Francisco, CA',
+      emergencyContact: '+1 (555) 987-6543',
+      vehicleInfo: 'Hyundai Sonata (2021), Blue, License: NOP345',
+      licenseNumber: 'DL65432109'
+    },
+    {
+      id: 16,
+      name: 'Sophia Martinez',
+      status: 'active',
+      assignedOrders: ['ORD-3456'],
+      currentOrder: 'ORD-3456',
+      currentTask: 'drop',
+      location: '987 Maple St, San Francisco, CA',
+      phone: '+1 (555) 109-8765',
+      totalOrders: 145,
+      rating: 4.7,
+      lastActive: '40 minutes ago',
+      joinDate: 'Jun 18, 2023',
+      email: 'sophia.martinez@example.com',
+      address: '987 Maple St, San Francisco, CA',
+      emergencyContact: '+1 (555) 876-5432',
+      vehicleInfo: 'Ford Fusion (2019), Silver, License: QRS678',
+      licenseNumber: 'DL43210987'
+    },
+    {
+      id: 17,
+      name: 'William Nguyen',
+      status: 'inactive',
+      assignedOrders: ['ORD-0123'],
+      currentOrder: 'ORD-0123',
+      currentTask: 'pickup',
+      location: '210 Birch St, San Francisco, CA',
+      phone: '+1 (555) 098-7654',
+      totalOrders: 102,
+      rating: 4.4,
+      lastActive: '1 day ago',
+      joinDate: 'Jul 25, 2023',
+      email: 'william.nguyen@example.com',
+      address: '210 Birch St, San Francisco, CA',
+      emergencyContact: '+1 (555) 765-4321',
+      vehicleInfo: 'Chevrolet Malibu (2020), White, License: TUV901',
+      licenseNumber: 'DL32109876'
+    },
+    {
+      id: 18,
+      name: 'Olivia Jones',
+      status: 'active',
+      assignedOrders: ['ORD-6789', 'ORD-2345', 'ORD-8765'],
+      currentOrder: 'ORD-6789',
+      currentTask: 'collect',
+      location: '543 Walnut St, San Francisco, CA',
+      phone: '+1 (555) 987-6543',
+      totalOrders: 192,
+      rating: 4.9,
+      lastActive: '8 minutes ago',
+      joinDate: 'Aug 9, 2023',
+      email: 'olivia.jones@example.com',
+      address: '543 Walnut St, San Francisco, CA',
+      emergencyContact: '+1 (555) 654-3210',
+      vehicleInfo: 'Toyota Corolla (2022), Black, License: WXY234',
+      licenseNumber: 'DL10987654'
+    },
+    {
+      id: 19,
+      name: 'Ethan Kim',
+      status: 'active',
+      assignedOrders: ['ORD-4567', 'ORD-0123'],
+      currentOrder: 'ORD-4567',
+      currentTask: 'deliver',
+      location: '876 Cherry St, San Francisco, CA',
+      phone: '+1 (555) 876-5432',
+      totalOrders: 165,
+      rating: 4.5,
+      lastActive: '25 minutes ago',
+      joinDate: 'Sep 14, 2023',
+      email: 'ethan.kim@example.com',
+      address: '876 Cherry St, San Francisco, CA',
+      emergencyContact: '+1 (555) 543-2109',
+      vehicleInfo: 'Honda Civic (2021), Red, License: ZAB567',
+      licenseNumber: 'DL09876543'
+    },
+    {
+      id: 20,
+      name: 'Ava Thomas',
+      status: 'active',
+      assignedOrders: ['ORD-9012', 'ORD-5678', 'ORD-1234'],
+      currentOrder: 'ORD-9012',
+      currentTask: 'drop',
+      location: '109 Spruce St, San Francisco, CA',
+      phone: '+1 (555) 765-4321',
+      totalOrders: 208,
+      rating: 4.8,
+      lastActive: '15 minutes ago',
+      joinDate: 'Oct 22, 2023',
+      email: 'ava.thomas@example.com',
+      address: '109 Spruce St, San Francisco, CA',
+      emergencyContact: '+1 (555) 432-1098',
+      vehicleInfo: 'Mazda 6 (2020), Silver, License: CDE890',
+      licenseNumber: 'DL98765432'
     }
   ];
+
+  const filteredDrivers = useMemo(() => {
+    return mockDrivers.filter(driver => {
+      // Filter by search query
+      if (searchQuery && searchQuery.length > 0) {
+        const nameMatch = driver.name.toLowerCase().includes(searchQuery.toLowerCase());
+        const phoneMatch = driver.phone.toLowerCase().includes(searchQuery.toLowerCase());
+        const emailMatch = driver.email.toLowerCase().includes(searchQuery.toLowerCase());
+        if (!nameMatch && !phoneMatch && !emailMatch) return false;
+      }
+      
+      // Filter by status
+      if (!filters.status[driver.status as 'active' | 'inactive']) return false;
+      
+      // Filter by orders
+      if (driver.assignedOrders.length === 0 && !filters.orders.none) return false;
+      if (driver.assignedOrders.length === 1 && !filters.orders.any) return false;
+      if (driver.assignedOrders.length > 1 && !filters.orders.multiple) return false;
+      
+      return true;
+    });
+  }, [mockDrivers, searchQuery, filters]);
 
   const handleOpenOrderDetails = (driver: any) => {
     setSelectedDriver({
@@ -257,6 +493,10 @@ const Drivers = () => {
     setDriverProfileOpen(true);
   };
 
+  const handleSearch = (query: string) => {
+    setSearchQuery(query);
+  };
+
   return (
     <AdminLayout>
       <div className="p-6">
@@ -265,13 +505,154 @@ const Drivers = () => {
           <div className="flex space-x-2">
             <div className="relative">
               <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4" />
-              <input
+              <Input
                 type="text"
                 placeholder="Search drivers..."
-                className="pl-10 pr-4 py-2 border border-gray-200 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-transparent"
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                className="pl-10 pr-4 py-2 w-64"
               />
+              {searchQuery.length >= 2 && (
+                <div className="absolute z-10 w-full mt-1 bg-white border border-gray-200 rounded-md shadow-lg">
+                  <ul className="py-1 text-sm text-gray-700 max-h-60 overflow-auto">
+                    {mockDrivers
+                      .filter(driver => 
+                        driver.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+                        driver.phone.includes(searchQuery) ||
+                        driver.email.toLowerCase().includes(searchQuery.toLowerCase())
+                      )
+                      .slice(0, 5)
+                      .map((driver) => (
+                        <li 
+                          key={driver.id}
+                          className="px-4 py-2 hover:bg-gray-100 cursor-pointer"
+                          onClick={() => setSearchQuery(driver.name)}
+                        >
+                          <div className="flex items-center">
+                            <span className="font-medium">{driver.name}</span>
+                            <span className="ml-2 text-gray-500 text-xs">{driver.phone}</span>
+                          </div>
+                        </li>
+                      ))}
+                  </ul>
+                </div>
+              )}
             </div>
-            <Button variant="outline">Filter</Button>
+            <Popover open={filtersOpen} onOpenChange={setFiltersOpen}>
+              <PopoverTrigger asChild>
+                <Button variant="outline" className="flex items-center gap-2">
+                  <Filter className="h-4 w-4" />
+                  Filters
+                </Button>
+              </PopoverTrigger>
+              <PopoverContent className="w-80">
+                <div className="space-y-4">
+                  <h3 className="font-medium">Filter Drivers</h3>
+                  
+                  <div>
+                    <h4 className="text-sm font-medium mb-2">Status</h4>
+                    <div className="space-y-2">
+                      <div className="flex items-center space-x-2">
+                        <Checkbox 
+                          id="status-active" 
+                          checked={filters.status.active}
+                          onCheckedChange={(checked) => 
+                            setFilters(prev => ({
+                              ...prev, 
+                              status: {...prev.status, active: Boolean(checked)}
+                            }))
+                          }
+                        />
+                        <label htmlFor="status-active" className="text-sm">
+                          Active
+                        </label>
+                      </div>
+                      <div className="flex items-center space-x-2">
+                        <Checkbox 
+                          id="status-inactive" 
+                          checked={filters.status.inactive}
+                          onCheckedChange={(checked) => 
+                            setFilters(prev => ({
+                              ...prev, 
+                              status: {...prev.status, inactive: Boolean(checked)}
+                            }))
+                          }
+                        />
+                        <label htmlFor="status-inactive" className="text-sm">
+                          Inactive
+                        </label>
+                      </div>
+                    </div>
+                  </div>
+                  
+                  <div>
+                    <h4 className="text-sm font-medium mb-2">Assigned Orders</h4>
+                    <div className="space-y-2">
+                      <div className="flex items-center space-x-2">
+                        <Checkbox 
+                          id="orders-any" 
+                          checked={filters.orders.any}
+                          onCheckedChange={(checked) => 
+                            setFilters(prev => ({
+                              ...prev, 
+                              orders: {...prev.orders, any: Boolean(checked)}
+                            }))
+                          }
+                        />
+                        <label htmlFor="orders-any" className="text-sm">
+                          With any orders
+                        </label>
+                      </div>
+                      <div className="flex items-center space-x-2">
+                        <Checkbox 
+                          id="orders-multiple" 
+                          checked={filters.orders.multiple}
+                          onCheckedChange={(checked) => 
+                            setFilters(prev => ({
+                              ...prev, 
+                              orders: {...prev.orders, multiple: Boolean(checked)}
+                            }))
+                          }
+                        />
+                        <label htmlFor="orders-multiple" className="text-sm">
+                          With multiple orders
+                        </label>
+                      </div>
+                      <div className="flex items-center space-x-2">
+                        <Checkbox 
+                          id="orders-none" 
+                          checked={filters.orders.none}
+                          onCheckedChange={(checked) => 
+                            setFilters(prev => ({
+                              ...prev, 
+                              orders: {...prev.orders, none: Boolean(checked)}
+                            }))
+                          }
+                        />
+                        <label htmlFor="orders-none" className="text-sm">
+                          No orders
+                        </label>
+                      </div>
+                    </div>
+                  </div>
+                  
+                  <div className="flex justify-between">
+                    <Button 
+                      variant="outline"
+                      onClick={() => setFilters({
+                        status: { active: true, inactive: true },
+                        orders: { any: true, none: true, multiple: true }
+                      })}
+                    >
+                      Reset
+                    </Button>
+                    <Button onClick={() => setFiltersOpen(false)}>
+                      Apply Filters
+                    </Button>
+                  </div>
+                </div>
+              </PopoverContent>
+            </Popover>
             <Button>Add Driver</Button>
           </div>
         </div>
@@ -323,7 +704,7 @@ const Drivers = () => {
                 </tr>
               </thead>
               <tbody className="bg-white divide-y divide-gray-100">
-                {mockDrivers.map((driver) => (
+                {filteredDrivers.map((driver) => (
                   <tr key={driver.id} className="hover:bg-gray-50 transition-colors">
                     <td className="px-6 py-4 whitespace-nowrap">
                       <div className="flex items-center">
