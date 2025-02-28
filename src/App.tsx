@@ -11,6 +11,7 @@ import OnboardingRequests from "./pages/OnboardingRequests";
 import StudioAnalytics from "./pages/StudioAnalytics";
 import StudioDetails from "./pages/StudioDetails";
 import Drivers from "./pages/Drivers";
+import Orders from "./pages/Orders";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -30,9 +31,9 @@ const App = () => (
           <Route path="/studios/analytics/:studioId" element={<StudioAnalytics />} />
           <Route path="/studios/details/:studioId" element={<StudioDetails />} />
           <Route path="/drivers" element={<Drivers />} />
+          <Route path="/orders" element={<Orders />} />
           
           {/* Placeholder routes for other sections */}
-          <Route path="/orders" element={<NotFound />} />
           <Route path="/revenue" element={<NotFound />} />
           <Route path="/tickets" element={<NotFound />} />
           <Route path="/users" element={<NotFound />} />
