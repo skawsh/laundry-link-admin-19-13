@@ -1,6 +1,6 @@
 
 import React, { useState, useEffect, useRef } from 'react';
-import { Plus, Edit, Eye, ChevronDown, Search, Filter, MoreHorizontal, X, ArrowUpDown, Car, Clipboard } from 'lucide-react';
+import { Plus, Edit, Eye, ChevronDown, Search, Filter, MoreHorizontal, X, ArrowUpDown, Car, Clipboard, HelpCircle } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import AdminLayout from '../components/layout/AdminLayout';
 import PageHeader from '../components/ui/PageHeader';
@@ -8,6 +8,8 @@ import DataTable from '../components/ui/DataTable';
 import StatusBadge from '../components/ui/StatusBadge';
 import ToggleSwitch from '../components/ui/ToggleSwitch';
 import { useToast } from "@/hooks/use-toast";
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
+import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip as RechartsTooltip, ResponsiveContainer } from 'recharts';
 
 // Task type
 type TaskType = 'pickup' | 'drop' | 'collect' | 'delivery' | 'none';
@@ -23,6 +25,23 @@ interface Task {
   studioAddress?: string;
   status: 'pending' | 'in-progress' | 'completed';
   scheduledTime: string;
+}
+
+// Order type
+interface Order {
+  id: string;
+  customerId: string;
+  customerName: string;
+  customerAddress: string;
+  studioId: string;
+  studioName: string;
+  studioAddress: string;
+  items: number;
+  totalAmount: number;
+  currentTask: TaskType;
+  allTasks: Task[];
+  status: 'active' | 'completed' | 'cancelled';
+  createdAt: string;
 }
 
 // Driver data type
@@ -43,6 +62,7 @@ interface Driver {
   currentLocation?: string;
   earnings?: number;
   currentTask?: Task;
+  assignedOrders?: Order[];
 }
 
 // Sample task data
@@ -72,7 +92,7 @@ const sampleTasks: Task[] = [
     type: 'collect',
     orderId: 'ORD-5680',
     customerName: 'Vikram Patel',
-    customerAddress: '123 Main Street, Koramangala, Bangalore', // Added the missing customerAddress property
+    customerAddress: '123 Main Street, Koramangala, Bangalore',
     studioName: 'Fresh Fold Services',
     studioAddress: '567 MG Road, Bangalore',
     status: 'pending',
@@ -90,7 +110,71 @@ const sampleTasks: Task[] = [
   }
 ];
 
-// Sample data for drivers
+// Sample order data
+const sampleOrders: Order[] = [
+  {
+    id: 'ORD-5678',
+    customerId: 'CUST-001',
+    customerName: 'Rahul Mehta',
+    customerAddress: '123 Park Street, Connaught Place, Delhi',
+    studioId: 'STD-001',
+    studioName: 'Sparkle Clean Laundry',
+    studioAddress: '789 Commercial Street, Delhi',
+    items: 5,
+    totalAmount: 750,
+    currentTask: 'pickup',
+    allTasks: [sampleTasks[0]],
+    status: 'active',
+    createdAt: '2023-09-15T08:30:00'
+  },
+  {
+    id: 'ORD-5679',
+    customerId: 'CUST-002',
+    customerName: 'Priya Shah',
+    customerAddress: '456 Marine Drive, Mumbai',
+    studioId: 'STD-002',
+    studioName: 'Sparkle Clean Laundry',
+    studioAddress: '789 Commercial Street, Mumbai',
+    items: 3,
+    totalAmount: 450,
+    currentTask: 'drop',
+    allTasks: [sampleTasks[1]],
+    status: 'active',
+    createdAt: '2023-09-15T09:15:00'
+  },
+  {
+    id: 'ORD-5680',
+    customerId: 'CUST-003',
+    customerName: 'Vikram Patel',
+    customerAddress: '123 Main Street, Koramangala, Bangalore',
+    studioId: 'STD-003',
+    studioName: 'Fresh Fold Services',
+    studioAddress: '567 MG Road, Bangalore',
+    items: 7,
+    totalAmount: 1200,
+    currentTask: 'collect',
+    allTasks: [sampleTasks[2]],
+    status: 'active',
+    createdAt: '2023-09-15T10:30:00'
+  },
+  {
+    id: 'ORD-5681',
+    customerId: 'CUST-004',
+    customerName: 'Ananya Singh',
+    customerAddress: '321 Hill View, Pune',
+    studioId: 'STD-004',
+    studioName: 'Royal Wash',
+    studioAddress: '456 MG Road, Pune',
+    items: 4,
+    totalAmount: 600,
+    currentTask: 'delivery',
+    allTasks: [sampleTasks[3]],
+    status: 'active',
+    createdAt: '2023-09-15T11:45:00'
+  }
+];
+
+// Sample data for drivers with assigned orders
 const initialDrivers: Driver[] = [
   {
     id: 1,
@@ -108,7 +192,8 @@ const initialDrivers: Driver[] = [
     city: 'Delhi',
     currentLocation: 'Connaught Place',
     earnings: 45600,
-    currentTask: sampleTasks[0]
+    currentTask: sampleTasks[0],
+    assignedOrders: [sampleOrders[0]]
   },
   {
     id: 2,
@@ -126,7 +211,8 @@ const initialDrivers: Driver[] = [
     city: 'Mumbai',
     currentLocation: 'Bandra',
     earnings: 52300,
-    currentTask: sampleTasks[1]
+    currentTask: sampleTasks[1],
+    assignedOrders: [sampleOrders[1]]
   },
   {
     id: 3,
@@ -143,7 +229,8 @@ const initialDrivers: Driver[] = [
     address: '789 Garden Road, Koramangala',
     city: 'Bangalore',
     currentLocation: 'Unavailable',
-    earnings: 28700
+    earnings: 28700,
+    assignedOrders: []
   },
   {
     id: 4,
@@ -160,7 +247,8 @@ const initialDrivers: Driver[] = [
     address: '321 River View, Navrangpura',
     city: 'Ahmedabad',
     currentLocation: 'Satellite',
-    earnings: 38900
+    earnings: 38900,
+    assignedOrders: []
   },
   {
     id: 5,
@@ -178,7 +266,8 @@ const initialDrivers: Driver[] = [
     city: 'Chennai',
     currentLocation: 'Adyar',
     earnings: 47500,
-    currentTask: sampleTasks[2]
+    currentTask: sampleTasks[2],
+    assignedOrders: [sampleOrders[2]]
   },
   {
     id: 6,
@@ -195,7 +284,8 @@ const initialDrivers: Driver[] = [
     address: '890 Mall Road, Hazratganj',
     city: 'Lucknow',
     currentLocation: 'Gomti Nagar',
-    earnings: 36200
+    earnings: 36200,
+    assignedOrders: []
   },
   {
     id: 7,
@@ -212,7 +302,8 @@ const initialDrivers: Driver[] = [
     address: '432 Green Park, Model Town',
     city: 'Chandigarh',
     currentLocation: 'Unavailable',
-    earnings: 24800
+    earnings: 24800,
+    assignedOrders: []
   },
   {
     id: 8,
@@ -230,8 +321,19 @@ const initialDrivers: Driver[] = [
     city: 'Kolkata',
     currentLocation: 'Park Street',
     earnings: 41200,
-    currentTask: sampleTasks[3]
+    currentTask: sampleTasks[3],
+    assignedOrders: [sampleOrders[3]]
   }
+];
+
+// Sample data for the performance chart
+const performanceData = [
+  { month: 'Jan', completedOrders: 45, cancelledOrders: 3 },
+  { month: 'Feb', completedOrders: 52, cancelledOrders: 4 },
+  { month: 'Mar', completedOrders: 48, cancelledOrders: 2 },
+  { month: 'Apr', completedOrders: 70, cancelledOrders: 5 },
+  { month: 'May', completedOrders: 63, cancelledOrders: 3 },
+  { month: 'Jun', completedOrders: 82, cancelledOrders: 4 }
 ];
 
 interface NewDriverFormData {
@@ -251,7 +353,7 @@ const Drivers: React.FC = () => {
   const [isAddDriverModalOpen, setIsAddDriverModalOpen] = useState(false);
   const [isEditDriverModalOpen, setIsEditDriverModalOpen] = useState(false);
   const [isViewDriverModalOpen, setIsViewDriverModalOpen] = useState(false);
-  const [isTaskDetailsModalOpen, setIsTaskDetailsModalOpen] = useState(false);
+  const [isOrderDetailsModalOpen, setIsOrderDetailsModalOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
   const [searchResults, setSearchResults] = useState<Driver[]>([]);
   const [showSearchDropdown, setShowSearchDropdown] = useState(false);
@@ -368,19 +470,19 @@ const Drivers: React.FC = () => {
     setIsViewDriverModalOpen(true);
   };
 
-  // View task details
-  const viewTaskDetails = (driver: Driver) => {
-    if (!driver.currentTask) {
+  // View order details
+  const viewOrderDetails = (driver: Driver) => {
+    if (!driver.currentTask && (!driver.assignedOrders || driver.assignedOrders.length === 0)) {
       toast({
-        title: "No active task",
-        description: `${driver.name} doesn't have any assigned tasks currently.`,
+        title: "No active orders",
+        description: `${driver.name} doesn't have any assigned orders currently.`,
         duration: 3000,
       });
       return;
     }
     
     setSelectedDriver(driver);
-    setIsTaskDetailsModalOpen(true);
+    setIsOrderDetailsModalOpen(true);
   };
 
   // Edit driver
@@ -441,7 +543,8 @@ const Drivers: React.FC = () => {
       rating: 0,
       completedOrders: 0,
       joinDate: new Date().toISOString().split('T')[0],
-      earnings: 0
+      earnings: 0,
+      assignedOrders: []
     };
     
     // Add to drivers list
@@ -623,14 +726,25 @@ const Drivers: React.FC = () => {
       ),
     },
     {
-      header: 'Assigned Task',
+      header: 'Assigned Orders',
       accessor: (row: Driver) => (
         <div className="flex flex-col">
-          {getTaskBadge(row.currentTask)}
-          {row.currentTask && (
-            <span className="text-xs text-gray-500 mt-1">
-              {row.currentTask.orderId}
-            </span>
+          {row.assignedOrders && row.assignedOrders.length > 0 ? (
+            <>
+              <div className="flex items-center">
+                <span className="font-medium">{row.assignedOrders.length}</span>
+                <span className="ml-2 text-xs text-gray-500">
+                  {row.assignedOrders.length === 1 ? 'order' : 'orders'}
+                </span>
+              </div>
+              {row.currentTask && (
+                <div className="mt-1">
+                  {getTaskBadge(row.currentTask)}
+                </div>
+              )}
+            </>
+          ) : (
+            <span className="text-xs text-gray-500">No assigned orders</span>
           )}
         </div>
       ),
@@ -654,56 +768,89 @@ const Drivers: React.FC = () => {
       header: 'Actions',
       accessor: (row: Driver) => (
         <div className="flex space-x-2">
-          <button
-            onClick={() => viewDriverDetails(row)}
-            className="p-1 text-gray-500 hover:text-admin-primary transition-colors"
-            aria-label="View driver details"
-          >
-            <Eye className="h-4 w-4" />
-          </button>
-          <button
-            onClick={() => viewTaskDetails(row)}
-            className="p-1 text-gray-500 hover:text-admin-primary transition-colors"
-            aria-label="View task details"
-          >
-            <Clipboard className="h-4 w-4" />
-          </button>
-          <button
-            onClick={() => editDriver(row)}
-            className="p-1 text-gray-500 hover:text-admin-primary transition-colors"
-            aria-label="Edit driver"
-          >
-            <Edit className="h-4 w-4" />
-          </button>
-          <div className="relative group">
-            <button
-              className="p-1 text-gray-500 hover:text-admin-primary transition-colors"
-              aria-label="More options"
-            >
-              <MoreHorizontal className="h-4 w-4" />
-            </button>
-            <div className="absolute right-0 mt-1 bg-white border border-gray-200 rounded-md shadow-lg py-1 w-48 hidden group-hover:block z-10">
-              <button 
-                className="block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
-                onClick={() => toggleDriverStatus(row.id)}
-              >
-                Change Status
-              </button>
-              <button 
-                className="block w-full text-left px-4 py-2 text-sm text-red-600 hover:bg-gray-100"
-                onClick={() => {
-                  setDrivers(drivers.filter(d => d.id !== row.id));
-                  toast({
-                    title: "Driver removed",
-                    description: `${row.name} has been removed`,
-                    duration: 3000,
-                  });
-                }}
-              >
-                Remove Driver
-              </button>
-            </div>
-          </div>
+          <TooltipProvider>
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <button
+                  onClick={() => viewDriverDetails(row)}
+                  className="p-1 text-gray-500 hover:text-admin-primary transition-colors"
+                  aria-label="View driver details"
+                >
+                  <Eye className="h-4 w-4" />
+                </button>
+              </TooltipTrigger>
+              <TooltipContent>
+                <p>View driver details</p>
+              </TooltipContent>
+            </Tooltip>
+            
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <button
+                  onClick={() => viewOrderDetails(row)}
+                  className="p-1 text-gray-500 hover:text-admin-primary transition-colors"
+                  aria-label="View order details"
+                >
+                  <Clipboard className="h-4 w-4" />
+                </button>
+              </TooltipTrigger>
+              <TooltipContent>
+                <p>View order details</p>
+              </TooltipContent>
+            </Tooltip>
+            
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <button
+                  onClick={() => editDriver(row)}
+                  className="p-1 text-gray-500 hover:text-admin-primary transition-colors"
+                  aria-label="Edit driver"
+                >
+                  <Edit className="h-4 w-4" />
+                </button>
+              </TooltipTrigger>
+              <TooltipContent>
+                <p>Edit driver</p>
+              </TooltipContent>
+            </Tooltip>
+            
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <div className="relative group">
+                  <button
+                    className="p-1 text-gray-500 hover:text-admin-primary transition-colors"
+                    aria-label="More options"
+                  >
+                    <MoreHorizontal className="h-4 w-4" />
+                  </button>
+                  <div className="absolute right-0 mt-1 bg-white border border-gray-200 rounded-md shadow-lg py-1 w-48 hidden group-hover:block z-10">
+                    <button 
+                      className="block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
+                      onClick={() => toggleDriverStatus(row.id)}
+                    >
+                      Change Status
+                    </button>
+                    <button 
+                      className="block w-full text-left px-4 py-2 text-sm text-red-600 hover:bg-gray-100"
+                      onClick={() => {
+                        setDrivers(drivers.filter(d => d.id !== row.id));
+                        toast({
+                          title: "Driver removed",
+                          description: `${row.name} has been removed`,
+                          duration: 3000,
+                        });
+                      }}
+                    >
+                      Remove Driver
+                    </button>
+                  </div>
+                </div>
+              </TooltipTrigger>
+              <TooltipContent>
+                <p>More options</p>
+              </TooltipContent>
+            </Tooltip>
+          </TooltipProvider>
         </div>
       ),
       width: '160px'
@@ -717,20 +864,37 @@ const Drivers: React.FC = () => {
         subtitle="Manage all drivers on your platform"
       >
         <div className="flex items-center space-x-3">
-          <button
-            onClick={resetFilters}
-            className="flex items-center px-3 py-2 text-sm bg-white border border-gray-200 rounded-md text-gray-700 hover:bg-gray-50 transition-colors"
-          >
-            <Filter className="h-4 w-4 mr-2" />
-            <span>Reset Filters</span>
-          </button>
-          <button
-            onClick={openAddDriverModal}
-            className="flex items-center bg-admin-primary text-white px-4 py-2 rounded-md hover:bg-opacity-90 transition-colors"
-          >
-            <Plus className="h-4 w-4 mr-2" />
-            <span>Add New Driver</span>
-          </button>
+          <TooltipProvider>
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <button
+                  onClick={resetFilters}
+                  className="flex items-center px-3 py-2 text-sm bg-white border border-gray-200 rounded-md text-gray-700 hover:bg-gray-50 transition-colors"
+                >
+                  <Filter className="h-4 w-4 mr-2" />
+                  <span>Reset Filters</span>
+                </button>
+              </TooltipTrigger>
+              <TooltipContent>
+                <p>Clear all applied filters</p>
+              </TooltipContent>
+            </Tooltip>
+            
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <button
+                  onClick={openAddDriverModal}
+                  className="flex items-center bg-admin-primary text-white px-4 py-2 rounded-md hover:bg-opacity-90 transition-colors"
+                >
+                  <Plus className="h-4 w-4 mr-2" />
+                  <span>Add New Driver</span>
+                </button>
+              </TooltipTrigger>
+              <TooltipContent>
+                <p>Register a new driver</p>
+              </TooltipContent>
+            </Tooltip>
+          </TooltipProvider>
         </div>
       </PageHeader>
       
@@ -758,6 +922,26 @@ const Drivers: React.FC = () => {
             <p className="text-2xl font-semibold">{(drivers.reduce((sum, driver) => sum + driver.rating, 0) / drivers.length).toFixed(1)}</p>
             <span className="ml-1 text-yellow-500 text-xl">★</span>
           </div>
+        </div>
+      </div>
+      
+      {/* Driver Performance Chart */}
+      <div className="bg-white p-4 rounded-lg shadow-subtle mb-6">
+        <h3 className="text-lg font-medium mb-4">Driver Performance</h3>
+        <div className="h-64">
+          <ResponsiveContainer width="100%" height="100%">
+            <BarChart
+              data={performanceData}
+              margin={{ top: 20, right: 30, left: 20, bottom: 5 }}
+            >
+              <CartesianGrid strokeDasharray="3 3" />
+              <XAxis dataKey="month" />
+              <YAxis />
+              <RechartsTooltip />
+              <Bar dataKey="completedOrders" name="Completed Orders" fill="#10b981" />
+              <Bar dataKey="cancelledOrders" name="Cancelled Orders" fill="#ef4444" />
+            </BarChart>
+          </ResponsiveContainer>
         </div>
       </div>
       
@@ -888,13 +1072,22 @@ const Drivers: React.FC = () => {
           
           {/* Sort button */}
           <div className="relative inline-block text-left">
-            <button 
-              onClick={() => handleSort('name')}
-              className="px-3 py-1.5 text-sm border border-gray-200 rounded-md flex items-center bg-white"
-            >
-              <span>Sort</span>
-              <ArrowUpDown className="ml-1 h-4 w-4" />
-            </button>
+            <TooltipProvider>
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <button 
+                    onClick={() => handleSort('name')}
+                    className="px-3 py-1.5 text-sm border border-gray-200 rounded-md flex items-center bg-white"
+                  >
+                    <span>Sort</span>
+                    <ArrowUpDown className="ml-1 h-4 w-4" />
+                  </button>
+                </TooltipTrigger>
+                <TooltipContent>
+                  <p>Sort the drivers list</p>
+                </TooltipContent>
+              </Tooltip>
+            </TooltipProvider>
           </div>
         </div>
         
@@ -1198,26 +1391,37 @@ const Drivers: React.FC = () => {
               </div>
             </div>
             
-            {selectedDriver.currentTask && (
+            {/* Order Information Section */}
+            {selectedDriver.assignedOrders && selectedDriver.assignedOrders.length > 0 && (
               <div className="bg-gray-50 p-4 rounded-lg mb-6">
                 <div className="flex justify-between items-center mb-3">
-                  <h4 className="font-medium">Current Task</h4>
-                  {getTaskBadge(selectedDriver.currentTask)}
+                  <h4 className="font-medium">Assigned Orders</h4>
+                  <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
+                    {selectedDriver.assignedOrders.length} {selectedDriver.assignedOrders.length === 1 ? 'Order' : 'Orders'}
+                  </span>
                 </div>
-                <div className="space-y-2">
-                  <div>
-                    <p className="text-sm text-gray-500">Order ID</p>
-                    <p className="font-medium">{selectedDriver.currentTask.orderId}</p>
+                {selectedDriver.assignedOrders.map((order, index) => (
+                  <div key={order.id} className={`p-3 border ${selectedDriver.currentTask && selectedDriver.currentTask.orderId === order.id ? 'border-blue-200 bg-blue-50' : 'border-gray-200'} rounded-md ${index !== 0 ? 'mt-3' : ''}`}>
+                    <div className="flex justify-between items-center">
+                      <p className="font-medium">{order.id}</p>
+                      {selectedDriver.currentTask && selectedDriver.currentTask.orderId === order.id && (
+                        <span className="text-xs text-blue-600">Current Task</span>
+                      )}
+                    </div>
+                    <div className="mt-2 space-y-1">
+                      <p className="text-sm">
+                        <span className="text-gray-500">Customer:</span> {order.customerName}
+                      </p>
+                      <p className="text-sm">
+                        <span className="text-gray-500">Studio:</span> {order.studioName}
+                      </p>
+                      <div className="flex items-center mt-2">
+                        <span className="text-xs text-gray-500 mr-2">Current Task:</span>
+                        {getTaskBadge(selectedDriver.currentTask)}
+                      </div>
+                    </div>
                   </div>
-                  <div>
-                    <p className="text-sm text-gray-500">Customer</p>
-                    <p className="font-medium">{selectedDriver.currentTask.customerName}</p>
-                  </div>
-                  <div>
-                    <p className="text-sm text-gray-500">Scheduled Time</p>
-                    <p className="font-medium">{new Date(selectedDriver.currentTask.scheduledTime).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</p>
-                  </div>
-                </div>
+                ))}
               </div>
             )}
             
@@ -1435,179 +1639,241 @@ const Drivers: React.FC = () => {
         </div>
       )}
       
-      {/* Task Details Modal */}
-      {isTaskDetailsModalOpen && selectedDriver && selectedDriver.currentTask && (
+      {/* Order Details Modal */}
+      {isOrderDetailsModalOpen && selectedDriver && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-          <div className="bg-white rounded-lg shadow-lg w-full max-w-lg p-6 max-h-[90vh] overflow-y-auto">
+          <div className="bg-white rounded-lg shadow-lg w-full max-w-2xl p-6 max-h-[90vh] overflow-y-auto">
             <div className="flex justify-between items-center mb-4">
-              <h3 className="text-lg font-semibold">Task Details</h3>
-              <button onClick={() => setIsTaskDetailsModalOpen(false)} className="text-gray-500 hover:text-gray-700">
+              <h3 className="text-lg font-semibold">Order Details</h3>
+              <button onClick={() => setIsOrderDetailsModalOpen(false)} className="text-gray-500 hover:text-gray-700">
                 <X className="h-5 w-5" />
               </button>
             </div>
             
-            <div className="mb-4">
-              <div className="flex justify-between items-center">
-                <div>
-                  <h2 className="text-xl font-semibold">
-                    {selectedDriver.currentTask.type.charAt(0).toUpperCase() + selectedDriver.currentTask.type.slice(1)} Task
-                  </h2>
-                  <p className="text-sm text-gray-500 mt-1">Assigned to {selectedDriver.name}</p>
+            <div className="mb-6">
+              <div className="flex items-center">
+                <div className="mr-4">
+                  <Car className="h-10 w-10 text-admin-primary" />
                 </div>
-                <div>{getTaskBadge(selectedDriver.currentTask)}</div>
+                <div>
+                  <h2 className="text-xl font-semibold">{selectedDriver.name}</h2>
+                  <div className="flex items-center mt-1">
+                    <span className="text-sm text-gray-500">{selectedDriver.vehicleType} • </span>
+                    <span className="text-sm text-gray-500 ml-1">{selectedDriver.vehicleNumber}</span>
+                  </div>
+                </div>
               </div>
             </div>
             
             <div className="bg-gray-50 p-4 rounded-lg mb-6">
-              <h4 className="font-medium mb-3">Task Information</h4>
-              <div className="space-y-3">
-                <div>
-                  <p className="text-sm text-gray-500">Task ID</p>
-                  <p className="font-medium">{selectedDriver.currentTask.id}</p>
-                </div>
-                <div>
-                  <p className="text-sm text-gray-500">Order ID</p>
-                  <p className="font-medium">{selectedDriver.currentTask.orderId}</p>
-                </div>
-                <div>
-                  <p className="text-sm text-gray-500">Scheduled Time</p>
-                  <p className="font-medium">
-                    {new Date(selectedDriver.currentTask.scheduledTime).toLocaleString([], {
-                      year: 'numeric',
-                      month: 'short',
-                      day: 'numeric',
-                      hour: '2-digit',
-                      minute: '2-digit'
-                    })}
+              <div className="flex justify-between items-center mb-3">
+                <h4 className="font-medium">Assigned Orders Summary</h4>
+                <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
+                  {selectedDriver.assignedOrders?.length || 0} Orders
+                </span>
+              </div>
+              
+              <div className="grid grid-cols-2 gap-4 mb-4">
+                <div className="bg-white p-3 rounded border border-gray-200">
+                  <p className="text-sm text-gray-500">Active Orders</p>
+                  <p className="text-xl font-semibold text-blue-600">
+                    {selectedDriver.assignedOrders?.filter(o => o.status === 'active').length || 0}
                   </p>
                 </div>
-                <div>
-                  <p className="text-sm text-gray-500">Status</p>
-                  <p className="font-medium capitalize">{selectedDriver.currentTask.status}</p>
+                <div className="bg-white p-3 rounded border border-gray-200">
+                  <p className="text-sm text-gray-500">Completed Today</p>
+                  <p className="text-xl font-semibold text-green-600">
+                    {selectedDriver.assignedOrders?.filter(o => o.status === 'completed').length || 0}
+                  </p>
+                </div>
+              </div>
+              
+              {/* Task Timeline */}
+              <div className="mb-3">
+                <h5 className="text-sm font-medium mb-3">Order Process</h5>
+                <div className="flex items-center justify-between mb-2">
+                  <div className="flex items-center">
+                    <div className={`h-3 w-3 rounded-full ${selectedDriver.currentTask?.type === 'pickup' || !selectedDriver.currentTask ? 'bg-yellow-500 animate-pulse' : 'bg-gray-300'}`}></div>
+                    <div className="ml-2 text-sm">Pickup</div>
+                  </div>
+                  <div className="h-0.5 flex-grow mx-2 bg-gray-200"></div>
+                  <div className="flex items-center">
+                    <div className={`h-3 w-3 rounded-full ${selectedDriver.currentTask?.type === 'drop' ? 'bg-blue-500 animate-pulse' : 'bg-gray-300'}`}></div>
+                    <div className="ml-2 text-sm">Drop</div>
+                  </div>
+                  <div className="h-0.5 flex-grow mx-2 bg-gray-200"></div>
+                  <div className="flex items-center">
+                    <div className={`h-3 w-3 rounded-full ${selectedDriver.currentTask?.type === 'collect' ? 'bg-purple-500 animate-pulse' : 'bg-gray-300'}`}></div>
+                    <div className="ml-2 text-sm">Collect</div>
+                  </div>
+                  <div className="h-0.5 flex-grow mx-2 bg-gray-200"></div>
+                  <div className="flex items-center">
+                    <div className={`h-3 w-3 rounded-full ${selectedDriver.currentTask?.type === 'delivery' ? 'bg-green-500 animate-pulse' : 'bg-gray-300'}`}></div>
+                    <div className="ml-2 text-sm">Deliver</div>
+                  </div>
                 </div>
               </div>
             </div>
             
-            <div className="bg-gray-50 p-4 rounded-lg mb-6">
-              {selectedDriver.currentTask.type === 'pickup' && (
-                <>
-                  <h4 className="font-medium mb-3">Pickup Details</h4>
-                  <div className="space-y-3">
+            {/* Current Task Details */}
+            {selectedDriver.currentTask && (
+              <div className="bg-white border border-admin-primary/20 p-4 rounded-lg mb-6">
+                <div className="flex justify-between items-center mb-3">
+                  <h4 className="font-medium text-admin-primary">Current Task</h4>
+                  {getTaskBadge(selectedDriver.currentTask)}
+                </div>
+                
+                <div className="space-y-3">
+                  <div>
+                    <p className="text-sm text-gray-500">Task ID</p>
+                    <p className="font-medium">{selectedDriver.currentTask.id}</p>
+                  </div>
+                  <div>
+                    <p className="text-sm text-gray-500">Order ID</p>
+                    <p className="font-medium">{selectedDriver.currentTask.orderId}</p>
+                  </div>
+                  <div>
+                    <p className="text-sm text-gray-500">Scheduled Time</p>
+                    <p className="font-medium">
+                      {new Date(selectedDriver.currentTask.scheduledTime).toLocaleString([], {
+                        year: 'numeric',
+                        month: 'short',
+                        day: 'numeric',
+                        hour: '2-digit',
+                        minute: '2-digit'
+                      })}
+                    </p>
+                  </div>
+                  <div>
+                    <p className="text-sm text-gray-500">Status</p>
+                    <p className="font-medium capitalize">{selectedDriver.currentTask.status}</p>
+                  </div>
+                  
+                  {/* Conditionally show relevant addresses based on task type */}
+                  {(selectedDriver.currentTask.type === 'pickup' || selectedDriver.currentTask.type === 'delivery') && (
                     <div>
-                      <p className="text-sm text-gray-500">Customer Name</p>
-                      <p className="font-medium">{selectedDriver.currentTask.customerName}</p>
-                    </div>
-                    <div>
-                      <p className="text-sm text-gray-500">Pickup Address</p>
+                      <p className="text-sm text-gray-500">Customer Address</p>
                       <p className="font-medium">{selectedDriver.currentTask.customerAddress}</p>
                     </div>
-                  </div>
-                </>
-              )}
-              
-              {selectedDriver.currentTask.type === 'drop' && (
-                <>
-                  <h4 className="font-medium mb-3">Drop Details</h4>
-                  <div className="space-y-3">
-                    <div>
-                      <p className="text-sm text-gray-500">Studio Name</p>
-                      <p className="font-medium">{selectedDriver.currentTask.studioName}</p>
-                    </div>
+                  )}
+                  
+                  {(selectedDriver.currentTask.type === 'drop' || selectedDriver.currentTask.type === 'collect') && (
                     <div>
                       <p className="text-sm text-gray-500">Studio Address</p>
                       <p className="font-medium">{selectedDriver.currentTask.studioAddress}</p>
                     </div>
-                  </div>
-                </>
-              )}
-              
-              {selectedDriver.currentTask.type === 'collect' && (
-                <>
-                  <h4 className="font-medium mb-3">Collection Details</h4>
-                  <div className="space-y-3">
-                    <div>
-                      <p className="text-sm text-gray-500">Studio Name</p>
-                      <p className="font-medium">{selectedDriver.currentTask.studioName}</p>
-                    </div>
-                    <div>
-                      <p className="text-sm text-gray-500">Studio Address</p>
-                      <p className="font-medium">{selectedDriver.currentTask.studioAddress}</p>
-                    </div>
-                  </div>
-                </>
-              )}
-              
-              {selectedDriver.currentTask.type === 'delivery' && (
-                <>
-                  <h4 className="font-medium mb-3">Delivery Details</h4>
-                  <div className="space-y-3">
-                    <div>
-                      <p className="text-sm text-gray-500">Customer Name</p>
-                      <p className="font-medium">{selectedDriver.currentTask.customerName}</p>
-                    </div>
-                    <div>
-                      <p className="text-sm text-gray-500">Delivery Address</p>
-                      <p className="font-medium">{selectedDriver.currentTask.customerAddress}</p>
-                    </div>
-                  </div>
-                </>
-              )}
-            </div>
+                  )}
+                </div>
+                
+                <div className="flex justify-end mt-4">
+                  <button
+                    onClick={() => {
+                      // Update the task status to the next stage
+                      if (selectedDriver && selectedDriver.currentTask) {
+                        const task = selectedDriver.currentTask;
+                        const newStatus = task.status === 'pending' ? 'in-progress' : 
+                                        task.status === 'in-progress' ? 'completed' : task.status;
+                        
+                        // Only allow status changes if not already completed
+                        if (task.status !== 'completed') {
+                          setSelectedDriver({
+                            ...selectedDriver,
+                            currentTask: {
+                              ...task,
+                              status: newStatus
+                            }
+                          });
+                          
+                          // Update the driver in the list
+                          setDrivers(drivers.map(d => 
+                            d.id === selectedDriver.id ? {
+                              ...d,
+                              currentTask: d.currentTask ? {
+                                ...d.currentTask,
+                                status: newStatus
+                              } : undefined
+                            } : d
+                          ));
+                          
+                          toast({
+                            title: "Task status updated",
+                            description: `Task is now ${newStatus}`,
+                            duration: 3000,
+                          });
+                        }
+                      }
+                    }}
+                    className="px-4 py-2 text-sm bg-admin-primary text-white rounded-md hover:bg-opacity-90 transition-colors"
+                    disabled={selectedDriver.currentTask.status === 'completed'}
+                  >
+                    {selectedDriver.currentTask.status === 'pending' ? 'Start Task' : 
+                    selectedDriver.currentTask.status === 'in-progress' ? 'Complete Task' : 'Task Completed'}
+                  </button>
+                </div>
+              </div>
+            )}
             
-            <div className="flex justify-end space-x-3">
+            {/* All Assigned Orders List */}
+            {selectedDriver.assignedOrders && selectedDriver.assignedOrders.length > 0 && (
+              <div className="border border-gray-200 rounded-lg overflow-hidden">
+                <div className="bg-gray-50 px-4 py-3 border-b border-gray-200">
+                  <h4 className="font-medium">All Assigned Orders</h4>
+                </div>
+                <div className="divide-y divide-gray-200">
+                  {selectedDriver.assignedOrders.map((order) => (
+                    <div key={order.id} className="p-4 hover:bg-gray-50">
+                      <div className="flex justify-between">
+                        <div className="font-medium">{order.id}</div>
+                        <div>
+                          {order.status === 'active' ? (
+                            <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">
+                              Active
+                            </span>
+                          ) : order.status === 'completed' ? (
+                            <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
+                              Completed
+                            </span>
+                          ) : (
+                            <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-red-100 text-red-800">
+                              Cancelled
+                            </span>
+                          )}
+                        </div>
+                      </div>
+                      <div className="mt-2 grid grid-cols-2 gap-y-2 text-sm">
+                        <div>
+                          <span className="text-gray-500">Customer:</span> {order.customerName}
+                        </div>
+                        <div>
+                          <span className="text-gray-500">Items:</span> {order.items}
+                        </div>
+                        <div>
+                          <span className="text-gray-500">Studio:</span> {order.studioName}
+                        </div>
+                        <div>
+                          <span className="text-gray-500">Amount:</span> ₹{order.totalAmount}
+                        </div>
+                      </div>
+                      <div className="mt-2 text-xs text-gray-500">
+                        Created: {new Date(order.createdAt).toLocaleString()}
+                      </div>
+                      {selectedDriver.currentTask && selectedDriver.currentTask.orderId === order.id && (
+                        <div className="mt-2 text-xs font-medium text-admin-primary">
+                          Current active task: {selectedDriver.currentTask.type}
+                        </div>
+                      )}
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+            
+            <div className="flex justify-end space-x-3 mt-6">
               <button
-                onClick={() => setIsTaskDetailsModalOpen(false)}
+                onClick={() => setIsOrderDetailsModalOpen(false)}
                 className="px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 rounded-md transition-colors"
               >
                 Close
-              </button>
-              <button
-                onClick={() => {
-                  // Update the task status to the next stage
-                  if (selectedDriver && selectedDriver.currentTask) {
-                    const task = selectedDriver.currentTask;
-                    const newStatus = task.status === 'pending' ? 'in-progress' : 
-                                      task.status === 'in-progress' ? 'completed' : task.status;
-                    
-                    // Only allow status changes if not already completed
-                    if (task.status !== 'completed') {
-                      setSelectedDriver({
-                        ...selectedDriver,
-                        currentTask: {
-                          ...task,
-                          status: newStatus
-                        }
-                      });
-                      
-                      // Update the driver in the list
-                      setDrivers(drivers.map(d => 
-                        d.id === selectedDriver.id ? {
-                          ...d,
-                          currentTask: d.currentTask ? {
-                            ...d.currentTask,
-                            status: newStatus
-                          } : undefined
-                        } : d
-                      ));
-                      
-                      toast({
-                        title: "Task status updated",
-                        description: `Task is now ${newStatus}`,
-                        duration: 3000,
-                      });
-                      
-                      // Close if completed
-                      if (newStatus === 'completed') {
-                        setIsTaskDetailsModalOpen(false);
-                      }
-                    }
-                  }
-                }}
-                className="px-4 py-2 text-sm bg-admin-primary text-white rounded-md hover:bg-opacity-90 transition-colors"
-                disabled={selectedDriver.currentTask.status === 'completed'}
-              >
-                {selectedDriver.currentTask.status === 'pending' ? 'Start Task' : 
-                 selectedDriver.currentTask.status === 'in-progress' ? 'Complete Task' : 'Task Completed'}
               </button>
             </div>
           </div>
@@ -1618,3 +1884,4 @@ const Drivers: React.FC = () => {
 };
 
 export default Drivers;
+
