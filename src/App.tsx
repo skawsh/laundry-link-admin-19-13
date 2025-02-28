@@ -12,6 +12,8 @@ import StudioAnalytics from "./pages/StudioAnalytics";
 import StudioDetails from "./pages/StudioDetails";
 import Drivers from "./pages/Drivers";
 import Orders from "./pages/Orders";
+import Revenue from "./pages/Revenue";
+import Users from "./pages/Users";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -32,11 +34,11 @@ const App = () => (
           <Route path="/studios/details/:studioId" element={<StudioDetails />} />
           <Route path="/drivers" element={<Drivers />} />
           <Route path="/orders" element={<Orders />} />
+          <Route path="/revenue" element={<Revenue />} />
+          <Route path="/users" element={<Users />} />
           
-          {/* Placeholder routes for other sections */}
-          <Route path="/revenue" element={<NotFound />} />
+          {/* Placeholder route for remaining sections */}
           <Route path="/tickets" element={<NotFound />} />
-          <Route path="/users" element={<NotFound />} />
           <Route path="/settings" element={<NotFound />} />
           
           {/* Catch-all route */}
