@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { CheckCircle, Download, InfoIcon, ArrowLeft } from 'lucide-react';
@@ -7,13 +6,11 @@ import PageHeader from '../components/ui/PageHeader';
 import { useToast } from "@/hooks/use-toast";
 import { Button } from "@/components/ui/button";
 
-// Import custom components
 import PaymentStats from '@/components/payments/PaymentStats';
 import PaymentModal from '@/components/payments/PaymentModal';
 import OrderDetailsModal from '@/components/payments/OrderDetailsModal';
 import PaymentTabs from '@/components/payments/PaymentTabs';
 
-// Import types and data
 import { UnpaidOrder, PaymentRecord, DateFilterOption } from '@/types/paymentTypes';
 import { initialUnpaidOrders, initialPaymentHistory } from '@/data/mockPaymentData';
 import { formatIndianRupees } from '@/utils/dateUtils';
@@ -22,7 +19,7 @@ import { applyDateFilter, applyOrderIdSearch, applyWashTypeFilter } from '@/util
 const StudioPayments: React.FC = () => {
   const { studioId } = useParams<{ studioId?: string }>();
   const navigate = useNavigate();
-  // Filter to only include orders with deliveredDate before setting initial state
+
   const [unpaidOrders, setUnpaidOrders] = useState<UnpaidOrder[]>(
     initialUnpaidOrders.filter(order => order.deliveredDate !== undefined)
   );
@@ -38,7 +35,6 @@ const StudioPayments: React.FC = () => {
   const [selectedOrderDetails, setSelectedOrderDetails] = useState<UnpaidOrder | null>(null);
   const { toast } = useToast();
   
-  // States for date filtering and search
   const [dateFilter, setDateFilter] = useState<DateFilterOption>('all');
   const [customDateRange, setCustomDateRange] = useState<{start: string, end: string}>({
     start: '',
@@ -55,7 +51,6 @@ const StudioPayments: React.FC = () => {
     ? paymentHistory.filter(payment => payment.studioId === Number(studioId))
     : paymentHistory;
 
-  // Combined filtering function for unpaid orders
   const getFilteredUnpaidOrders = (): UnpaidOrder[] => {
     let data = filteredUnpaidOrders;
     data = applyDateFilter(data, dateFilter, customDateRange);
@@ -64,7 +59,6 @@ const StudioPayments: React.FC = () => {
     return data;
   };
 
-  // Combined filtering function for payment history
   const getFilteredPaymentHistory = (): PaymentRecord[] => {
     let data = filteredPaymentHistory;
     data = applyDateFilter(data, dateFilter, customDateRange);
@@ -112,16 +106,13 @@ const StudioPayments: React.FC = () => {
       return;
     }
 
-    // Determine which orders to mark as paid (based on selection)
     let ordersToPay: UnpaidOrder[] = [];
     
     if (selectedOrderIds.length > 0) {
-      // Pay only selected orders
       ordersToPay = getFilteredUnpaidOrders().filter(order => 
         selectedOrderIds.includes(order.id)
       );
     } else if (selectedOrder) {
-      // Pay just the one selected order
       ordersToPay = [selectedOrder];
     } else {
       toast({
@@ -143,7 +134,6 @@ const StudioPayments: React.FC = () => {
       return;
     }
 
-    // Create payment records for all orders
     const newPayments: PaymentRecord[] = ordersToPay.map(order => ({
       id: `PMT-${Math.floor(Math.random() * 10000)}`,
       studioId: order.studioId,
@@ -156,11 +146,9 @@ const StudioPayments: React.FC = () => {
       deliveredDate: order.deliveredDate
     }));
 
-    // Remove all paid orders from unpaid orders
     const paidOrderIds = ordersToPay.map(order => order.id);
     setUnpaidOrders(unpaidOrders.filter(order => !paidOrderIds.includes(order.id)));
     
-    // Add all new payment records to payment history
     setPaymentHistory([...newPayments, ...paymentHistory]);
     
     setShowPaymentModal(false);
@@ -182,7 +170,6 @@ const StudioPayments: React.FC = () => {
     setCustomDateRange({ start: '', end: '' });
   };
 
-  // Define table columns with an S.No column
   const unpaidColumns = [
     {
       header: 'S.No',
@@ -209,9 +196,9 @@ const StudioPayments: React.FC = () => {
           row.washType === 'standard' ? 'bg-blue-100 text-blue-800' : 
           'bg-green-100 text-green-800'
         }`}>
-          {row.washType === 'express' ? 'Express Wash' : 
-           row.washType === 'standard' ? 'Standard Wash' : 
-           'Both'}
+          {row.washType === 'express' ? 'Express Wash (1 day)' : 
+           row.washType === 'standard' ? 'Standard Wash (4 days)' : 
+           'Both (4 days)'}
         </span>
       ),
     },
@@ -272,9 +259,9 @@ const StudioPayments: React.FC = () => {
           row.washType === 'standard' ? 'bg-blue-100 text-blue-800' : 
           'bg-green-100 text-green-800'
         }`}>
-          {row.washType === 'express' ? 'Express Wash' : 
-           row.washType === 'standard' ? 'Standard Wash' : 
-           'Both'}
+          {row.washType === 'express' ? 'Express Wash (1 day)' : 
+           row.washType === 'standard' ? 'Standard Wash (4 days)' : 
+           'Both (4 days)'}
         </span>
       ),
     },
