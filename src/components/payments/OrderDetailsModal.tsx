@@ -26,12 +26,6 @@ const OrderDetailsModal: React.FC<OrderDetailsModalProps> = ({
   setShowOrderDetailsModal,
   openPaymentModal,
 }) => {
-  // Get delivery time based on wash type
-  const getDeliveryTimeText = (washType: 'express' | 'standard' | 'combined') => {
-    if (washType === 'express') return '(1 day delivery)';
-    return '(4 days delivery)';
-  };
-
   return (
     <Dialog open={showOrderDetailsModal} onOpenChange={setShowOrderDetailsModal}>
       <DialogContent className="sm:max-w-[550px]">
@@ -61,9 +55,8 @@ const OrderDetailsModal: React.FC<OrderDetailsModalProps> = ({
             <div>
               <h3 className="text-sm font-medium text-gray-500">Service Type</h3>
               <p className="text-sm font-semibold">
-                {selectedOrderDetails?.washType === 'express' ? 'Express Wash ' + getDeliveryTimeText('express') : 
-                 selectedOrderDetails?.washType === 'standard' ? 'Standard Wash ' + getDeliveryTimeText('standard') : 
-                 'Both ' + getDeliveryTimeText('combined')}
+                {selectedOrderDetails?.washType === 'express' ? 'Express Wash' : 
+                 selectedOrderDetails?.washType === 'standard' ? 'Standard Wash' : 'Both'}
               </p>
             </div>
             <div>

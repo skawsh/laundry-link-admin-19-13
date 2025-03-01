@@ -40,17 +40,17 @@ const PaymentStats: React.FC<PaymentStatsProps> = ({ filteredUnpaidOrders }) => 
       <StatsCard
         title="Express Wash Unpaid Amount"
         value={formatIndianRupees(expressWashAmount)}
-        subtext={`${expressWashCount} orders pending (1 day delivery)`}
+        subtext={`${expressWashCount} orders pending`}
       />
       <StatsCard
         title="Standard Wash Unpaid Amount"
         value={formatIndianRupees(standardWashAmount)}
-        subtext={`${standardWashCount} orders pending (4 days delivery)`}
+        subtext={`${standardWashCount} orders pending`}
       />
       <StatsCard
         title="Both Unpaid Amount"
         value={formatIndianRupees(combinedWashAmount)}
-        subtext={`${combinedWashCount} orders pending (4 days delivery)`}
+        subtext={`${combinedWashCount} orders pending`}
       />
     </div>
   );
