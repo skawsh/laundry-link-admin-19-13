@@ -1,4 +1,3 @@
-<lov-code>
 import React, { useState, useEffect, useRef } from 'react';
 import { Plus, ChevronDown, Search, Filter, Star, MoreHorizontal, X, ArrowUpDown, CreditCard, Settings, Package, Trash2, Frown } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
@@ -10,7 +9,6 @@ import ToggleSwitch from '../components/ui/ToggleSwitch';
 import { useToast } from "@/hooks/use-toast";
 import { ConfirmationDialog } from "@/components/ui/confirmation-dialog";
 
-// Studio data type
 interface Studio {
   id: number;
   studioId: string; 
@@ -32,7 +30,6 @@ interface Studio {
   }[];
 }
 
-// Sample data
 const initialStudios: Studio[] = [
   {
     id: 1,
@@ -803,4 +800,55 @@ const Studios: React.FC = () => {
                     <div className="font-medium">{studio.name}</div>
                     <div className="text-xs text-gray-500 flex justify-between">
                       <span>{studio.studioId}</span>
-                      <span>{studio.
+                      <span>{studio.contactNumber}</span>
+                    </div>
+                  </button>
+                ))
+              ) : (
+                <div className="px-4 py-3 text-sm text-gray-600 text-center">
+                  <Frown className="h-5 w-5 mx-auto mb-1 opacity-70" />
+                  <p>No studios found</p>
+                </div>
+              )}
+            </div>
+          )}
+        </div>
+      </div>
+      
+      <DataTable 
+        columns={columns}
+        data={filteredStudios}
+        className="bg-white rounded-lg shadow-subtle overflow-hidden"
+      />
+      
+      <ConfirmationDialog
+        isOpen={isDeleteDialogOpen}
+        onClose={() => setIsDeleteDialogOpen(false)}
+        onConfirm={executeDeleteStudio}
+        title="Delete Studio"
+        description={
+          <div className="text-center">
+            <p>Are you sure you want to delete {studioToDelete?.name}? <span role="img" aria-label="sad">😢</span></p>
+          </div>
+        }
+        confirmText="OK"
+        confirmWithTimer={5}
+      />
+      
+      <ConfirmationDialog
+        isOpen={isDeactivateDialogOpen}
+        onClose={() => setIsDeactivateDialogOpen(false)}
+        onConfirm={confirmStatusChange}
+        title="Deactivate Studio"
+        description={
+          <div className="text-center">
+            <p>Are you sure you want to deactivate {studioToToggle?.name}?</p>
+          </div>
+        }
+        confirmText="OK"
+      />
+    </AdminLayout>
+  );
+};
+
+export default Studios;
