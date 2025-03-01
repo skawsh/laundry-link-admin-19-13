@@ -2,7 +2,7 @@
 import React, { useEffect, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import AdminLayout from '@/components/layout/AdminLayout';
-import { User, Phone, Calendar, Mail, MapPin, AlertTriangle, Truck, FileText, Award, ChevronLeft, Pencil, Info } from 'lucide-react';
+import { User, Phone, Calendar, Mail, MapPin, AlertTriangle, Truck, FileText, Award, ChevronLeft, Pencil, Save, X } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Separator } from '@/components/ui/separator';
 import { Badge } from '@/components/ui/badge';
@@ -12,6 +12,15 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "@/components/ui/dialog";
 
 // Define the Driver type with additional fields for vehicle details
 type Driver = {
@@ -43,8 +52,38 @@ const DriverProfile = () => {
   const navigate = useNavigate();
   const [driver, setDriver] = useState<Driver | null>(null);
   const [loading, setLoading] = useState(true);
+  
+  // State for editing profile fields
+  const [isEditingName, setIsEditingName] = useState(false);
+  const [name, setName] = useState('');
+  
+  const [isEditingPhone, setIsEditingPhone] = useState(false);
+  const [phone, setPhone] = useState('');
+  
   const [isEditingSecondary, setIsEditingSecondary] = useState(false);
   const [secondaryPhone, setSecondaryPhone] = useState('');
+  
+  const [isEditingEmergency, setIsEditingEmergency] = useState(false);
+  const [emergencyContact, setEmergencyContact] = useState('');
+  
+  const [isEditingEmail, setIsEditingEmail] = useState(false);
+  const [email, setEmail] = useState('');
+  
+  const [isEditingAddress, setIsEditingAddress] = useState(false);
+  const [address, setAddress] = useState('');
+  
+  // State for editing vehicle fields
+  const [isEditingVehicleNumber, setIsEditingVehicleNumber] = useState(false);
+  const [vehicleNumber, setVehicleNumber] = useState('');
+  
+  const [isEditingVehicleName, setIsEditingVehicleName] = useState(false);
+  const [vehicleName, setVehicleName] = useState('');
+  
+  const [isEditingVehicleModel, setIsEditingVehicleModel] = useState(false);
+  const [vehicleModel, setVehicleModel] = useState('');
+  
+  const [isEditingLicense, setIsEditingLicense] = useState(false);
+  const [licenseNumber, setLicenseNumber] = useState('');
   
   useEffect(() => {
     // Fetch driver data based on ID
@@ -107,7 +146,17 @@ const DriverProfile = () => {
         
         if (foundDriver) {
           setDriver(foundDriver);
+          // Initialize the edit form values
+          setName(foundDriver.name);
+          setPhone(foundDriver.phone);
           setSecondaryPhone(foundDriver.secondaryPhone || '');
+          setEmergencyContact(foundDriver.emergencyContact);
+          setEmail(foundDriver.email);
+          setAddress(foundDriver.address);
+          setVehicleNumber(foundDriver.vehicleNumber);
+          setVehicleName(foundDriver.vehicleName);
+          setVehicleModel(foundDriver.vehicleModel);
+          setLicenseNumber(foundDriver.licenseNumber);
         } else {
           // If driver not found, show error and redirect
           toast({
@@ -134,22 +183,53 @@ const DriverProfile = () => {
     }
   }, [id, navigate]);
 
-  const handleSecondaryPhoneChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setSecondaryPhone(e.target.value);
+  // Generic handlers for field changes
+  const handleInputChange = (
+    setter: React.Dispatch<React.SetStateAction<string>>,
+    e: React.ChangeEvent<HTMLInputElement>
+  ) => {
+    setter(e.target.value);
   };
 
-  const saveSecondaryPhone = () => {
+  // Generic save function with field-specific editing state
+  const saveField = (
+    field: string, 
+    value: string, 
+    setEditingState: React.Dispatch<React.SetStateAction<boolean>>
+  ) => {
     if (driver) {
-      // In a real app, this would make an API call to update the phone number
-      const updatedDriver = { ...driver, secondaryPhone };
+      // In a real app, this would make an API call to update the field
+      const updatedDriver = { ...driver, [field]: value };
       setDriver(updatedDriver);
-      setIsEditingSecondary(false);
+      setEditingState(false);
       toast({
-        title: "Secondary phone updated",
-        description: "Your secondary phone number has been updated successfully.",
+        title: "Profile updated",
+        description: `Your ${field} has been updated successfully.`,
         variant: "default",
       });
     }
+  };
+
+  // Field-specific save functions
+  const saveName = () => saveField('name', name, setIsEditingName);
+  const savePhone = () => saveField('phone', phone, setIsEditingPhone);
+  const saveSecondaryPhone = () => saveField('secondaryPhone', secondaryPhone, setIsEditingSecondary);
+  const saveEmergencyContact = () => saveField('emergencyContact', emergencyContact, setIsEditingEmergency);
+  const saveEmail = () => saveField('email', email, setIsEditingEmail);
+  const saveAddress = () => saveField('address', address, setIsEditingAddress);
+  const saveVehicleNumber = () => saveField('vehicleNumber', vehicleNumber, setIsEditingVehicleNumber);
+  const saveVehicleName = () => saveField('vehicleName', vehicleName, setIsEditingVehicleName);
+  const saveVehicleModel = () => saveField('vehicleModel', vehicleModel, setIsEditingVehicleModel);
+  const saveLicenseNumber = () => saveField('licenseNumber', licenseNumber, setIsEditingLicense);
+
+  // Cancel editing for any field
+  const cancelEditing = (
+    originalValue: string, 
+    setter: React.Dispatch<React.SetStateAction<string>>,
+    setEditingState: React.Dispatch<React.SetStateAction<boolean>>
+  ) => {
+    setter(originalValue);
+    setEditingState(false);
   };
 
   if (loading) {
@@ -175,6 +255,67 @@ const DriverProfile = () => {
     );
   }
 
+  // Render component for an editable field
+  const renderEditableField = (
+    icon: React.ReactNode,
+    label: string,
+    value: string,
+    isEditing: boolean,
+    setIsEditing: React.Dispatch<React.SetStateAction<boolean>>,
+    currentValue: string,
+    handleChange: (e: React.ChangeEvent<HTMLInputElement>) => void,
+    saveFunction: () => void,
+    cancelFunction: () => void
+  ) => (
+    <div className="flex items-start">
+      {icon}
+      <div className="flex-1">
+        <p className="text-sm font-medium text-gray-700">{label}</p>
+        {isEditing ? (
+          <div className="flex gap-2 mt-1">
+            <Input 
+              value={currentValue}
+              onChange={handleChange}
+              className="text-sm py-1 h-8"
+            />
+            <div className="flex gap-1">
+              <Button 
+                variant="success" 
+                size="sm" 
+                className="h-8 text-xs"
+                onClick={saveFunction}
+              >
+                <Save className="h-3 w-3 mr-1" />
+                Save
+              </Button>
+              <Button 
+                variant="outline" 
+                size="sm"
+                className="h-8 text-xs"
+                onClick={cancelFunction}
+              >
+                <X className="h-3 w-3 mr-1" />
+                Cancel
+              </Button>
+            </div>
+          </div>
+        ) : (
+          <div className="flex justify-between items-center">
+            <p className="text-sm text-gray-600">{value}</p>
+            <Button 
+              size="sm" 
+              variant="ghost"
+              onClick={() => setIsEditing(true)}
+              className="h-7 px-2"
+            >
+              <Pencil className="h-3 w-3" />
+            </Button>
+          </div>
+        )}
+      </div>
+    </div>
+  );
+
   return (
     <AdminLayout>
       <div className="p-6 max-w-6xl mx-auto">
@@ -191,7 +332,6 @@ const DriverProfile = () => {
             <h1 className="text-2xl font-bold text-gray-800">Driver Profile</h1>
           </div>
           <div className="flex gap-2">
-            <Button variant="outline">Edit Profile</Button>
             <Button variant={driver.status === 'active' ? 'destructive' : 'success'}>
               {driver.status === 'active' ? 'Deactivate' : 'Activate'} Driver
             </Button>
@@ -205,7 +345,47 @@ const DriverProfile = () => {
               <div className="h-24 w-24 bg-gray-200 rounded-full flex items-center justify-center mb-4">
                 <User className="h-12 w-12 text-gray-500" />
               </div>
-              <h2 className="text-xl font-semibold">{driver.name}</h2>
+              
+              {isEditingName ? (
+                <div className="flex flex-col gap-2 mt-1 w-full">
+                  <Input 
+                    value={name}
+                    onChange={(e) => handleInputChange(setName, e)}
+                    className="text-center text-xl font-semibold"
+                  />
+                  <div className="flex gap-1 justify-center">
+                    <Button 
+                      variant="success" 
+                      size="sm" 
+                      onClick={saveName}
+                    >
+                      <Save className="h-3 w-3 mr-1" />
+                      Save
+                    </Button>
+                    <Button 
+                      variant="outline" 
+                      size="sm"
+                      onClick={() => cancelEditing(driver.name, setName, setIsEditingName)}
+                    >
+                      <X className="h-3 w-3 mr-1" />
+                      Cancel
+                    </Button>
+                  </div>
+                </div>
+              ) : (
+                <div className="flex items-center">
+                  <h2 className="text-xl font-semibold">{driver.name}</h2>
+                  <Button 
+                    size="sm" 
+                    variant="ghost"
+                    onClick={() => setIsEditingName(true)}
+                    className="ml-2 h-7 px-2"
+                  >
+                    <Pencil className="h-3 w-3" />
+                  </Button>
+                </div>
+              )}
+              
               <Badge 
                 variant={driver.status === 'active' ? 'default' : 'secondary'}
                 className="mt-2"
@@ -221,89 +401,70 @@ const DriverProfile = () => {
             <Separator className="my-4" />
 
             <div className="space-y-4">
-              <div className="flex items-start">
-                <Phone className="h-5 w-5 text-gray-500 mt-0.5 mr-3" />
-                <div>
-                  <p className="text-sm font-medium text-gray-700">Phone (Primary)</p>
-                  <p className="text-sm text-gray-600">{driver.phone}</p>
-                  <p className="text-xs text-amber-600 flex items-center gap-1 mt-1">
-                    <Info className="h-3 w-3" /> Contact admin to update
-                  </p>
-                </div>
-              </div>
+              {/* Editable Phone Field */}
+              {renderEditableField(
+                <Phone className="h-5 w-5 text-gray-500 mt-0.5 mr-3" />,
+                "Phone (Primary)",
+                driver.phone,
+                isEditingPhone,
+                setIsEditingPhone,
+                phone,
+                (e) => handleInputChange(setPhone, e),
+                savePhone,
+                () => cancelEditing(driver.phone, setPhone, setIsEditingPhone)
+              )}
 
-              <div className="flex items-start">
-                <Phone className="h-5 w-5 text-gray-500 mt-0.5 mr-3" />
-                <div className="flex-1">
-                  <p className="text-sm font-medium text-gray-700">Phone (Secondary)</p>
-                  {isEditingSecondary ? (
-                    <div className="flex gap-2 mt-1">
-                      <Input 
-                        value={secondaryPhone}
-                        onChange={handleSecondaryPhoneChange}
-                        className="text-sm py-1 h-8"
-                      />
-                      <div className="flex gap-1">
-                        <Button 
-                          variant="success" 
-                          size="sm" 
-                          className="h-8 text-xs"
-                          onClick={saveSecondaryPhone}
-                        >
-                          Save
-                        </Button>
-                        <Button 
-                          variant="outline" 
-                          size="sm"
-                          className="h-8 text-xs"
-                          onClick={() => {
-                            setSecondaryPhone(driver.secondaryPhone || '');
-                            setIsEditingSecondary(false);
-                          }}
-                        >
-                          Cancel
-                        </Button>
-                      </div>
-                    </div>
-                  ) : (
-                    <div className="flex justify-between items-center">
-                      <p className="text-sm text-gray-600">{driver.secondaryPhone || 'Not set'}</p>
-                      <Button 
-                        size="sm" 
-                        variant="ghost"
-                        onClick={() => setIsEditingSecondary(true)}
-                        className="h-7 px-2"
-                      >
-                        <Pencil className="h-3 w-3" />
-                      </Button>
-                    </div>
-                  )}
-                </div>
-              </div>
+              {/* Editable Secondary Phone Field */}
+              {renderEditableField(
+                <Phone className="h-5 w-5 text-gray-500 mt-0.5 mr-3" />,
+                "Phone (Secondary)",
+                driver.secondaryPhone || 'Not set',
+                isEditingSecondary,
+                setIsEditingSecondary,
+                secondaryPhone,
+                (e) => handleInputChange(setSecondaryPhone, e),
+                saveSecondaryPhone,
+                () => cancelEditing(driver.secondaryPhone || '', setSecondaryPhone, setIsEditingSecondary)
+              )}
 
-              <div className="flex items-start">
-                <AlertTriangle className="h-5 w-5 text-gray-500 mt-0.5 mr-3" />
-                <div>
-                  <p className="text-sm font-medium text-gray-700">Emergency Contact</p>
-                  <p className="text-sm text-gray-600">{driver.emergencyContact}</p>
-                </div>
-              </div>
+              {/* Editable Emergency Contact Field */}
+              {renderEditableField(
+                <AlertTriangle className="h-5 w-5 text-gray-500 mt-0.5 mr-3" />,
+                "Emergency Contact",
+                driver.emergencyContact,
+                isEditingEmergency,
+                setIsEditingEmergency,
+                emergencyContact,
+                (e) => handleInputChange(setEmergencyContact, e),
+                saveEmergencyContact,
+                () => cancelEditing(driver.emergencyContact, setEmergencyContact, setIsEditingEmergency)
+              )}
 
-              <div className="flex items-start">
-                <Mail className="h-5 w-5 text-gray-500 mt-0.5 mr-3" />
-                <div>
-                  <p className="text-sm font-medium text-gray-700">Email</p>
-                  <p className="text-sm text-gray-600">{driver.email}</p>
-                </div>
-              </div>
+              {/* Editable Email Field */}
+              {renderEditableField(
+                <Mail className="h-5 w-5 text-gray-500 mt-0.5 mr-3" />,
+                "Email",
+                driver.email,
+                isEditingEmail,
+                setIsEditingEmail,
+                email,
+                (e) => handleInputChange(setEmail, e),
+                saveEmail,
+                () => cancelEditing(driver.email, setEmail, setIsEditingEmail)
+              )}
 
-              <div className="flex items-start">
-                <MapPin className="h-5 w-5 text-gray-500 mt-0.5 mr-3" />
-                <div>
-                  <p className="text-sm font-medium text-gray-700">Address</p>
-                  <p className="text-sm text-gray-600">{driver.address}</p>
-                </div>
-              </div>
+              {/* Editable Address Field */}
+              {renderEditableField(
+                <MapPin className="h-5 w-5 text-gray-500 mt-0.5 mr-3" />,
+                "Address",
+                driver.address,
+                isEditingAddress,
+                setIsEditingAddress,
+                address,
+                (e) => handleInputChange(setAddress, e),
+                saveAddress,
+                () => cancelEditing(driver.address, setAddress, setIsEditingAddress)
+              )}
 
               <div className="flex items-start">
                 <Calendar className="h-5 w-5 text-gray-500 mt-0.5 mr-3" />
@@ -330,82 +491,182 @@ const DriverProfile = () => {
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                     <div>
                       <Label className="text-gray-700">Vehicle Number</Label>
-                      <div className="mt-1 text-gray-800 font-medium">{driver.vehicleNumber}</div>
+                      {isEditingVehicleNumber ? (
+                        <div className="flex gap-2 mt-1">
+                          <Input 
+                            value={vehicleNumber}
+                            onChange={(e) => handleInputChange(setVehicleNumber, e)}
+                            className="text-sm py-1"
+                          />
+                          <div className="flex gap-1">
+                            <Button 
+                              variant="success" 
+                              size="sm" 
+                              onClick={saveVehicleNumber}
+                              className="h-9"
+                            >
+                              <Save className="h-3 w-3 mr-1" />
+                              Save
+                            </Button>
+                            <Button 
+                              variant="outline" 
+                              size="sm"
+                              onClick={() => cancelEditing(driver.vehicleNumber, setVehicleNumber, setIsEditingVehicleNumber)}
+                              className="h-9"
+                            >
+                              <X className="h-3 w-3 mr-1" />
+                              Cancel
+                            </Button>
+                          </div>
+                        </div>
+                      ) : (
+                        <div className="flex justify-between items-center mt-1">
+                          <div className="text-gray-800 font-medium">{driver.vehicleNumber}</div>
+                          <Button 
+                            size="sm" 
+                            variant="ghost"
+                            onClick={() => setIsEditingVehicleNumber(true)}
+                            className="h-7 px-2"
+                          >
+                            <Pencil className="h-3 w-3" />
+                          </Button>
+                        </div>
+                      )}
                     </div>
                     <div>
                       <Label className="text-gray-700">Vehicle Name</Label>
-                      <div className="mt-1 text-gray-800 font-medium">{driver.vehicleName}</div>
+                      {isEditingVehicleName ? (
+                        <div className="flex gap-2 mt-1">
+                          <Input 
+                            value={vehicleName}
+                            onChange={(e) => handleInputChange(setVehicleName, e)}
+                            className="text-sm py-1"
+                          />
+                          <div className="flex gap-1">
+                            <Button 
+                              variant="success" 
+                              size="sm" 
+                              onClick={saveVehicleName}
+                              className="h-9"
+                            >
+                              <Save className="h-3 w-3 mr-1" />
+                              Save
+                            </Button>
+                            <Button 
+                              variant="outline" 
+                              size="sm"
+                              onClick={() => cancelEditing(driver.vehicleName, setVehicleName, setIsEditingVehicleName)}
+                              className="h-9"
+                            >
+                              <X className="h-3 w-3 mr-1" />
+                              Cancel
+                            </Button>
+                          </div>
+                        </div>
+                      ) : (
+                        <div className="flex justify-between items-center mt-1">
+                          <div className="text-gray-800 font-medium">{driver.vehicleName}</div>
+                          <Button 
+                            size="sm" 
+                            variant="ghost"
+                            onClick={() => setIsEditingVehicleName(true)}
+                            className="h-7 px-2"
+                          >
+                            <Pencil className="h-3 w-3" />
+                          </Button>
+                        </div>
+                      )}
                     </div>
                     <div>
                       <Label className="text-gray-700">Model Details</Label>
-                      <div className="mt-1 text-gray-800 font-medium">{driver.vehicleModel}</div>
+                      {isEditingVehicleModel ? (
+                        <div className="flex gap-2 mt-1">
+                          <Input 
+                            value={vehicleModel}
+                            onChange={(e) => handleInputChange(setVehicleModel, e)}
+                            className="text-sm py-1"
+                          />
+                          <div className="flex gap-1">
+                            <Button 
+                              variant="success" 
+                              size="sm" 
+                              onClick={saveVehicleModel}
+                              className="h-9"
+                            >
+                              <Save className="h-3 w-3 mr-1" />
+                              Save
+                            </Button>
+                            <Button 
+                              variant="outline" 
+                              size="sm"
+                              onClick={() => cancelEditing(driver.vehicleModel, setVehicleModel, setIsEditingVehicleModel)}
+                              className="h-9"
+                            >
+                              <X className="h-3 w-3 mr-1" />
+                              Cancel
+                            </Button>
+                          </div>
+                        </div>
+                      ) : (
+                        <div className="flex justify-between items-center mt-1">
+                          <div className="text-gray-800 font-medium">{driver.vehicleModel}</div>
+                          <Button 
+                            size="sm" 
+                            variant="ghost"
+                            onClick={() => setIsEditingVehicleModel(true)}
+                            className="h-7 px-2"
+                          >
+                            <Pencil className="h-3 w-3" />
+                          </Button>
+                        </div>
+                      )}
                     </div>
                     <div>
                       <Label className="text-gray-700">License Number</Label>
-                      <div className="mt-1 text-gray-800 font-medium">{driver.licenseNumber}</div>
-                    </div>
-                  </div>
-
-                  <div className="bg-blue-50 border border-blue-100 rounded-md p-3 mt-4">
-                    <div className="flex items-start">
-                      <Info className="h-5 w-5 text-blue-500 mt-0.5 mr-2 flex-shrink-0" />
-                      <p className="text-sm text-blue-700">
-                        For any changes to your vehicle details, please contact the admin. These details cannot be updated directly from your profile.
-                      </p>
-                    </div>
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-
-            {/* Order Information */}
-            <Card>
-              <CardHeader className="pb-2">
-                <CardTitle className="text-lg flex items-center">
-                  <FileText className="h-5 w-5 mr-2 text-gray-700" />
-                  Order Information
-                </CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
-                  <div className="bg-gray-50 p-3 rounded-lg text-center">
-                    <p className="text-2xl font-semibold text-gray-800">{driver.totalOrders}</p>
-                    <p className="text-sm text-gray-600">Total Orders</p>
-                  </div>
-                  <div className="bg-gray-50 p-3 rounded-lg text-center">
-                    <p className="text-2xl font-semibold text-gray-800">{driver.assignedOrders.length}</p>
-                    <p className="text-sm text-gray-600">Current Orders</p>
-                  </div>
-                  <div className="bg-gray-50 p-3 rounded-lg text-center">
-                    <p className="text-2xl font-semibold text-gray-800">{driver.lastActive}</p>
-                    <p className="text-sm text-gray-600">Last Active</p>
-                  </div>
-                </div>
-
-                {driver.assignedOrders.length > 0 ? (
-                  <>
-                    <h4 className="text-md font-medium mb-3">Current Assignments</h4>
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-                      {driver.assignedOrders.map((order, index) => (
-                        <div 
-                          key={index} 
-                          className="p-3 border border-gray-200 rounded-lg flex justify-between items-center"
-                        >
-                          <span className="font-medium">{order}</span>
-                          {order === driver.currentOrder && (
-                            <Badge variant="outline" className="bg-blue-50">
-                              Current Task: {driver.currentTask}
-                            </Badge>
-                          )}
+                      {isEditingLicense ? (
+                        <div className="flex gap-2 mt-1">
+                          <Input 
+                            value={licenseNumber}
+                            onChange={(e) => handleInputChange(setLicenseNumber, e)}
+                            className="text-sm py-1"
+                          />
+                          <div className="flex gap-1">
+                            <Button 
+                              variant="success" 
+                              size="sm" 
+                              onClick={saveLicenseNumber}
+                              className="h-9"
+                            >
+                              <Save className="h-3 w-3 mr-1" />
+                              Save
+                            </Button>
+                            <Button 
+                              variant="outline" 
+                              size="sm"
+                              onClick={() => cancelEditing(driver.licenseNumber, setLicenseNumber, setIsEditingLicense)}
+                              className="h-9"
+                            >
+                              <X className="h-3 w-3 mr-1" />
+                              Cancel
+                            </Button>
+                          </div>
                         </div>
-                      ))}
+                      ) : (
+                        <div className="flex justify-between items-center mt-1">
+                          <div className="text-gray-800 font-medium">{driver.licenseNumber}</div>
+                          <Button 
+                            size="sm" 
+                            variant="ghost"
+                            onClick={() => setIsEditingLicense(true)}
+                            className="h-7 px-2"
+                          >
+                            <Pencil className="h-3 w-3" />
+                          </Button>
+                        </div>
+                      )}
                     </div>
-                  </>
-                ) : (
-                  <div className="text-center py-6 text-gray-500">
-                    No orders currently assigned
                   </div>
-                )}
+                </div>
               </CardContent>
             </Card>
           </div>
