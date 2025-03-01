@@ -93,7 +93,7 @@ const StudioPayments: React.FC = () => {
 
   const openPaymentModal = (order: UnpaidOrder) => {
     setSelectedOrder(order);
-    setSelectedOrderIds([order.id]);
+    setSelectedOrderIds([]);
     setShowPaymentModal(true);
   };
 
@@ -364,6 +364,8 @@ const StudioPayments: React.FC = () => {
         setShowDateFilterPopover={setShowDateFilterPopover}
         resetDateFilter={resetDateFilter}
         openBulkPaymentModal={openBulkPaymentModal}
+        selectedItems={selectedOrderIds}
+        setSelectedItems={setSelectedOrderIds}
       />
       
       <PaymentModal 

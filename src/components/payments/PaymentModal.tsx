@@ -78,9 +78,9 @@ const PaymentModal: React.FC<PaymentModalProps> = ({
     if (selectedOrders.length === 0) {
       return "Record Payment";
     } else if (selectedOrders.length === 1) {
-      return "Record Payment";
+      return `Record Payment for Order ${selectedOrders[0]?.id}`;
     } else {
-      return "Record Bulk Payment";
+      return `Record Payment for ${selectedOrders.length} Orders`;
     }
   };
 

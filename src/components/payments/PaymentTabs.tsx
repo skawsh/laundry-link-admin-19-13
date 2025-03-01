@@ -27,6 +27,8 @@ interface PaymentTabsProps {
   setShowDateFilterPopover: (value: boolean) => void;
   resetDateFilter: () => void;
   openBulkPaymentModal: () => void;
+  selectedItems: string[];
+  setSelectedItems: (items: string[]) => void;
 }
 
 const PaymentTabs: React.FC<PaymentTabsProps> = ({
@@ -46,17 +48,17 @@ const PaymentTabs: React.FC<PaymentTabsProps> = ({
   showDateFilterPopover,
   setShowDateFilterPopover,
   resetDateFilter,
-  openBulkPaymentModal
+  openBulkPaymentModal,
+  selectedItems,
+  setSelectedItems
 }) => {
-  // State for selected items
-  const [selectedItems, setSelectedItems] = useState<string[]>([]);
   const [selectAll, setSelectAll] = useState(false);
 
   // Reset selections when view type changes
   useEffect(() => {
     setSelectedItems([]);
     setSelectAll(false);
-  }, [viewType, mainWashTypeTab, orderIdSearch, dateFilter]);
+  }, [viewType, mainWashTypeTab, orderIdSearch, dateFilter, setSelectedItems]);
 
   // Handle selection of individual items
   const handleSelect = (id: string) => {
