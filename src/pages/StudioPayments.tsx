@@ -23,6 +23,13 @@ import {
   PopoverContent,
   PopoverTrigger,
 } from "@/components/ui/popover";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 
 // Payment data types
 interface UnpaidOrder {
@@ -99,6 +106,7 @@ const StudioPayments: React.FC = () => {
   const [selectedOrder, setSelectedOrder] = useState<UnpaidOrder | null>(null);
   const [paymentReference, setPaymentReference] = useState('');
   const [paymentDate, setPaymentDate] = useState('');
+  const [mainWashTypeTab, setMainWashTypeTab] = useState<'all' | 'express' | 'standard' | 'combined'>('all');
   const [washTypeFilter, setWashTypeFilter] = useState<'all' | 'express' | 'standard' | 'combined'>('all');
   const [showOrderDetailsModal, setShowOrderDetailsModal] = useState(false);
   const [selectedOrderDetails, setSelectedOrderDetails] = useState<UnpaidOrder | null>(null);
@@ -122,7 +130,7 @@ const StudioPayments: React.FC = () => {
     : paymentHistory;
 
   // Apply date filter to data
-  const applyDateFilter = (orders: UnpaidOrder[] | PaymentRecord[]) => {
+  const applyDateFilter = <T extends UnpaidOrder | PaymentRecord>(orders: T[]): T[] => {
     if (dateFilter === 'all') return orders;
     
     const now = new Date();
@@ -139,7 +147,8 @@ const StudioPayments: React.FC = () => {
     const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1).getTime();
     
     return orders.filter(order => {
-      const orderDate = new Date(viewType === 'unpaid' ? (order as UnpaidOrder).date : (order as PaymentRecord).paymentDate);
+      const dateField = 'paymentDate' in order ? order.paymentDate : order.date;
+      const orderDate = new Date(dateField);
       const orderDateTime = orderDate.getTime();
       
       switch (dateFilter) {
@@ -172,43 +181,51 @@ const StudioPayments: React.FC = () => {
   };
 
   // Apply order ID search to data
-  const applyOrderIdSearch = (orders: UnpaidOrder[] | PaymentRecord[]) => {
+  const applyOrderIdSearch = <T extends UnpaidOrder | PaymentRecord>(orders: T[]): T[] => {
     if (!orderIdSearch) return orders;
     
     return orders.filter(order => {
-      const orderId = viewType === 'unpaid' 
-        ? (order as UnpaidOrder).id 
-        : (order as PaymentRecord).orderId;
-      
+      const orderId = 'orderId' in order ? order.orderId : order.id;
       return orderId.toLowerCase().includes(orderIdSearch.toLowerCase());
     });
   };
 
   // Apply wash type filter to data
-  const applyWashTypeFilter = (orders: UnpaidOrder[] | PaymentRecord[]) => {
-    if (washTypeFilter === 'all') return orders;
+  const applyWashTypeFilter = <T extends UnpaidOrder | PaymentRecord>(orders: T[]): T[] => {
+    // If on tab other than 'all', the tab itself acts as filter
+    if (mainWashTypeTab !== 'all') {
+      return orders.filter(order => order.washType === mainWashTypeTab);
+    }
     
-    return orders.filter(order => order.washType === washTypeFilter);
+    // If on 'all' tab but specific filter is selected
+    if (washTypeFilter !== 'all') {
+      return orders.filter(order => order.washType === washTypeFilter);
+    }
+    
+    return orders;
   };
 
-  // Combined filtering function
-  const getFilteredData = () => {
-    let filteredData = viewType === 'unpaid' ? filteredUnpaidOrders : filteredPaymentHistory;
-    
-    // Apply date filter
-    filteredData = applyDateFilter(filteredData);
-    
-    // Apply order ID search
-    filteredData = applyOrderIdSearch(filteredData);
-    
-    // Apply wash type filter
-    filteredData = applyWashTypeFilter(filteredData);
-    
-    return filteredData;
+  // Combined filtering function for unpaid orders
+  const getFilteredUnpaidOrders = (): UnpaidOrder[] => {
+    let data = filteredUnpaidOrders;
+    data = applyDateFilter(data);
+    data = applyOrderIdSearch(data);
+    data = applyWashTypeFilter(data);
+    return data;
   };
 
-  const washTypeFilteredUnpaidOrders = getFilteredData() as UnpaidOrder[];
-  const washTypeFilteredPaymentHistory = getFilteredData() as PaymentRecord[];
+  // Combined filtering function for payment history
+  const getFilteredPaymentHistory = (): PaymentRecord[] => {
+    let data = filteredPaymentHistory;
+    data = applyDateFilter(data);
+    data = applyOrderIdSearch(data);
+    data = applyWashTypeFilter(data);
+    return data;
+  };
+
+  const filteredData = viewType === 'unpaid' 
+    ? getFilteredUnpaidOrders() 
+    : getFilteredPaymentHistory();
 
   const studioName = studioId && filteredUnpaidOrders.length > 0 
     ? filteredUnpaidOrders[0].studioName 
@@ -469,313 +486,574 @@ const StudioPayments: React.FC = () => {
           <TabsTrigger value="history" className="flex-1">Payment History</TabsTrigger>
         </TabsList>
         
-        {/* New filter and search section */}
-        <div className="flex flex-wrap items-center gap-3 mb-5">
-          {/* Search by Order ID */}
-          <div className="relative w-full sm:w-auto">
-            <div className="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none">
-              <Search className="h-4 w-4 text-gray-400" />
-            </div>
-            <Input
-              type="text"
-              placeholder="Search by Order ID..."
-              value={orderIdSearch}
-              onChange={(e) => setOrderIdSearch(e.target.value)}
-              className="pl-10 pr-4 py-2 w-full sm:w-60"
-            />
-            {orderIdSearch && (
-              <button
-                onClick={() => setOrderIdSearch('')}
-                className="absolute inset-y-0 right-0 flex items-center pr-3 text-gray-400 hover:text-gray-500"
-              >
-                <X className="h-4 w-4" />
-              </button>
-            )}
-          </div>
-          
-          {/* Date Filter Popover */}
-          <Popover open={showDateFilterPopover} onOpenChange={setShowDateFilterPopover}>
-            <PopoverTrigger asChild>
-              <Button variant="outline" className="flex items-center gap-2">
-                <Calendar className="h-4 w-4" />
-                <span>
-                  {dateFilter === 'all' ? 'All Dates' :
-                   dateFilter === 'today' ? 'Today' :
-                   dateFilter === 'yesterday' ? 'Yesterday' :
-                   dateFilter === 'this_week' ? 'This Week' :
-                   dateFilter === 'this_month' ? 'This Month' :
-                   'Custom Date Range'}
-                </span>
-              </Button>
-            </PopoverTrigger>
-            <PopoverContent className="w-72 p-4">
-              <div className="space-y-4">
-                <h3 className="font-medium">Filter by Date</h3>
-                
-                <div className="space-y-2">
-                  <div className="flex items-center gap-2">
-                    <input
-                      type="radio"
-                      id="all-dates"
-                      name="date-filter"
-                      checked={dateFilter === 'all'}
-                      onChange={() => setDateFilter('all')}
-                      className="h-4 w-4 text-primary"
-                    />
-                    <label htmlFor="all-dates" className="text-sm">All Dates</label>
-                  </div>
-                  
-                  <div className="flex items-center gap-2">
-                    <input
-                      type="radio"
-                      id="today"
-                      name="date-filter"
-                      checked={dateFilter === 'today'}
-                      onChange={() => setDateFilter('today')}
-                      className="h-4 w-4 text-primary"
-                    />
-                    <label htmlFor="today" className="text-sm">Today</label>
-                  </div>
-                  
-                  <div className="flex items-center gap-2">
-                    <input
-                      type="radio"
-                      id="yesterday"
-                      name="date-filter"
-                      checked={dateFilter === 'yesterday'}
-                      onChange={() => setDateFilter('yesterday')}
-                      className="h-4 w-4 text-primary"
-                    />
-                    <label htmlFor="yesterday" className="text-sm">Yesterday</label>
-                  </div>
-                  
-                  <div className="flex items-center gap-2">
-                    <input
-                      type="radio"
-                      id="this-week"
-                      name="date-filter"
-                      checked={dateFilter === 'this_week'}
-                      onChange={() => setDateFilter('this_week')}
-                      className="h-4 w-4 text-primary"
-                    />
-                    <label htmlFor="this-week" className="text-sm">This Week</label>
-                  </div>
-                  
-                  <div className="flex items-center gap-2">
-                    <input
-                      type="radio"
-                      id="this-month"
-                      name="date-filter"
-                      checked={dateFilter === 'this_month'}
-                      onChange={() => setDateFilter('this_month')}
-                      className="h-4 w-4 text-primary"
-                    />
-                    <label htmlFor="this-month" className="text-sm">This Month</label>
-                  </div>
-                  
-                  <div className="flex items-center gap-2">
-                    <input
-                      type="radio"
-                      id="custom-range"
-                      name="date-filter"
-                      checked={dateFilter === 'custom'}
-                      onChange={() => setDateFilter('custom')}
-                      className="h-4 w-4 text-primary"
-                    />
-                    <label htmlFor="custom-range" className="text-sm">Custom Range</label>
-                  </div>
-                </div>
-                
-                {dateFilter === 'custom' && (
-                  <div className="space-y-2 pt-2 border-t border-gray-100">
-                    <div className="space-y-1">
-                      <label htmlFor="start-date" className="text-xs font-medium">Start Date</label>
-                      <Input
-                        id="start-date"
-                        type="date"
-                        value={customDateRange.start}
-                        onChange={(e) => setCustomDateRange({...customDateRange, start: e.target.value})}
-                        className="h-9"
-                      />
-                    </div>
-                    
-                    <div className="space-y-1">
-                      <label htmlFor="end-date" className="text-xs font-medium">End Date</label>
-                      <Input
-                        id="end-date"
-                        type="date"
-                        value={customDateRange.end}
-                        onChange={(e) => setCustomDateRange({...customDateRange, end: e.target.value})}
-                        className="h-9"
-                      />
-                    </div>
-                  </div>
-                )}
-                
-                <div className="flex justify-between pt-2 border-t border-gray-100">
-                  <Button 
-                    variant="outline" 
-                    size="sm"
-                    onClick={resetDateFilter}
-                  >
-                    Reset
-                  </Button>
-                  <Button 
-                    size="sm"
-                    onClick={() => setShowDateFilterPopover(false)}
-                  >
-                    Apply
-                  </Button>
-                </div>
-              </div>
-            </PopoverContent>
-          </Popover>
-          
-          {/* Active Filters Display */}
-          {(dateFilter !== 'all' || orderIdSearch) && (
-            <div className="flex items-center gap-2 text-sm text-gray-500">
-              <span>Active Filters:</span>
-              {dateFilter !== 'all' && (
-                <span className="inline-flex items-center px-2 py-1 rounded-full bg-gray-100 text-gray-700 text-xs">
-                  {dateFilter === 'today' ? 'Today' :
-                   dateFilter === 'yesterday' ? 'Yesterday' :
-                   dateFilter === 'this_week' ? 'This Week' :
-                   dateFilter === 'this_month' ? 'This Month' :
-                   'Custom Date Range'}
-                  <button
-                    onClick={resetDateFilter}
-                    className="ml-1 text-gray-400 hover:text-gray-600"
-                  >
-                    <X className="h-3 w-3" />
-                  </button>
-                </span>
-              )}
-              {orderIdSearch && (
-                <span className="inline-flex items-center px-2 py-1 rounded-full bg-gray-100 text-gray-700 text-xs">
-                  Order ID: {orderIdSearch}
-                  <button
-                    onClick={() => setOrderIdSearch('')}
-                    className="ml-1 text-gray-400 hover:text-gray-600"
-                  >
-                    <X className="h-3 w-3" />
-                  </button>
-                </span>
-              )}
-            </div>
-          )}
-        </div>
-        
         <TabsContent value="unpaid">
-          <Tabs defaultValue="all" className="w-full" onValueChange={(value) => setWashTypeFilter(value as 'all' | 'express' | 'standard' | 'combined')}>
-            <TabsList className="bg-background border border-input mb-5">
-              <TabsTrigger value="all">
-                All Wash Types
-              </TabsTrigger>
-              <TabsTrigger value="express">
-                Express Wash
-              </TabsTrigger>
-              <TabsTrigger value="standard">
-                Standard Wash
-              </TabsTrigger>
-              <TabsTrigger value="combined">
-                Combined Wash
-              </TabsTrigger>
-            </TabsList>
-            
-            <TabsContent value="all">
-              <DataTable
-                columns={unpaidColumns}
-                data={washTypeFilteredUnpaidOrders}
-                keyField="id"
-                emptyMessage="No unpaid orders found"
-              />
-            </TabsContent>
-            
-            <TabsContent value="express">
-              <DataTable
-                columns={unpaidColumns}
-                data={filteredUnpaidOrders.filter(order => order.washType === 'express')}
-                keyField="id"
-                emptyMessage="No unpaid express wash orders found"
-              />
-            </TabsContent>
-            
-            <TabsContent value="standard">
-              <DataTable
-                columns={unpaidColumns}
-                data={filteredUnpaidOrders.filter(order => order.washType === 'standard')}
-                keyField="id"
-                emptyMessage="No unpaid standard wash orders found"
-              />
-            </TabsContent>
-            
-            <TabsContent value="combined">
-              <DataTable
-                columns={unpaidColumns}
-                data={filteredUnpaidOrders.filter(order => order.washType === 'combined')}
-                keyField="id"
-                emptyMessage="No unpaid combined wash orders found"
-              />
-            </TabsContent>
-          </Tabs>
+          <div className="flex flex-col space-y-4">
+            <div className="flex justify-between items-center">
+              <Tabs 
+                defaultValue="all" 
+                className="w-full" 
+                onValueChange={(value) => setMainWashTypeTab(value as 'all' | 'express' | 'standard' | 'combined')}
+              >
+                <div className="flex justify-between items-center mb-4">
+                  <TabsList className="bg-background border border-input">
+                    <TabsTrigger value="all">All Wash Types</TabsTrigger>
+                    <TabsTrigger value="express">Express Wash</TabsTrigger>
+                    <TabsTrigger value="standard">Standard Wash</TabsTrigger>
+                    <TabsTrigger value="combined">Combined Wash</TabsTrigger>
+                  </TabsList>
+                  
+                  {/* Search Bar - Now positioned to the right */}
+                  <div className="relative">
+                    <div className="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none">
+                      <Search className="h-4 w-4 text-gray-400" />
+                    </div>
+                    <Input
+                      type="text"
+                      placeholder="Search by Order ID..."
+                      value={orderIdSearch}
+                      onChange={(e) => setOrderIdSearch(e.target.value)}
+                      className="pl-10 pr-4 py-2 w-full sm:w-60"
+                    />
+                    {orderIdSearch && (
+                      <button
+                        onClick={() => setOrderIdSearch('')}
+                        className="absolute inset-y-0 right-0 flex items-center pr-3 text-gray-400 hover:text-gray-500"
+                      >
+                        <X className="h-4 w-4" />
+                      </button>
+                    )}
+                  </div>
+                </div>
+
+                {/* Filters Row - Below the tabs */}
+                <div className="flex flex-wrap items-center gap-3 mb-5">
+                  {/* Date Filter */}
+                  <Popover open={showDateFilterPopover} onOpenChange={setShowDateFilterPopover}>
+                    <PopoverTrigger asChild>
+                      <Button variant="outline" className="flex items-center gap-2">
+                        <Calendar className="h-4 w-4" />
+                        <span>
+                          {dateFilter === 'all' ? 'All Dates' :
+                          dateFilter === 'today' ? 'Today' :
+                          dateFilter === 'yesterday' ? 'Yesterday' :
+                          dateFilter === 'this_week' ? 'This Week' :
+                          dateFilter === 'this_month' ? 'This Month' :
+                          'Custom Date Range'}
+                        </span>
+                      </Button>
+                    </PopoverTrigger>
+                    <PopoverContent className="w-72 p-4">
+                      <div className="space-y-4">
+                        <h3 className="font-medium">Filter by Date</h3>
+                        
+                        <div className="space-y-2">
+                          <div className="flex items-center gap-2">
+                            <input
+                              type="radio"
+                              id="all-dates"
+                              name="date-filter"
+                              checked={dateFilter === 'all'}
+                              onChange={() => setDateFilter('all')}
+                              className="h-4 w-4 text-primary"
+                            />
+                            <label htmlFor="all-dates" className="text-sm">All Dates</label>
+                          </div>
+                          
+                          <div className="flex items-center gap-2">
+                            <input
+                              type="radio"
+                              id="today"
+                              name="date-filter"
+                              checked={dateFilter === 'today'}
+                              onChange={() => setDateFilter('today')}
+                              className="h-4 w-4 text-primary"
+                            />
+                            <label htmlFor="today" className="text-sm">Today</label>
+                          </div>
+                          
+                          <div className="flex items-center gap-2">
+                            <input
+                              type="radio"
+                              id="yesterday"
+                              name="date-filter"
+                              checked={dateFilter === 'yesterday'}
+                              onChange={() => setDateFilter('yesterday')}
+                              className="h-4 w-4 text-primary"
+                            />
+                            <label htmlFor="yesterday" className="text-sm">Yesterday</label>
+                          </div>
+                          
+                          <div className="flex items-center gap-2">
+                            <input
+                              type="radio"
+                              id="this-week"
+                              name="date-filter"
+                              checked={dateFilter === 'this_week'}
+                              onChange={() => setDateFilter('this_week')}
+                              className="h-4 w-4 text-primary"
+                            />
+                            <label htmlFor="this-week" className="text-sm">This Week</label>
+                          </div>
+                          
+                          <div className="flex items-center gap-2">
+                            <input
+                              type="radio"
+                              id="this-month"
+                              name="date-filter"
+                              checked={dateFilter === 'this_month'}
+                              onChange={() => setDateFilter('this_month')}
+                              className="h-4 w-4 text-primary"
+                            />
+                            <label htmlFor="this-month" className="text-sm">This Month</label>
+                          </div>
+                          
+                          <div className="flex items-center gap-2">
+                            <input
+                              type="radio"
+                              id="custom-range"
+                              name="date-filter"
+                              checked={dateFilter === 'custom'}
+                              onChange={() => setDateFilter('custom')}
+                              className="h-4 w-4 text-primary"
+                            />
+                            <label htmlFor="custom-range" className="text-sm">Custom Range</label>
+                          </div>
+                        </div>
+                        
+                        {dateFilter === 'custom' && (
+                          <div className="space-y-2 pt-2 border-t border-gray-100">
+                            <div className="space-y-1">
+                              <label htmlFor="start-date" className="text-xs font-medium">Start Date</label>
+                              <Input
+                                id="start-date"
+                                type="date"
+                                value={customDateRange.start}
+                                onChange={(e) => setCustomDateRange({...customDateRange, start: e.target.value})}
+                                className="h-9"
+                              />
+                            </div>
+                            
+                            <div className="space-y-1">
+                              <label htmlFor="end-date" className="text-xs font-medium">End Date</label>
+                              <Input
+                                id="end-date"
+                                type="date"
+                                value={customDateRange.end}
+                                onChange={(e) => setCustomDateRange({...customDateRange, end: e.target.value})}
+                                className="h-9"
+                              />
+                            </div>
+                          </div>
+                        )}
+                        
+                        <div className="flex justify-between pt-2 border-t border-gray-100">
+                          <Button 
+                            variant="outline" 
+                            size="sm"
+                            onClick={resetDateFilter}
+                          >
+                            Reset
+                          </Button>
+                          <Button 
+                            size="sm"
+                            onClick={() => setShowDateFilterPopover(false)}
+                          >
+                            Apply
+                          </Button>
+                        </div>
+                      </div>
+                    </PopoverContent>
+                  </Popover>
+                  
+                  {/* Additional Wash Type Filter - Only for "All Wash Types" tab */}
+                  {mainWashTypeTab === 'all' && (
+                    <Select 
+                      value={washTypeFilter} 
+                      onValueChange={(value) => setWashTypeFilter(value as 'all' | 'express' | 'standard' | 'combined')}
+                    >
+                      <SelectTrigger className="w-[180px]">
+                        <SelectValue placeholder="Select Wash Type" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="all">All Wash Types</SelectItem>
+                        <SelectItem value="express">Express Wash</SelectItem>
+                        <SelectItem value="standard">Standard Wash</SelectItem>
+                        <SelectItem value="combined">Combined Wash</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  )}
+                  
+                  {/* Active Filters Display */}
+                  {(dateFilter !== 'all' || orderIdSearch || (mainWashTypeTab === 'all' && washTypeFilter !== 'all')) && (
+                    <div className="flex items-center gap-2 text-sm text-gray-500">
+                      <span>Active Filters:</span>
+                      {dateFilter !== 'all' && (
+                        <span className="inline-flex items-center px-2 py-1 rounded-full bg-gray-100 text-gray-700 text-xs">
+                          {dateFilter === 'today' ? 'Today' :
+                          dateFilter === 'yesterday' ? 'Yesterday' :
+                          dateFilter === 'this_week' ? 'This Week' :
+                          dateFilter === 'this_month' ? 'This Month' :
+                          'Custom Date Range'}
+                          <button
+                            onClick={resetDateFilter}
+                            className="ml-1 text-gray-400 hover:text-gray-600"
+                          >
+                            <X className="h-3 w-3" />
+                          </button>
+                        </span>
+                      )}
+                      {orderIdSearch && (
+                        <span className="inline-flex items-center px-2 py-1 rounded-full bg-gray-100 text-gray-700 text-xs">
+                          Order ID: {orderIdSearch}
+                          <button
+                            onClick={() => setOrderIdSearch('')}
+                            className="ml-1 text-gray-400 hover:text-gray-600"
+                          >
+                            <X className="h-3 w-3" />
+                          </button>
+                        </span>
+                      )}
+                      {mainWashTypeTab === 'all' && washTypeFilter !== 'all' && (
+                        <span className="inline-flex items-center px-2 py-1 rounded-full bg-gray-100 text-gray-700 text-xs">
+                          Wash Type: {washTypeFilter === 'express' ? 'Express' : 
+                                     washTypeFilter === 'standard' ? 'Standard' : 'Combined'}
+                          <button
+                            onClick={() => setWashTypeFilter('all')}
+                            className="ml-1 text-gray-400 hover:text-gray-600"
+                          >
+                            <X className="h-3 w-3" />
+                          </button>
+                        </span>
+                      )}
+                    </div>
+                  )}
+                </div>
+                
+                <TabsContent value="all">
+                  <DataTable
+                    columns={unpaidColumns}
+                    data={getFilteredUnpaidOrders()}
+                    keyField="id"
+                    emptyMessage="No unpaid orders found"
+                  />
+                </TabsContent>
+                
+                <TabsContent value="express">
+                  <DataTable
+                    columns={unpaidColumns}
+                    data={applyDateFilter(applyOrderIdSearch(filteredUnpaidOrders.filter(order => order.washType === 'express')))}
+                    keyField="id"
+                    emptyMessage="No unpaid express wash orders found"
+                  />
+                </TabsContent>
+                
+                <TabsContent value="standard">
+                  <DataTable
+                    columns={unpaidColumns}
+                    data={applyDateFilter(applyOrderIdSearch(filteredUnpaidOrders.filter(order => order.washType === 'standard')))}
+                    keyField="id"
+                    emptyMessage="No unpaid standard wash orders found"
+                  />
+                </TabsContent>
+                
+                <TabsContent value="combined">
+                  <DataTable
+                    columns={unpaidColumns}
+                    data={applyDateFilter(applyOrderIdSearch(filteredUnpaidOrders.filter(order => order.washType === 'combined')))}
+                    keyField="id"
+                    emptyMessage="No unpaid combined wash orders found"
+                  />
+                </TabsContent>
+              </Tabs>
+            </div>
+          </div>
         </TabsContent>
         
         <TabsContent value="history">
-          <Tabs defaultValue="all" className="w-full" onValueChange={(value) => setWashTypeFilter(value as 'all' | 'express' | 'standard' | 'combined')}>
-            <TabsList className="bg-background border border-input mb-5">
-              <TabsTrigger value="all">
-                All Wash Types
-              </TabsTrigger>
-              <TabsTrigger value="express">
-                Express Wash
-              </TabsTrigger>
-              <TabsTrigger value="standard">
-                Standard Wash
-              </TabsTrigger>
-              <TabsTrigger value="combined">
-                Combined Wash
-              </TabsTrigger>
-            </TabsList>
-            
-            <TabsContent value="all">
-              <DataTable
-                columns={historyColumns}
-                data={washTypeFilteredPaymentHistory}
-                keyField="id"
-                emptyMessage="No payment history found"
-              />
-            </TabsContent>
-            
-            <TabsContent value="express">
-              <DataTable
-                columns={historyColumns}
-                data={filteredPaymentHistory.filter(payment => payment.washType === 'express')}
-                keyField="id"
-                emptyMessage="No express wash payment history found"
-              />
-            </TabsContent>
-            
-            <TabsContent value="standard">
-              <DataTable
-                columns={historyColumns}
-                data={filteredPaymentHistory.filter(payment => payment.washType === 'standard')}
-                keyField="id"
-                emptyMessage="No standard wash payment history found"
-              />
-            </TabsContent>
-            
-            <TabsContent value="combined">
-              <DataTable
-                columns={historyColumns}
-                data={filteredPaymentHistory.filter(payment => payment.washType === 'combined')}
-                keyField="id"
-                emptyMessage="No combined wash payment history found"
-              />
-            </TabsContent>
-          </Tabs>
+          <div className="flex flex-col space-y-4">
+            <div className="flex justify-between items-center">
+              <Tabs 
+                defaultValue="all" 
+                className="w-full" 
+                onValueChange={(value) => setMainWashTypeTab(value as 'all' | 'express' | 'standard' | 'combined')}
+              >
+                <div className="flex justify-between items-center mb-4">
+                  <TabsList className="bg-background border border-input">
+                    <TabsTrigger value="all">All Wash Types</TabsTrigger>
+                    <TabsTrigger value="express">Express Wash</TabsTrigger>
+                    <TabsTrigger value="standard">Standard Wash</TabsTrigger>
+                    <TabsTrigger value="combined">Combined Wash</TabsTrigger>
+                  </TabsList>
+                  
+                  {/* Search Bar - Now positioned to the right */}
+                  <div className="relative">
+                    <div className="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none">
+                      <Search className="h-4 w-4 text-gray-400" />
+                    </div>
+                    <Input
+                      type="text"
+                      placeholder="Search by Order ID..."
+                      value={orderIdSearch}
+                      onChange={(e) => setOrderIdSearch(e.target.value)}
+                      className="pl-10 pr-4 py-2 w-full sm:w-60"
+                    />
+                    {orderIdSearch && (
+                      <button
+                        onClick={() => setOrderIdSearch('')}
+                        className="absolute inset-y-0 right-0 flex items-center pr-3 text-gray-400 hover:text-gray-500"
+                      >
+                        <X className="h-4 w-4" />
+                      </button>
+                    )}
+                  </div>
+                </div>
+
+                {/* Filters Row - Below the tabs */}
+                <div className="flex flex-wrap items-center gap-3 mb-5">
+                  {/* Date Filter */}
+                  <Popover open={showDateFilterPopover} onOpenChange={setShowDateFilterPopover}>
+                    <PopoverTrigger asChild>
+                      <Button variant="outline" className="flex items-center gap-2">
+                        <Calendar className="h-4 w-4" />
+                        <span>
+                          {dateFilter === 'all' ? 'All Dates' :
+                          dateFilter === 'today' ? 'Today' :
+                          dateFilter === 'yesterday' ? 'Yesterday' :
+                          dateFilter === 'this_week' ? 'This Week' :
+                          dateFilter === 'this_month' ? 'This Month' :
+                          'Custom Date Range'}
+                        </span>
+                      </Button>
+                    </PopoverTrigger>
+                    <PopoverContent className="w-72 p-4">
+                      <div className="space-y-4">
+                        <h3 className="font-medium">Filter by Date</h3>
+                        
+                        <div className="space-y-2">
+                          <div className="flex items-center gap-2">
+                            <input
+                              type="radio"
+                              id="all-dates-history"
+                              name="date-filter-history"
+                              checked={dateFilter === 'all'}
+                              onChange={() => setDateFilter('all')}
+                              className="h-4 w-4 text-primary"
+                            />
+                            <label htmlFor="all-dates-history" className="text-sm">All Dates</label>
+                          </div>
+                          
+                          <div className="flex items-center gap-2">
+                            <input
+                              type="radio"
+                              id="today-history"
+                              name="date-filter-history"
+                              checked={dateFilter === 'today'}
+                              onChange={() => setDateFilter('today')}
+                              className="h-4 w-4 text-primary"
+                            />
+                            <label htmlFor="today-history" className="text-sm">Today</label>
+                          </div>
+                          
+                          <div className="flex items-center gap-2">
+                            <input
+                              type="radio"
+                              id="yesterday-history"
+                              name="date-filter-history"
+                              checked={dateFilter === 'yesterday'}
+                              onChange={() => setDateFilter('yesterday')}
+                              className="h-4 w-4 text-primary"
+                            />
+                            <label htmlFor="yesterday-history" className="text-sm">Yesterday</label>
+                          </div>
+                          
+                          <div className="flex items-center gap-2">
+                            <input
+                              type="radio"
+                              id="this-week-history"
+                              name="date-filter-history"
+                              checked={dateFilter === 'this_week'}
+                              onChange={() => setDateFilter('this_week')}
+                              className="h-4 w-4 text-primary"
+                            />
+                            <label htmlFor="this-week-history" className="text-sm">This Week</label>
+                          </div>
+                          
+                          <div className="flex items-center gap-2">
+                            <input
+                              type="radio"
+                              id="this-month-history"
+                              name="date-filter-history"
+                              checked={dateFilter === 'this_month'}
+                              onChange={() => setDateFilter('this_month')}
+                              className="h-4 w-4 text-primary"
+                            />
+                            <label htmlFor="this-month-history" className="text-sm">This Month</label>
+                          </div>
+                          
+                          <div className="flex items-center gap-2">
+                            <input
+                              type="radio"
+                              id="custom-range-history"
+                              name="date-filter-history"
+                              checked={dateFilter === 'custom'}
+                              onChange={() => setDateFilter('custom')}
+                              className="h-4 w-4 text-primary"
+                            />
+                            <label htmlFor="custom-range-history" className="text-sm">Custom Range</label>
+                          </div>
+                        </div>
+                        
+                        {dateFilter === 'custom' && (
+                          <div className="space-y-2 pt-2 border-t border-gray-100">
+                            <div className="space-y-1">
+                              <label htmlFor="start-date-history" className="text-xs font-medium">Start Date</label>
+                              <Input
+                                id="start-date-history"
+                                type="date"
+                                value={customDateRange.start}
+                                onChange={(e) => setCustomDateRange({...customDateRange, start: e.target.value})}
+                                className="h-9"
+                              />
+                            </div>
+                            
+                            <div className="space-y-1">
+                              <label htmlFor="end-date-history" className="text-xs font-medium">End Date</label>
+                              <Input
+                                id="end-date-history"
+                                type="date"
+                                value={customDateRange.end}
+                                onChange={(e) => setCustomDateRange({...customDateRange, end: e.target.value})}
+                                className="h-9"
+                              />
+                            </div>
+                          </div>
+                        )}
+                        
+                        <div className="flex justify-between pt-2 border-t border-gray-100">
+                          <Button 
+                            variant="outline" 
+                            size="sm"
+                            onClick={resetDateFilter}
+                          >
+                            Reset
+                          </Button>
+                          <Button 
+                            size="sm"
+                            onClick={() => setShowDateFilterPopover(false)}
+                          >
+                            Apply
+                          </Button>
+                        </div>
+                      </div>
+                    </PopoverContent>
+                  </Popover>
+                  
+                  {/* Additional Wash Type Filter - Only for "All Wash Types" tab */}
+                  {mainWashTypeTab === 'all' && (
+                    <Select 
+                      value={washTypeFilter} 
+                      onValueChange={(value) => setWashTypeFilter(value as 'all' | 'express' | 'standard' | 'combined')}
+                    >
+                      <SelectTrigger className="w-[180px]">
+                        <SelectValue placeholder="Select Wash Type" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="all">All Wash Types</SelectItem>
+                        <SelectItem value="express">Express Wash</SelectItem>
+                        <SelectItem value="standard">Standard Wash</SelectItem>
+                        <SelectItem value="combined">Combined Wash</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  )}
+                  
+                  {/* Active Filters Display */}
+                  {(dateFilter !== 'all' || orderIdSearch || (mainWashTypeTab === 'all' && washTypeFilter !== 'all')) && (
+                    <div className="flex items-center gap-2 text-sm text-gray-500">
+                      <span>Active Filters:</span>
+                      {dateFilter !== 'all' && (
+                        <span className="inline-flex items-center px-2 py-1 rounded-full bg-gray-100 text-gray-700 text-xs">
+                          {dateFilter === 'today' ? 'Today' :
+                          dateFilter === 'yesterday' ? 'Yesterday' :
+                          dateFilter === 'this_week' ? 'This Week' :
+                          dateFilter === 'this_month' ? 'This Month' :
+                          'Custom Date Range'}
+                          <button
+                            onClick={resetDateFilter}
+                            className="ml-1 text-gray-400 hover:text-gray-600"
+                          >
+                            <X className="h-3 w-3" />
+                          </button>
+                        </span>
+                      )}
+                      {orderIdSearch && (
+                        <span className="inline-flex items-center px-2 py-1 rounded-full bg-gray-100 text-gray-700 text-xs">
+                          Order ID: {orderIdSearch}
+                          <button
+                            onClick={() => setOrderIdSearch('')}
+                            className="ml-1 text-gray-400 hover:text-gray-600"
+                          >
+                            <X className="h-3 w-3" />
+                          </button>
+                        </span>
+                      )}
+                      {mainWashTypeTab === 'all' && washTypeFilter !== 'all' && (
+                        <span className="inline-flex items-center px-2 py-1 rounded-full bg-gray-100 text-gray-700 text-xs">
+                          Wash Type: {washTypeFilter === 'express' ? 'Express' : 
+                                     washTypeFilter === 'standard' ? 'Standard' : 'Combined'}
+                          <button
+                            onClick={() => setWashTypeFilter('all')}
+                            className="ml-1 text-gray-400 hover:text-gray-600"
+                          >
+                            <X className="h-3 w-3" />
+                          </button>
+                        </span>
+                      )}
+                    </div>
+                  )}
+                </div>
+                
+                <TabsContent value="all">
+                  <DataTable
+                    columns={historyColumns}
+                    data={getFilteredPaymentHistory()}
+                    keyField="id"
+                    emptyMessage="No payment history found"
+                  />
+                </TabsContent>
+                
+                <TabsContent value="express">
+                  <DataTable
+                    columns={historyColumns}
+                    data={applyDateFilter(applyOrderIdSearch(filteredPaymentHistory.filter(payment => payment.washType === 'express')))}
+                    keyField="id"
+                    emptyMessage="No express wash payment history found"
+                  />
+                </TabsContent>
+                
+                <TabsContent value="standard">
+                  <DataTable
+                    columns={historyColumns}
+                    data={applyDateFilter(applyOrderIdSearch(filteredPaymentHistory.filter(payment => payment.washType === 'standard')))}
+                    keyField="id"
+                    emptyMessage="No standard wash payment history found"
+                  />
+                </TabsContent>
+                
+                <TabsContent value="combined">
+                  <DataTable
+                    columns={historyColumns}
+                    data={applyDateFilter(applyOrderIdSearch(filteredPaymentHistory.filter(payment => payment.washType === 'combined')))}
+                    keyField="id"
+                    emptyMessage="No combined wash payment history found"
+                  />
+                </TabsContent>
+              </Tabs>
+            </div>
+          </div>
         </TabsContent>
       </Tabs>
       
+      {/* Payment Modal */}
       {showPaymentModal && selectedOrder && (
         <div className="fixed inset-0 flex items-center justify-center z-50 bg-black bg-opacity-50">
           <div className="bg-white rounded-lg shadow-elevated w-full max-w-md p-6 animate-fade-in">
@@ -848,6 +1126,7 @@ const StudioPayments: React.FC = () => {
         </div>
       )}
 
+      {/* Order Details Modal */}
       {showOrderDetailsModal && selectedOrderDetails && (
         <Dialog open={showOrderDetailsModal} onOpenChange={setShowOrderDetailsModal}>
           <DialogContent className="sm:max-w-lg">
