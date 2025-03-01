@@ -11,6 +11,7 @@ import {
 import { Button } from "@/components/ui/button";
 import { UnpaidOrder } from '@/types/paymentTypes';
 import { formatIndianRupees } from '@/utils/dateUtils';
+import { toast } from "@/hooks/use-toast";
 
 interface PaymentModalProps {
   selectedOrders: UnpaidOrder[];
@@ -35,6 +36,30 @@ const PaymentModal: React.FC<PaymentModalProps> = ({
 }) => {
   // Calculate total amount from selected orders
   const totalAmount = selectedOrders.reduce((sum, order) => sum + order.amount, 0);
+
+  const handleConfirmPayment = () => {
+    if (selectedOrders.length === 0) {
+      toast({
+        title: "Error",
+        description: "No orders selected for payment",
+        variant: "destructive",
+        duration: 3000,
+      });
+      return;
+    }
+
+    if (!paymentReference || !paymentDate) {
+      toast({
+        title: "Error",
+        description: "Please fill in all payment details",
+        variant: "destructive",
+        duration: 3000,
+      });
+      return;
+    }
+
+    confirmPayment();
+  };
 
   return (
     <Dialog open={showPaymentModal} onOpenChange={setShowPaymentModal}>
@@ -136,9 +161,10 @@ const PaymentModal: React.FC<PaymentModalProps> = ({
             Cancel
           </Button>
           <Button
-            onClick={confirmPayment}
+            onClick={handleConfirmPayment}
             variant="success"
             className="ml-2"
+            disabled={selectedOrders.length === 0 || !paymentReference || !paymentDate}
           >
             Record Payment
           </Button>
