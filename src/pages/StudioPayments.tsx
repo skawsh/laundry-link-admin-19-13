@@ -22,7 +22,10 @@ import { applyDateFilter, applyOrderIdSearch, applyWashTypeFilter } from '@/util
 const StudioPayments: React.FC = () => {
   const { studioId } = useParams<{ studioId?: string }>();
   const navigate = useNavigate();
-  const [unpaidOrders, setUnpaidOrders] = useState<UnpaidOrder[]>(initialUnpaidOrders);
+  // Filter to only include orders with deliveredDate before setting initial state
+  const [unpaidOrders, setUnpaidOrders] = useState<UnpaidOrder[]>(
+    initialUnpaidOrders.filter(order => order.deliveredDate !== undefined)
+  );
   const [paymentHistory, setPaymentHistory] = useState<PaymentRecord[]>(initialPaymentHistory);
   const [viewType, setViewType] = useState<'unpaid' | 'history'>('unpaid');
   const [showPaymentModal, setShowPaymentModal] = useState(false);

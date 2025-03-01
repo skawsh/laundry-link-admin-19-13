@@ -113,5 +113,5 @@ export const applyWashTypeFilter = <T extends UnpaidOrder | PaymentRecord>(
 
 // Filter orders to only include those with delivery dates (for stats)
 export const filterDeliveredOrders = (orders: UnpaidOrder[]): UnpaidOrder[] => {
-  return orders.filter(order => order.deliveredDate !== undefined);
+  return orders;  // All orders now have delivery dates by type definition
 };
