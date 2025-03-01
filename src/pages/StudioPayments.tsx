@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { CheckCircle, Download, InfoIcon, ArrowLeft } from 'lucide-react';
@@ -18,6 +17,22 @@ import { UnpaidOrder, PaymentRecord, DateFilterOption } from '@/types/paymentTyp
 import { initialUnpaidOrders, initialPaymentHistory } from '@/data/mockPaymentData';
 import { formatIndianRupees } from '@/utils/dateUtils';
 import { applyDateFilter, applyOrderIdSearch, applyWashTypeFilter } from '@/utils/orderUtils';
+
+// Add this function to calculate delivery date based on wash type
+const calculateDeliveryDate = (orderDate: string, washType: 'express' | 'standard' | 'combined'): string => {
+  const date = new Date(orderDate);
+  
+  // Add days based on wash type
+  if (washType === 'express') {
+    date.setDate(date.getDate() + 1); // 1 day for express
+  } else {
+    // Both 'standard' and 'combined' use 4 days
+    date.setDate(date.getDate() + 4); // 4 days for standard/combined
+  }
+  
+  // Format as DD/MM/YYYY
+  return `${date.getDate().toString().padStart(2, '0')}/${(date.getMonth() + 1).toString().padStart(2, '0')}/${date.getFullYear()}`;
+};
 
 const StudioPayments: React.FC = () => {
   const { studioId } = useParams<{ studioId?: string }>();
@@ -199,7 +214,10 @@ const StudioPayments: React.FC = () => {
     },
     {
       header: 'Ordered Date',
-      accessor: (row: UnpaidOrder) => new Date(row.date).toLocaleDateString(),
+      accessor: (row: UnpaidOrder) => {
+        const date = new Date(row.date);
+        return `${date.getDate().toString().padStart(2, '0')}/${(date.getMonth() + 1).toString().padStart(2, '0')}/${date.getFullYear()}`;
+      },
     },
     {
       header: 'Wash Type',
@@ -221,7 +239,7 @@ const StudioPayments: React.FC = () => {
     },
     {
       header: 'Delivered Date',
-      accessor: (row: UnpaidOrder) => row.deliveredDate ? new Date(row.deliveredDate).toLocaleDateString() : "—",
+      accessor: (row: UnpaidOrder) => calculateDeliveryDate(row.date, row.washType),
     },
     {
       header: 'Actions',
@@ -284,11 +302,24 @@ const StudioPayments: React.FC = () => {
     },
     {
       header: 'Payment Date',
-      accessor: (row: PaymentRecord) => new Date(row.paymentDate).toLocaleDateString(),
+      accessor: (row: PaymentRecord) => {
+        const date = new Date(row.paymentDate);
+        return `${date.getDate().toString().padStart(2, '0')}/${(date.getMonth() + 1).toString().padStart(2, '0')}/${date.getFullYear()}`;
+      },
     },
     {
       header: 'Delivered Date',
-      accessor: (row: PaymentRecord) => row.deliveredDate ? new Date(row.deliveredDate).toLocaleDateString() : "—",
+      accessor: (row: PaymentRecord) => {
+        if (row.deliveredDate) {
+          const date = new Date(row.deliveredDate);
+          return `${date.getDate().toString().padStart(2, '0')}/${(date.getMonth() + 1).toString().padStart(2, '0')}/${date.getFullYear()}`;
+        } else {
+          // If we don't have an actual delivered date, calculate an estimated one
+          const orderDate = new Date(row.paymentDate); // Using payment date as a proxy for order date
+          orderDate.setDate(orderDate.getDate() - (row.washType === 'express' ? 1 : 4)); // Approximate order date
+          return calculateDeliveryDate(orderDate.toISOString(), row.washType);
+        }
+      },
     },
     {
       header: 'Reference No.',

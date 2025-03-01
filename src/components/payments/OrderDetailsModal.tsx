@@ -26,6 +26,12 @@ const OrderDetailsModal: React.FC<OrderDetailsModalProps> = ({
   setShowOrderDetailsModal,
   openPaymentModal,
 }) => {
+  // Format date in DD/MM/YYYY format
+  const formatDate = (dateString: string) => {
+    const date = new Date(dateString);
+    return `${date.getDate().toString().padStart(2, '0')}/${(date.getMonth() + 1).toString().padStart(2, '0')}/${date.getFullYear()}`;
+  };
+
   return (
     <Dialog open={showOrderDetailsModal} onOpenChange={setShowOrderDetailsModal}>
       <DialogContent className="sm:max-w-[550px]">
@@ -45,7 +51,7 @@ const OrderDetailsModal: React.FC<OrderDetailsModalProps> = ({
             <div>
               <h3 className="text-sm font-medium text-gray-500">Date</h3>
               <p className="text-sm font-semibold">
-                {selectedOrderDetails?.date ? new Date(selectedOrderDetails.date).toLocaleDateString() : ''}
+                {selectedOrderDetails?.date ? formatDate(selectedOrderDetails.date) : ''}
               </p>
             </div>
             <div>
