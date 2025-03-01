@@ -1,5 +1,5 @@
 
-import React from 'react';
+import React, { useEffect } from 'react';
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { UnpaidOrder, PaymentRecord } from '@/types/paymentTypes';
 import WashTypeTabs from './WashTypeTabs';
@@ -53,6 +53,22 @@ const PaymentTabs: React.FC<PaymentTabsProps> = ({
   toggleSelectAllOrders,
   openBulkPaymentModal
 }) => {
+  // Add useEffect to track changes to selectedOrders for debugging
+  useEffect(() => {
+    console.log("Selected orders updated:", selectedOrders.length, selectedOrders.map(o => o.id));
+  }, [selectedOrders]);
+
+  // Update the selection handling to properly track selected orders
+  const handleSelectionChange = (selectedOrderIds: string[]) => {
+    console.log("Selection changed to:", selectedOrderIds);
+    if (viewType === 'unpaid') {
+      const ordersToSelect = (filteredData as UnpaidOrder[]).filter(order => 
+        selectedOrderIds.includes(order.id)
+      );
+      setSelectedOrders(ordersToSelect);
+    }
+  };
+
   return (
     <Tabs defaultValue="unpaid" className="w-full" onValueChange={(value) => setViewType(value as 'unpaid' | 'history')}>
       <TabsList className="mb-6 bg-background border border-input">
@@ -113,12 +129,7 @@ const PaymentTabs: React.FC<PaymentTabsProps> = ({
             keyField="id"
             emptyMessage="No unpaid orders found"
             selectable={true}
-            onSelectionChange={(selectedOrderIds: string[]) => {
-              const selected = (filteredData as UnpaidOrder[]).filter(order => 
-                selectedOrderIds.includes(order.id as string)
-              );
-              setSelectedOrders(selected);
-            }}
+            onSelectionChange={handleSelectionChange}
             onSelectAll={toggleSelectAllOrders}
           />
         </div>
