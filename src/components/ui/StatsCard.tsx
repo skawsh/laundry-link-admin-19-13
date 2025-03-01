@@ -9,10 +9,11 @@ interface StatsCardProps {
     value: string | number;
     trend: 'up' | 'down' | 'neutral';
   };
+  subtext?: string;
   onClick?: () => void;
 }
 
-const StatsCard: React.FC<StatsCardProps> = ({ title, value, icon, change, onClick }) => {
+const StatsCard: React.FC<StatsCardProps> = ({ title, value, icon, change, subtext, onClick }) => {
   return (
     <div 
       className={`bg-white p-5 rounded-lg shadow-subtle transition-all duration-300 hover:shadow-card ${
@@ -24,6 +25,9 @@ const StatsCard: React.FC<StatsCardProps> = ({ title, value, icon, change, onCli
         <div>
           <h3 className="text-sm font-medium text-gray-500">{title}</h3>
           <p className="text-2xl font-semibold mt-1 text-gray-800">{value}</p>
+          {subtext && (
+            <p className="text-xs text-gray-500 mt-1">{subtext}</p>
+          )}
           
           {change && (
             <div className="flex items-center mt-2">

@@ -5,6 +5,7 @@ import { CheckCircle, Download } from 'lucide-react';
 import AdminLayout from '../components/layout/AdminLayout';
 import PageHeader from '../components/ui/PageHeader';
 import DataTable from '../components/ui/DataTable';
+import StatsCard from '../components/ui/StatsCard';
 import { useToast } from "@/hooks/use-toast";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
@@ -16,7 +17,7 @@ interface UnpaidOrder {
   date: string;
   amount: number;
   isPaid: boolean;
-  washType: 'express' | 'standard';
+  washType: 'express' | 'standard' | 'combined';
   customerName: string;
 }
 
@@ -28,27 +29,32 @@ interface PaymentRecord {
   amount: number;
   paymentDate: string;
   referenceNumber: string;
-  washType: 'express' | 'standard';
+  washType: 'express' | 'standard' | 'combined';
 }
 
-// Sample data
+// Sample data with combined wash type added
 const initialUnpaidOrders: UnpaidOrder[] = [
-  { id: 'ORD-1001', studioId: 1, studioName: 'Saiteja Laundry', date: '2023-06-10', amount: 450.00, isPaid: false, washType: 'standard', customerName: 'John Doe' },
-  { id: 'ORD-1002', studioId: 1, studioName: 'Saiteja Laundry', date: '2023-06-12', amount: 320.00, isPaid: false, washType: 'express', customerName: 'Jane Smith' },
-  { id: 'ORD-1003', studioId: 2, studioName: 'Sparkle Clean Laundry', date: '2023-06-15', amount: 550.00, isPaid: false, washType: 'standard', customerName: 'Robert Johnson' },
-  { id: 'ORD-1004', studioId: 3, studioName: 'Fresh Fold Services', date: '2023-06-16', amount: 400.00, isPaid: false, washType: 'express', customerName: 'Emily Wilson' },
-  { id: 'ORD-1005', studioId: 2, studioName: 'Sparkle Clean Laundry', date: '2023-06-18', amount: 280.00, isPaid: false, washType: 'standard', customerName: 'Michael Brown' },
-  { id: 'ORD-1006', studioId: 1, studioName: 'Saiteja Laundry', date: '2023-06-20', amount: 380.00, isPaid: false, washType: 'standard', customerName: 'Sarah Davis' },
-  { id: 'ORD-1007', studioId: 1, studioName: 'Saiteja Laundry', date: '2023-06-22', amount: 290.00, isPaid: false, washType: 'express', customerName: 'Thomas Miller' },
+  { id: 'ORD-1001', studioId: 1, studioName: 'Saiteja Laundry', date: '2023-06-10', amount: 45000, isPaid: false, washType: 'standard', customerName: 'John Doe' },
+  { id: 'ORD-1002', studioId: 1, studioName: 'Saiteja Laundry', date: '2023-06-12', amount: 32000, isPaid: false, washType: 'express', customerName: 'Jane Smith' },
+  { id: 'ORD-1003', studioId: 2, studioName: 'Sparkle Clean Laundry', date: '2023-06-15', amount: 55000, isPaid: false, washType: 'standard', customerName: 'Robert Johnson' },
+  { id: 'ORD-1004', studioId: 3, studioName: 'Fresh Fold Services', date: '2023-06-16', amount: 40000, isPaid: false, washType: 'express', customerName: 'Emily Wilson' },
+  { id: 'ORD-1005', studioId: 2, studioName: 'Sparkle Clean Laundry', date: '2023-06-18', amount: 28000, isPaid: false, washType: 'standard', customerName: 'Michael Brown' },
+  { id: 'ORD-1006', studioId: 1, studioName: 'Saiteja Laundry', date: '2023-06-20', amount: 38000, isPaid: false, washType: 'standard', customerName: 'Sarah Davis' },
+  { id: 'ORD-1007', studioId: 1, studioName: 'Saiteja Laundry', date: '2023-06-22', amount: 29000, isPaid: false, washType: 'express', customerName: 'Thomas Miller' },
+  { id: 'ORD-1008', studioId: 3, studioName: 'Fresh Fold Services', date: '2023-06-25', amount: 65000, isPaid: false, washType: 'combined', customerName: 'Laura Wilson' },
+  { id: 'ORD-1009', studioId: 2, studioName: 'Sparkle Clean Laundry', date: '2023-06-26', amount: 52000, isPaid: false, washType: 'combined', customerName: 'Alex Johnson' },
+  { id: 'ORD-1010', studioId: 1, studioName: 'Saiteja Laundry', date: '2023-06-28', amount: 47000, isPaid: false, washType: 'combined', customerName: 'Maya Patel' },
 ];
 
 const initialPaymentHistory: PaymentRecord[] = [
-  { id: 'PMT-2001', studioId: 1, studioName: 'Saiteja Laundry', orderId: 'ORD-1000', amount: 520.00, paymentDate: '2023-06-05', referenceNumber: 'UTR12345678', washType: 'standard' },
-  { id: 'PMT-2002', studioId: 2, studioName: 'Sparkle Clean Laundry', orderId: 'ORD-995', amount: 420.00, paymentDate: '2023-06-04', referenceNumber: 'UTR87654321', washType: 'express' },
-  { id: 'PMT-2003', studioId: 1, studioName: 'Saiteja Laundry', orderId: 'ORD-990', amount: 350.00, paymentDate: '2023-06-02', referenceNumber: 'UTR23456789', washType: 'standard' },
-  { id: 'PMT-2004', studioId: 3, studioName: 'Fresh Fold Services', orderId: 'ORD-985', amount: 600.00, paymentDate: '2023-05-30', referenceNumber: 'UTR98765432', washType: 'express' },
-  { id: 'PMT-2005', studioId: 4, studioName: 'Royal Wash', orderId: 'ORD-980', amount: 480.00, paymentDate: '2023-05-28', referenceNumber: 'UTR34567890', washType: 'standard' },
-  { id: 'PMT-2006', studioId: 1, studioName: 'Saiteja Laundry', orderId: 'ORD-975', amount: 410.00, paymentDate: '2023-05-25', referenceNumber: 'UTR45678901', washType: 'express' },
+  { id: 'PMT-2001', studioId: 1, studioName: 'Saiteja Laundry', orderId: 'ORD-1000', amount: 52000, paymentDate: '2023-06-05', referenceNumber: 'UTR12345678', washType: 'standard' },
+  { id: 'PMT-2002', studioId: 2, studioName: 'Sparkle Clean Laundry', orderId: 'ORD-995', amount: 42000, paymentDate: '2023-06-04', referenceNumber: 'UTR87654321', washType: 'express' },
+  { id: 'PMT-2003', studioId: 1, studioName: 'Saiteja Laundry', orderId: 'ORD-990', amount: 35000, paymentDate: '2023-06-02', referenceNumber: 'UTR23456789', washType: 'standard' },
+  { id: 'PMT-2004', studioId: 3, studioName: 'Fresh Fold Services', orderId: 'ORD-985', amount: 60000, paymentDate: '2023-05-30', referenceNumber: 'UTR98765432', washType: 'express' },
+  { id: 'PMT-2005', studioId: 4, studioName: 'Royal Wash', orderId: 'ORD-980', amount: 48000, paymentDate: '2023-05-28', referenceNumber: 'UTR34567890', washType: 'standard' },
+  { id: 'PMT-2006', studioId: 1, studioName: 'Saiteja Laundry', orderId: 'ORD-975', amount: 41000, paymentDate: '2023-05-25', referenceNumber: 'UTR45678901', washType: 'express' },
+  { id: 'PMT-2007', studioId: 3, studioName: 'Fresh Fold Services', orderId: 'ORD-970', amount: 58000, paymentDate: '2023-05-22', referenceNumber: 'UTR56789012', washType: 'combined' },
+  { id: 'PMT-2008', studioId: 2, studioName: 'Sparkle Clean Laundry', orderId: 'ORD-965', amount: 49000, paymentDate: '2023-05-20', referenceNumber: 'UTR67890123', washType: 'combined' },
 ];
 
 const StudioPayments: React.FC = () => {
@@ -60,7 +66,7 @@ const StudioPayments: React.FC = () => {
   const [selectedOrder, setSelectedOrder] = useState<UnpaidOrder | null>(null);
   const [paymentReference, setPaymentReference] = useState('');
   const [paymentDate, setPaymentDate] = useState('');
-  const [washTypeFilter, setWashTypeFilter] = useState<'all' | 'express' | 'standard'>('all');
+  const [washTypeFilter, setWashTypeFilter] = useState<'all' | 'express' | 'standard' | 'combined'>('all');
   const { toast } = useToast();
 
   // Filter data based on studio ID if provided
@@ -83,6 +89,24 @@ const StudioPayments: React.FC = () => {
     : 'All Studios';
     
   const totalUnpaidAmount = washTypeFilteredUnpaidOrders.reduce((sum, order) => sum + order.amount, 0);
+
+  // Get order counts by wash type
+  const expressWashCount = filteredUnpaidOrders.filter(order => order.washType === 'express').length;
+  const standardWashCount = filteredUnpaidOrders.filter(order => order.washType === 'standard').length;
+  const combinedWashCount = filteredUnpaidOrders.filter(order => order.washType === 'combined').length;
+
+  // Get total amounts by wash type
+  const expressWashAmount = filteredUnpaidOrders
+    .filter(order => order.washType === 'express')
+    .reduce((sum, order) => sum + order.amount, 0);
+    
+  const standardWashAmount = filteredUnpaidOrders
+    .filter(order => order.washType === 'standard')
+    .reduce((sum, order) => sum + order.amount, 0);
+    
+  const combinedWashAmount = filteredUnpaidOrders
+    .filter(order => order.washType === 'combined')
+    .reduce((sum, order) => sum + order.amount, 0);
 
   // Mark order as paid
   const openPaymentModal = (order: UnpaidOrder) => {
@@ -128,9 +152,14 @@ const StudioPayments: React.FC = () => {
     // Show success toast
     toast({
       title: "Payment Recorded",
-      description: `Payment of $${selectedOrder.amount.toFixed(2)} for order ${selectedOrder.id} has been marked as paid.`,
+      description: `Payment of ₹${(selectedOrder.amount).toLocaleString('en-IN')} for order ${selectedOrder.id} has been marked as paid.`,
       duration: 3000,
     });
+  };
+
+  // Format currency to Indian Rupees
+  const formatIndianRupees = (amount: number) => {
+    return `₹${amount.toLocaleString('en-IN')}`;
   };
 
   // Unpaid orders columns
@@ -151,15 +180,19 @@ const StudioPayments: React.FC = () => {
       header: 'Wash Type',
       accessor: (row: UnpaidOrder) => (
         <span className={`px-2 py-1 text-xs rounded-full ${
-          row.washType === 'express' ? 'bg-purple-100 text-purple-800' : 'bg-blue-100 text-blue-800'
+          row.washType === 'express' ? 'bg-purple-100 text-purple-800' : 
+          row.washType === 'standard' ? 'bg-blue-100 text-blue-800' : 
+          'bg-green-100 text-green-800'
         }`}>
-          {row.washType === 'express' ? 'Express Wash' : 'Standard Wash'}
+          {row.washType === 'express' ? 'Express Wash' : 
+           row.washType === 'standard' ? 'Standard Wash' : 
+           'Combined Wash'}
         </span>
       ),
     },
     {
       header: 'Amount',
-      accessor: (row: UnpaidOrder) => `$${row.amount.toFixed(2)}`,
+      accessor: (row: UnpaidOrder) => formatIndianRupees(row.amount),
     },
     {
       header: 'Actions',
@@ -189,15 +222,19 @@ const StudioPayments: React.FC = () => {
       header: 'Wash Type',
       accessor: (row: PaymentRecord) => (
         <span className={`px-2 py-1 text-xs rounded-full ${
-          row.washType === 'express' ? 'bg-purple-100 text-purple-800' : 'bg-blue-100 text-blue-800'
+          row.washType === 'express' ? 'bg-purple-100 text-purple-800' : 
+          row.washType === 'standard' ? 'bg-blue-100 text-blue-800' : 
+          'bg-green-100 text-green-800'
         }`}>
-          {row.washType === 'express' ? 'Express Wash' : 'Standard Wash'}
+          {row.washType === 'express' ? 'Express Wash' : 
+           row.washType === 'standard' ? 'Standard Wash' : 
+           'Combined Wash'}
         </span>
       ),
     },
     {
       header: 'Amount',
-      accessor: (row: PaymentRecord) => `$${row.amount.toFixed(2)}`,
+      accessor: (row: PaymentRecord) => formatIndianRupees(row.amount),
     },
     {
       header: 'Payment Date',
@@ -223,34 +260,26 @@ const StudioPayments: React.FC = () => {
       
       {/* Payment summary cards */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5 mb-6">
-        <div className="bg-white p-4 rounded-lg shadow-subtle">
-          <p className="text-sm text-gray-500">Total Unpaid Amount</p>
-          <p className="text-2xl font-semibold mt-1 text-red-600">
-            ${totalUnpaidAmount.toFixed(2)}
-          </p>
-        </div>
-        <div className="bg-white p-4 rounded-lg shadow-subtle">
-          <p className="text-sm text-gray-500">Unpaid Orders</p>
-          <p className="text-2xl font-semibold mt-1">{washTypeFilteredUnpaidOrders.length}</p>
-        </div>
-        <div className="bg-white p-4 rounded-lg shadow-subtle">
-          <p className="text-sm text-gray-500">Express Wash Unpaid</p>
-          <p className="text-2xl font-semibold mt-1 text-purple-600">
-            ${washTypeFilteredUnpaidOrders
-              .filter(order => order.washType === 'express')
-              .reduce((sum, order) => sum + order.amount, 0)
-              .toFixed(2)}
-          </p>
-        </div>
-        <div className="bg-white p-4 rounded-lg shadow-subtle">
-          <p className="text-sm text-gray-500">Standard Wash Unpaid</p>
-          <p className="text-2xl font-semibold mt-1 text-blue-600">
-            ${washTypeFilteredUnpaidOrders
-              .filter(order => order.washType === 'standard')
-              .reduce((sum, order) => sum + order.amount, 0)
-              .toFixed(2)}
-          </p>
-        </div>
+        <StatsCard
+          title="Total Unpaid Amount"
+          value={formatIndianRupees(totalUnpaidAmount)}
+          subtext={`${washTypeFilteredUnpaidOrders.length} orders pending`}
+        />
+        <StatsCard
+          title="Express Wash Unpaid"
+          value={formatIndianRupees(expressWashAmount)}
+          subtext={`${expressWashCount} orders pending`}
+        />
+        <StatsCard
+          title="Standard Wash Unpaid"
+          value={formatIndianRupees(standardWashAmount)}
+          subtext={`${standardWashCount} orders pending`}
+        />
+        <StatsCard
+          title="Combined Wash Unpaid"
+          value={formatIndianRupees(combinedWashAmount)}
+          subtext={`${combinedWashCount} orders pending`}
+        />
       </div>
       
       {/* Main Tabs - Unpaid vs History */}
@@ -262,15 +291,15 @@ const StudioPayments: React.FC = () => {
         
         <TabsContent value="unpaid">
           {/* Wash Type Tabs for Unpaid Payments */}
-          <Tabs defaultValue="all" className="w-full" onValueChange={(value) => setWashTypeFilter(value as 'all' | 'express' | 'standard')}>
+          <Tabs defaultValue="all" className="w-full" onValueChange={(value) => setWashTypeFilter(value as 'all' | 'express' | 'standard' | 'combined')}>
             <TabsList className="bg-background border border-input mb-5">
               <TabsTrigger value="all">All Wash Types</TabsTrigger>
               <TabsTrigger value="express" className="text-purple-800">Express Wash</TabsTrigger>
               <TabsTrigger value="standard" className="text-blue-800">Standard Wash</TabsTrigger>
+              <TabsTrigger value="combined" className="text-green-800">Combined Wash</TabsTrigger>
             </TabsList>
             
             <TabsContent value="all">
-              <h3 className="text-lg font-semibold mb-4">All Unpaid Orders</h3>
               <DataTable
                 columns={unpaidColumns}
                 data={washTypeFilteredUnpaidOrders}
@@ -280,7 +309,6 @@ const StudioPayments: React.FC = () => {
             </TabsContent>
             
             <TabsContent value="express">
-              <h3 className="text-lg font-semibold mb-4">Express Wash Unpaid Orders</h3>
               <DataTable
                 columns={unpaidColumns}
                 data={filteredUnpaidOrders.filter(order => order.washType === 'express')}
@@ -290,7 +318,6 @@ const StudioPayments: React.FC = () => {
             </TabsContent>
             
             <TabsContent value="standard">
-              <h3 className="text-lg font-semibold mb-4">Standard Wash Unpaid Orders</h3>
               <DataTable
                 columns={unpaidColumns}
                 data={filteredUnpaidOrders.filter(order => order.washType === 'standard')}
@@ -298,20 +325,29 @@ const StudioPayments: React.FC = () => {
                 emptyMessage="No unpaid standard wash orders found"
               />
             </TabsContent>
+            
+            <TabsContent value="combined">
+              <DataTable
+                columns={unpaidColumns}
+                data={filteredUnpaidOrders.filter(order => order.washType === 'combined')}
+                keyField="id"
+                emptyMessage="No unpaid combined wash orders found"
+              />
+            </TabsContent>
           </Tabs>
         </TabsContent>
         
         <TabsContent value="history">
           {/* Wash Type Tabs for Payment History */}
-          <Tabs defaultValue="all" className="w-full" onValueChange={(value) => setWashTypeFilter(value as 'all' | 'express' | 'standard')}>
+          <Tabs defaultValue="all" className="w-full" onValueChange={(value) => setWashTypeFilter(value as 'all' | 'express' | 'standard' | 'combined')}>
             <TabsList className="bg-background border border-input mb-5">
               <TabsTrigger value="all">All Wash Types</TabsTrigger>
               <TabsTrigger value="express" className="text-purple-800">Express Wash</TabsTrigger>
               <TabsTrigger value="standard" className="text-blue-800">Standard Wash</TabsTrigger>
+              <TabsTrigger value="combined" className="text-green-800">Combined Wash</TabsTrigger>
             </TabsList>
             
             <TabsContent value="all">
-              <h3 className="text-lg font-semibold mb-4">All Payment History</h3>
               <DataTable
                 columns={historyColumns}
                 data={filteredPaymentHistory}
@@ -321,7 +357,6 @@ const StudioPayments: React.FC = () => {
             </TabsContent>
             
             <TabsContent value="express">
-              <h3 className="text-lg font-semibold mb-4">Express Wash Payment History</h3>
               <DataTable
                 columns={historyColumns}
                 data={filteredPaymentHistory.filter(payment => payment.washType === 'express')}
@@ -331,12 +366,20 @@ const StudioPayments: React.FC = () => {
             </TabsContent>
             
             <TabsContent value="standard">
-              <h3 className="text-lg font-semibold mb-4">Standard Wash Payment History</h3>
               <DataTable
                 columns={historyColumns}
                 data={filteredPaymentHistory.filter(payment => payment.washType === 'standard')}
                 keyField="id"
                 emptyMessage="No standard wash payment history found"
+              />
+            </TabsContent>
+            
+            <TabsContent value="combined">
+              <DataTable
+                columns={historyColumns}
+                data={filteredPaymentHistory.filter(payment => payment.washType === 'combined')}
+                keyField="id"
+                emptyMessage="No combined wash payment history found"
               />
             </TabsContent>
           </Tabs>
@@ -358,7 +401,7 @@ const StudioPayments: React.FC = () => {
                 Amount
               </label>
               <div className="bg-gray-50 px-3 py-2 rounded-md border border-gray-200 text-gray-700">
-                ${selectedOrder.amount.toFixed(2)}
+                {formatIndianRupees(selectedOrder.amount)}
               </div>
             </div>
             
@@ -367,7 +410,9 @@ const StudioPayments: React.FC = () => {
                 Wash Type
               </label>
               <div className="bg-gray-50 px-3 py-2 rounded-md border border-gray-200 text-gray-700">
-                {selectedOrder.washType === 'express' ? 'Express Wash' : 'Standard Wash'}
+                {selectedOrder.washType === 'express' ? 'Express Wash' : 
+                 selectedOrder.washType === 'standard' ? 'Standard Wash' : 
+                 'Combined Wash'}
               </div>
             </div>
             
