@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { Plus, ChevronDown, Search, Filter, Star, MoreHorizontal, X, ArrowUpDown, CreditCard, Settings, Package, Trash2 } from 'lucide-react';
+import { Plus, ChevronDown, Search, Filter, Star, MoreHorizontal, X, ArrowUpDown, CreditCard, Settings, Package, Trash2, Frown } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import AdminLayout from '../components/layout/AdminLayout';
 import PageHeader from '../components/ui/PageHeader';
@@ -7,6 +7,7 @@ import DataTable from '../components/ui/DataTable';
 import StatusBadge from '../components/ui/StatusBadge';
 import ToggleSwitch from '../components/ui/ToggleSwitch';
 import { useToast } from "@/hooks/use-toast";
+import { ConfirmationDialog } from "@/components/ui/confirmation-dialog";
 
 // Studio data type
 interface Studio {
@@ -227,6 +228,8 @@ const Studios: React.FC = () => {
   const [showStatusFilter, setShowStatusFilter] = useState(false);
   const [showRatingFilter, setShowRatingFilter] = useState(false);
   const [activeDropdownId, setActiveDropdownId] = useState<number | null>(null);
+  const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
+  const [studioToDelete, setStudioToDelete] = useState<{id: number, name: string} | null>(null);
   
   const searchRef = useRef<HTMLDivElement>(null);
   const statusFilterRef = useRef<HTMLDivElement>(null);
@@ -406,14 +409,25 @@ const Studios: React.FC = () => {
     navigate('/studios/add');
   };
 
-  // Delete studio
-  const deleteStudio = (studioId: number, studioName: string) => {
-    setStudios(studios.filter(s => s.id !== studioId));
+  // Confirm delete studio
+  const confirmDeleteStudio = (studioId: number, studioName: string) => {
+    setStudioToDelete({ id: studioId, name: studioName });
+    setIsDeleteDialogOpen(true);
+  };
+
+  // Execute delete studio
+  const executeDeleteStudio = () => {
+    if (!studioToDelete) return;
+    
+    setStudios(studios.filter(s => s.id !== studioToDelete.id));
+    
     toast({
-      title: "Studio deleted",
-      description: `${studioName} has been removed`,
+      title: "Studio Deleted",
+      description: `${studioToDelete.name} has been successfully deleted.`,
       duration: 3000,
     });
+    
+    setStudioToDelete(null);
   };
 
   // Handle search
@@ -597,7 +611,7 @@ const Studios: React.FC = () => {
                 
                 <button 
                   className="flex items-center w-full text-left px-4 py-2.5 text-sm text-red-600 hover:bg-gray-100"
-                  onClick={() => deleteStudio(row.id, row.name)}
+                  onClick={() => confirmDeleteStudio(row.id, row.name)}
                 >
                   <Trash2 className="h-4 w-4 mr-2 text-red-500" />
                   <span>Delete Studio</span>
@@ -1072,6 +1086,22 @@ const Studios: React.FC = () => {
           </div>
         </div>
       )}
+      
+      {/* Delete Confirmation Dialog */}
+      <ConfirmationDialog
+        open={isDeleteDialogOpen}
+        onOpenChange={setIsDeleteDialogOpen}
+        onConfirm={executeDeleteStudio}
+        title="Delete Studio"
+        description={
+          <div className="flex items-center space-x-2">
+            <Frown className="h-5 w-5 text-gray-500" />
+            <span>Are you sure you want to delete {studioToDelete?.name}?</span>
+          </div>
+        }
+        confirmText="Delete"
+        confirmWithTimer={5}
+      />
     </AdminLayout>
   );
 };
