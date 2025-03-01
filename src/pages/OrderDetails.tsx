@@ -46,36 +46,42 @@ const clothingItemsByOrderId: Record<string, {name: string, quantity: number}[]>
 };
 
 // Sample delivery information for each order
-const deliveryInfoByOrderId: Record<string, {assignedTo: string, vehicleDetails: string, phoneNumber: string}> = {
+const deliveryInfoByOrderId: Record<string, {assignedTo: string, vehicleDetails: string, phoneNumber: string, deliveryTime: string}> = {
   'ORD-1001': {
     assignedTo: 'Deepak Bagade',
     vehicleDetails: 'Maruti WagonR TS-08 JN 9988',
-    phoneNumber: '9901362590'
+    phoneNumber: '9901362590',
+    deliveryTime: '4:30 PM'
   },
   'ORD-1002': {
     assignedTo: 'Rahul Sharma',
     vehicleDetails: 'Honda Activa TS-09 KL 2345',
-    phoneNumber: '8756423190'
+    phoneNumber: '8756423190',
+    deliveryTime: '5:15 PM'
   },
   'ORD-1003': {
     assignedTo: 'Vinod Kumar',
     vehicleDetails: 'TVS Apache TS-10 AB 7721',
-    phoneNumber: '9845123670'
+    phoneNumber: '9845123670',
+    deliveryTime: '6:00 PM'
   },
   'ORD-1004': {
     assignedTo: 'Priya Singh',
     vehicleDetails: 'Bajaj Chetak TS-11 CD 5643',
-    phoneNumber: '7789456123'
+    phoneNumber: '7789456123',
+    deliveryTime: '3:45 PM'
   },
   'ORD-1005': {
     assignedTo: 'Amit Patel',
     vehicleDetails: 'Hero Splendor TS-12 EF 3321',
-    phoneNumber: '9956784321'
+    phoneNumber: '9956784321',
+    deliveryTime: '2:30 PM'
   },
   'ORD-1006': {
     assignedTo: 'Neha Gupta',
     vehicleDetails: 'Ola Electric TS-13 GH 9087',
-    phoneNumber: '8890123456'
+    phoneNumber: '8890123456',
+    deliveryTime: '5:45 PM'
   },
 };
 
@@ -170,7 +176,8 @@ const OrderDetails: React.FC = () => {
   const getWashTypeText = (washType: string | undefined) => {
     if (washType === 'express') return 'Quick Wash';
     if (washType === 'standard') return 'Standard Wash';
-    return 'Combined Wash';
+    if (washType === 'combined') return 'Standard Wash & Express Wash';
+    return 'Standard Wash';
   };
 
   // Fixed per kg rate at 49 rs/kg as requested
@@ -197,6 +204,9 @@ const OrderDetails: React.FC = () => {
     
     return `${date.getDate().toString().padStart(2, '0')}/${(date.getMonth() + 1).toString().padStart(2, '0')}/${date.getFullYear()}`;
   };
+
+  // Determine if we need to show both standard and express services
+  const isCombinedWash = orderDetails.washType === 'combined';
 
   return (
     <AdminLayout>
@@ -288,19 +298,61 @@ const OrderDetails: React.FC = () => {
                 <span className="font-medium text-red-600">{getWashTypeText(orderDetails.washType)}</span>
               </div>
               
-              <div className="border-b border-gray-200 mb-3">
-                <div className="grid grid-cols-3 gap-1 font-medium mb-2">
-                  <div>Services</div>
-                  <div>Quantity</div>
-                  <div className="text-right">Price</div>
+              {isCombinedWash ? (
+                <>
+                  {/* Standard Wash Section */}
+                  <div className="border-b border-gray-200 mb-3">
+                    <div className="font-medium mb-2 text-blue-700">Standard Wash</div>
+                    <div className="grid grid-cols-3 gap-1 font-medium mb-2">
+                      <div>Services</div>
+                      <div>Quantity</div>
+                      <div className="text-right">Price</div>
+                    </div>
+                    
+                    <div className="grid grid-cols-3 gap-1 mb-2">
+                      <div>1. Wash & Fold</div>
+                      <div>{getTotalWeight()} X {getPerKgRate()}/kg</div>
+                      <div className="text-right">{formatIndianRupees(getTotalWeight() * getPerKgRate())}</div>
+                    </div>
+                    <div className="text-xs text-gray-500 mb-2">
+                      Delivery in 4 days
+                    </div>
+                  </div>
+                  
+                  {/* Express Wash Section */}
+                  <div className="border-b border-gray-200 mb-3">
+                    <div className="font-medium mb-2 text-purple-700">Express Wash</div>
+                    <div className="grid grid-cols-3 gap-1 font-medium mb-2">
+                      <div>Services</div>
+                      <div>Quantity</div>
+                      <div className="text-right">Price</div>
+                    </div>
+                    
+                    <div className="grid grid-cols-3 gap-1 mb-2">
+                      <div>1. Express Wash & Fold</div>
+                      <div>{getTotalWeight()} X {getPerKgRate()}/kg</div>
+                      <div className="text-right">{formatIndianRupees(getTotalWeight() * getPerKgRate())}</div>
+                    </div>
+                    <div className="text-xs text-gray-500 mb-2">
+                      Delivery in 1 day
+                    </div>
+                  </div>
+                </>
+              ) : (
+                <div className="border-b border-gray-200 mb-3">
+                  <div className="grid grid-cols-3 gap-1 font-medium mb-2">
+                    <div>Services</div>
+                    <div>Quantity</div>
+                    <div className="text-right">Price</div>
+                  </div>
+                  
+                  <div className="grid grid-cols-3 gap-1 mb-2">
+                    <div>1. Wash & Fold</div>
+                    <div>{getTotalWeight()} X {getPerKgRate()}/kg</div>
+                    <div className="text-right">{formatIndianRupees(getTotalWeight() * getPerKgRate())}</div>
+                  </div>
                 </div>
-                
-                <div className="grid grid-cols-3 gap-1 mb-2">
-                  <div>1. Wash & Fold</div>
-                  <div>{getTotalWeight()} X {getPerKgRate()}/kg</div>
-                  <div className="text-right">{formatIndianRupees(getTotalWeight() * getPerKgRate())}</div>
-                </div>
-              </div>
+              )}
               
               <div className="mb-4">
                 <div className="font-medium mb-2">Clothing Items</div>
@@ -315,7 +367,9 @@ const OrderDetails: React.FC = () => {
               
               <div className="flex justify-between font-medium border-t border-gray-200 pt-3 text-base">
                 <div>Total</div>
-                <div>{formatIndianRupees(getTotalWeight() * getPerKgRate())}</div>
+                <div>{isCombinedWash ? 
+                  formatIndianRupees(getTotalWeight() * getPerKgRate() * 2) : 
+                  formatIndianRupees(getTotalWeight() * getPerKgRate())}</div>
               </div>
             </CardContent>
           </Card>
@@ -332,8 +386,10 @@ const OrderDetails: React.FC = () => {
                 <span className="font-medium">{getDeliveryInfo().assignedTo} / {getDeliveryInfo().phoneNumber}</span>
               </div>
               <div>
-                <span className="text-gray-600">Delivered date - </span>
-                <span className="font-medium">{calculateDeliveryDate(orderDetails.date, orderDetails.washType)}</span>
+                <span className="text-gray-600">Delivered date & time - </span>
+                <span className="font-medium">
+                  {calculateDeliveryDate(orderDetails.date, orderDetails.washType)} at {getDeliveryInfo().deliveryTime}
+                </span>
               </div>
               <div>
                 <span className="text-gray-600">Vehicle details - </span>
