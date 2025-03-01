@@ -2,6 +2,7 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import { Search, X, Check } from 'lucide-react';
 import { Checkbox } from "@/components/ui/checkbox";
+import { cn } from "@/lib/utils";
 
 interface TableColumn<T> {
   header: string;
@@ -212,6 +213,10 @@ function DataTable<T>({
                       checked={selectAll}
                       onCheckedChange={handleSelectAll}
                       aria-label="Select all"
+                      className={cn(
+                        "border-gray-300",
+                        selectAll && "bg-emerald-500 border-emerald-500 text-white"
+                      )}
                     />
                   </div>
                 </th>
@@ -239,6 +244,10 @@ function DataTable<T>({
                           checked={selectedRows.has(String(row[keyField]))}
                           onCheckedChange={() => handleRowSelect(String(row[keyField]))}
                           aria-label={`Select row ${rowIndex + 1}`}
+                          className={cn(
+                            "border-gray-300",
+                            selectedRows.has(String(row[keyField])) && "bg-emerald-500 border-emerald-500 text-white"
+                          )}
                         />
                       </div>
                     </td>

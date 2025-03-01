@@ -7,6 +7,7 @@ import SearchBar from './SearchBar';
 import DateFilterPopover from './DateFilterPopover';
 import DataTable from '../ui/DataTable';
 import { Button } from "@/components/ui/button";
+import { Check, Square } from 'lucide-react';
 
 interface PaymentTabsProps {
   viewType: 'unpaid' | 'history';
@@ -69,6 +70,15 @@ const PaymentTabs: React.FC<PaymentTabsProps> = ({
     }
   };
 
+  // Determine if the select/deselect all button should be shown
+  const showSelectionControls = viewType === 'unpaid' && (filteredData as UnpaidOrder[]).length > 0;
+  
+  // Helper function to select/deselect all orders
+  const handleToggleAll = () => {
+    const allSelected = selectedOrders.length === (filteredData as UnpaidOrder[]).length;
+    toggleSelectAllOrders(!allSelected);
+  };
+
   return (
     <Tabs defaultValue="unpaid" className="w-full" onValueChange={(value) => setViewType(value as 'unpaid' | 'history')}>
       <TabsList className="mb-6 bg-background border border-input">
@@ -98,16 +108,40 @@ const PaymentTabs: React.FC<PaymentTabsProps> = ({
 
               {/* Filters Row - Below the tabs */}
               <div className="flex flex-wrap items-center justify-between gap-3 mb-5">
-                {/* Date Filter */}
-                <DateFilterPopover 
-                  dateFilter={dateFilter}
-                  setDateFilter={setDateFilter}
-                  customDateRange={customDateRange}
-                  setCustomDateRange={setCustomDateRange}
-                  showDateFilterPopover={showDateFilterPopover}
-                  setShowDateFilterPopover={setShowDateFilterPopover}
-                  resetDateFilter={resetDateFilter}
-                />
+                <div className="flex items-center gap-3">
+                  {/* Date Filter */}
+                  <DateFilterPopover 
+                    dateFilter={dateFilter}
+                    setDateFilter={setDateFilter}
+                    customDateRange={customDateRange}
+                    setCustomDateRange={setCustomDateRange}
+                    showDateFilterPopover={showDateFilterPopover}
+                    setShowDateFilterPopover={setShowDateFilterPopover}
+                    resetDateFilter={resetDateFilter}
+                  />
+                  
+                  {/* Select/Deselect All Button */}
+                  {showSelectionControls && selectedOrders.length > 0 && (
+                    <Button 
+                      variant="outline" 
+                      size="sm"
+                      onClick={handleToggleAll}
+                      className="gap-2 items-center"
+                    >
+                      {selectedOrders.length === (filteredData as UnpaidOrder[]).length ? (
+                        <>
+                          <Square className="h-4 w-4" />
+                          Deselect All
+                        </>
+                      ) : (
+                        <>
+                          <Check className="h-4 w-4" />
+                          Select All
+                        </>
+                      )}
+                    </Button>
+                  )}
+                </div>
                 
                 {/* Bulk Payment Button */}
                 {selectedOrders.length > 0 && (
@@ -116,7 +150,7 @@ const PaymentTabs: React.FC<PaymentTabsProps> = ({
                     onClick={openBulkPaymentModal}
                     className="ml-auto"
                   >
-                    Mark {selectedOrders.length} Orders as Paid
+                    Mark {selectedOrders.length} {selectedOrders.length === 1 ? 'Order' : 'Orders'} as Paid
                   </Button>
                 )}
               </div>
