@@ -1,6 +1,7 @@
+
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { CheckCircle, Download, InfoIcon, ArrowLeft, Phone, MapPin, Calendar, Package } from 'lucide-react';
+import { CheckCircle, Download, InfoIcon, ArrowLeft, Phone, MapPin, Calendar, Package, Search } from 'lucide-react';
 import AdminLayout from '../components/layout/AdminLayout';
 import PageHeader from '../components/ui/PageHeader';
 import DataTable from '../components/ui/DataTable';
@@ -16,6 +17,14 @@ import {
   DialogTitle,
   DialogFooter,
 } from "@/components/ui/dialog";
+import { 
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/components/ui/popover";
+import { Label } from "@/components/ui/label";
+import { Input } from "@/components/ui/input";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 
 // Payment data types
 interface UnpaidOrder {
@@ -52,6 +61,12 @@ const initialUnpaidOrders: UnpaidOrder[] = [
   { id: 'ORD-1008', studioId: 3, studioName: 'Fresh Fold Services', date: '2023-06-25', amount: 650, isPaid: false, washType: 'combined', customerName: 'Laura Wilson' },
   { id: 'ORD-1009', studioId: 2, studioName: 'Sparkle Clean Laundry', date: '2023-06-26', amount: 520, isPaid: false, washType: 'combined', customerName: 'Alex Johnson' },
   { id: 'ORD-1010', studioId: 1, studioName: 'Saiteja Laundry', date: '2023-06-28', amount: 470, isPaid: false, washType: 'combined', customerName: 'Maya Patel' },
+  // Add more recent orders for today/yesterday/this week
+  { id: 'ORD-1011', studioId: 1, studioName: 'Saiteja Laundry', date: new Date().toISOString(), amount: 320, isPaid: false, washType: 'express', customerName: 'Today User 1' },
+  { id: 'ORD-1012', studioId: 1, studioName: 'Saiteja Laundry', date: new Date().toISOString(), amount: 450, isPaid: false, washType: 'standard', customerName: 'Today User 2' },
+  { id: 'ORD-1013', studioId: 1, studioName: 'Saiteja Laundry', date: new Date(Date.now() - 86400000).toISOString(), amount: 380, isPaid: false, washType: 'combined', customerName: 'Yesterday User 1' },
+  { id: 'ORD-1014', studioId: 1, studioName: 'Saiteja Laundry', date: new Date(Date.now() - 86400000 * 2).toISOString(), amount: 290, isPaid: false, washType: 'express', customerName: 'This Week User 1' },
+  { id: 'ORD-1015', studioId: 1, studioName: 'Saiteja Laundry', date: new Date(Date.now() - 86400000 * 10).toISOString(), amount: 520, isPaid: false, washType: 'standard', customerName: 'This Month User 1' },
 ];
 
 const initialPaymentHistory: PaymentRecord[] = [
@@ -79,18 +94,127 @@ const StudioPayments: React.FC = () => {
   const [showOrderDetailsModal, setShowOrderDetailsModal] = useState(false);
   const [selectedOrderDetails, setSelectedOrderDetails] = useState<UnpaidOrder | null>(null);
   const { toast } = useToast();
+  
+  // New filters state
+  const [dateRangeFilter, setDateRangeFilter] = useState<'all' | 'today' | 'yesterday' | 'this_week' | 'this_month' | 'custom'>('all');
+  const [customDateRange, setCustomDateRange] = useState({
+    start: '',
+    end: ''
+  });
+  const [showFilterPopover, setShowFilterPopover] = useState(false);
+  const [orderIdSearch, setOrderIdSearch] = useState('');
+  const [filteredWashType, setFilteredWashType] = useState<'all' | 'express' | 'standard' | 'combined'>('all');
+
+  // Custom date range filtering logic
+  const isDateInRange = (dateStr: string) => {
+    const date = new Date(dateStr);
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    
+    const yesterday = new Date(today);
+    yesterday.setDate(yesterday.getDate() - 1);
+    
+    const startOfWeek = new Date(today);
+    startOfWeek.setDate(today.getDate() - today.getDay());
+    
+    const startOfMonth = new Date(today.getFullYear(), today.getMonth(), 1);
+    
+    if (dateRangeFilter === 'all') {
+      return true;
+    }
+    
+    if (dateRangeFilter === 'today') {
+      const orderDate = new Date(date);
+      orderDate.setHours(0, 0, 0, 0);
+      return orderDate.getTime() === today.getTime();
+    }
+    
+    if (dateRangeFilter === 'yesterday') {
+      const orderDate = new Date(date);
+      orderDate.setHours(0, 0, 0, 0);
+      return orderDate.getTime() === yesterday.getTime();
+    }
+    
+    if (dateRangeFilter === 'this_week') {
+      return date >= startOfWeek && date <= today;
+    }
+    
+    if (dateRangeFilter === 'this_month') {
+      return date >= startOfMonth && date <= today;
+    }
+    
+    if (dateRangeFilter === 'custom') {
+      if (!customDateRange.start || !customDateRange.end) return true;
+      
+      const start = new Date(customDateRange.start);
+      const end = new Date(customDateRange.end);
+      end.setHours(23, 59, 59, 999); // Include the entire end day
+      
+      return date >= start && date <= end;
+    }
+    
+    return true;
+  };
 
   const filteredUnpaidOrders = studioId 
-    ? unpaidOrders.filter(order => order.studioId === Number(studioId))
-    : unpaidOrders;
+    ? unpaidOrders.filter(order => {
+        // Studio ID filter
+        const matchesStudio = order.studioId === Number(studioId);
+        
+        // Date range filter
+        const matchesDateRange = isDateInRange(order.date);
+        
+        // Order ID search filter
+        const matchesOrderId = orderIdSearch ? 
+          order.id.toLowerCase().includes(orderIdSearch.toLowerCase()) : true;
+        
+        return matchesStudio && matchesDateRange && matchesOrderId;
+      })
+    : unpaidOrders.filter(order => {
+        // Date range filter
+        const matchesDateRange = isDateInRange(order.date);
+        
+        // Order ID search filter
+        const matchesOrderId = orderIdSearch ? 
+          order.id.toLowerCase().includes(orderIdSearch.toLowerCase()) : true;
+        
+        return matchesDateRange && matchesOrderId;
+      });
 
   const filteredPaymentHistory = studioId 
-    ? paymentHistory.filter(payment => payment.studioId === Number(studioId))
-    : paymentHistory;
+    ? paymentHistory.filter(payment => {
+        // Studio ID filter
+        const matchesStudio = payment.studioId === Number(studioId);
+        
+        // Date range filter
+        const matchesDateRange = isDateInRange(payment.paymentDate);
+        
+        // Order ID search filter
+        const matchesOrderId = orderIdSearch ? 
+          payment.orderId.toLowerCase().includes(orderIdSearch.toLowerCase()) : true;
+        
+        return matchesStudio && matchesDateRange && matchesOrderId;
+      })
+    : paymentHistory.filter(payment => {
+        // Date range filter
+        const matchesDateRange = isDateInRange(payment.paymentDate);
+        
+        // Order ID search filter
+        const matchesOrderId = orderIdSearch ? 
+          payment.orderId.toLowerCase().includes(orderIdSearch.toLowerCase()) : true;
+        
+        return matchesDateRange && matchesOrderId;
+      });
 
+  // Apply wash type filter on top of other filters
   const washTypeFilteredUnpaidOrders = washTypeFilter === 'all' 
     ? filteredUnpaidOrders 
     : filteredUnpaidOrders.filter(order => order.washType === washTypeFilter);
+
+  // Apply wash type filter in All Wash Types tab (only when filtered wash type is set)
+  const allWashTypesFiltered = washTypeFilter === 'all' && filteredWashType !== 'all'
+    ? filteredUnpaidOrders.filter(order => order.washType === filteredWashType)
+    : washTypeFilteredUnpaidOrders;
 
   const studioName = studioId && filteredUnpaidOrders.length > 0 
     ? filteredUnpaidOrders[0].studioName 
@@ -195,6 +319,14 @@ const StudioPayments: React.FC = () => {
         { name: "Premium Packaging", price: 60 }
       ];
     }
+  };
+
+  const resetFilters = () => {
+    setDateRangeFilter('all');
+    setCustomDateRange({ start: '', end: '' });
+    setOrderIdSearch('');
+    setFilteredWashType('all');
+    setShowFilterPopover(false);
   };
 
   const unpaidColumns = [
@@ -302,13 +434,167 @@ const StudioPayments: React.FC = () => {
             variant="back"
             onClick={handleGoBack}
             size="icon"
-            className="mr-2"
           >
             <ArrowLeft className="h-5 w-5" />
           </Button>
         }
       >
         <div className="flex items-center gap-3">
+          {/* Filter Button */}
+          <Popover open={showFilterPopover} onOpenChange={setShowFilterPopover}>
+            <PopoverTrigger asChild>
+              <Button variant="outline" className="flex items-center gap-2">
+                <Calendar className="h-4 w-4" />
+                <span>Date Filter</span>
+              </Button>
+            </PopoverTrigger>
+            <PopoverContent className="w-80">
+              <div className="space-y-4">
+                <h3 className="font-medium">Filter by Date</h3>
+                
+                <div className="space-y-2">
+                  <div className="flex items-center">
+                    <input 
+                      type="radio" 
+                      id="all" 
+                      name="dateRange" 
+                      checked={dateRangeFilter === 'all'} 
+                      onChange={() => setDateRangeFilter('all')}
+                      className="mr-2"
+                    />
+                    <Label htmlFor="all">All Time</Label>
+                  </div>
+                  
+                  <div className="flex items-center">
+                    <input 
+                      type="radio" 
+                      id="today" 
+                      name="dateRange" 
+                      checked={dateRangeFilter === 'today'}
+                      onChange={() => setDateRangeFilter('today')}
+                      className="mr-2"
+                    />
+                    <Label htmlFor="today">Today</Label>
+                  </div>
+                  
+                  <div className="flex items-center">
+                    <input 
+                      type="radio" 
+                      id="yesterday" 
+                      name="dateRange" 
+                      checked={dateRangeFilter === 'yesterday'}
+                      onChange={() => setDateRangeFilter('yesterday')}
+                      className="mr-2"
+                    />
+                    <Label htmlFor="yesterday">Yesterday</Label>
+                  </div>
+                  
+                  <div className="flex items-center">
+                    <input 
+                      type="radio" 
+                      id="this_week" 
+                      name="dateRange" 
+                      checked={dateRangeFilter === 'this_week'}
+                      onChange={() => setDateRangeFilter('this_week')}
+                      className="mr-2"
+                    />
+                    <Label htmlFor="this_week">This Week</Label>
+                  </div>
+                  
+                  <div className="flex items-center">
+                    <input 
+                      type="radio" 
+                      id="this_month" 
+                      name="dateRange" 
+                      checked={dateRangeFilter === 'this_month'}
+                      onChange={() => setDateRangeFilter('this_month')}
+                      className="mr-2"
+                    />
+                    <Label htmlFor="this_month">This Month</Label>
+                  </div>
+                  
+                  <div className="flex items-center">
+                    <input 
+                      type="radio" 
+                      id="custom" 
+                      name="dateRange" 
+                      checked={dateRangeFilter === 'custom'}
+                      onChange={() => setDateRangeFilter('custom')}
+                      className="mr-2"
+                    />
+                    <Label htmlFor="custom">Custom Range</Label>
+                  </div>
+                  
+                  {dateRangeFilter === 'custom' && (
+                    <div className="grid grid-cols-2 gap-2 mt-2">
+                      <div>
+                        <Label htmlFor="startDate">Start Date</Label>
+                        <Input
+                          id="startDate"
+                          type="date"
+                          value={customDateRange.start}
+                          onChange={(e) => setCustomDateRange(prev => ({ ...prev, start: e.target.value }))}
+                          className="mt-1"
+                        />
+                      </div>
+                      <div>
+                        <Label htmlFor="endDate">End Date</Label>
+                        <Input
+                          id="endDate"
+                          type="date"
+                          value={customDateRange.end}
+                          onChange={(e) => setCustomDateRange(prev => ({ ...prev, end: e.target.value }))}
+                          className="mt-1"
+                        />
+                      </div>
+                    </div>
+                  )}
+                </div>
+                
+                {washTypeFilter === 'all' && (
+                  <div>
+                    <h3 className="font-medium mb-2">Filter by Wash Type</h3>
+                    <Select 
+                      value={filteredWashType} 
+                      onValueChange={(value) => setFilteredWashType(value as 'all' | 'express' | 'standard' | 'combined')}
+                    >
+                      <SelectTrigger>
+                        <SelectValue placeholder="All Wash Types" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="all">All Wash Types</SelectItem>
+                        <SelectItem value="express">Express Wash</SelectItem>
+                        <SelectItem value="standard">Standard Wash</SelectItem>
+                        <SelectItem value="combined">Combined Wash</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+                )}
+                
+                <div className="flex justify-between">
+                  <Button 
+                    variant="outline"
+                    onClick={resetFilters}
+                  >
+                    Reset
+                  </Button>
+                  <Button onClick={() => setShowFilterPopover(false)}>Apply Filters</Button>
+                </div>
+              </div>
+            </PopoverContent>
+          </Popover>
+          
+          <div className="relative">
+            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
+            <Input
+              type="text"
+              placeholder="Search by Order ID..."
+              value={orderIdSearch}
+              onChange={(e) => setOrderIdSearch(e.target.value)}
+              className="pl-9 w-64"
+            />
+          </div>
+
           <button className="flex items-center px-4 py-2 bg-white border border-gray-200 rounded-md text-gray-700 hover:bg-gray-50 transition-colors">
             <Download className="h-4 w-4 mr-2" />
             <span>Export</span>
@@ -365,7 +651,7 @@ const StudioPayments: React.FC = () => {
             <TabsContent value="all">
               <DataTable
                 columns={unpaidColumns}
-                data={washTypeFilteredUnpaidOrders}
+                data={allWashTypesFiltered}
                 keyField="id"
                 emptyMessage="No unpaid orders found"
               />
