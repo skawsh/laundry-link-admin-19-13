@@ -30,6 +30,7 @@ const StudioPayments: React.FC = () => {
   const [viewType, setViewType] = useState<'unpaid' | 'history'>('unpaid');
   const [showPaymentModal, setShowPaymentModal] = useState(false);
   const [selectedOrder, setSelectedOrder] = useState<UnpaidOrder | null>(null);
+  const [selectedOrderIds, setSelectedOrderIds] = useState<string[]>([]);
   const [paymentReference, setPaymentReference] = useState('');
   const [paymentDate, setPaymentDate] = useState('');
   const [mainWashTypeTab, setMainWashTypeTab] = useState<'all' | 'express' | 'standard' | 'combined'>('all');
@@ -86,11 +87,12 @@ const StudioPayments: React.FC = () => {
 
   const openPaymentModal = (order: UnpaidOrder) => {
     setSelectedOrder(order);
+    setSelectedOrderIds([order.id]);
     setShowPaymentModal(true);
   };
 
   const openBulkPaymentModal = () => {
-    // Open payment modal for all filtered unpaid orders
+    setSelectedOrder(null);
     setShowPaymentModal(true);
   };
 
@@ -110,8 +112,26 @@ const StudioPayments: React.FC = () => {
       return;
     }
 
-    // Determine which orders to mark as paid (either selected single order or all filtered orders)
-    const ordersToPay = selectedOrder ? [selectedOrder] : getFilteredUnpaidOrders();
+    // Determine which orders to mark as paid (based on selection)
+    let ordersToPay: UnpaidOrder[] = [];
+    
+    if (selectedOrderIds.length > 0) {
+      // Pay only selected orders
+      ordersToPay = getFilteredUnpaidOrders().filter(order => 
+        selectedOrderIds.includes(order.id)
+      );
+    } else if (selectedOrder) {
+      // Pay just the one selected order
+      ordersToPay = [selectedOrder];
+    } else {
+      toast({
+        title: "Error",
+        description: "No orders selected for payment",
+        variant: "destructive",
+        duration: 3000,
+      });
+      return;
+    }
     
     if (ordersToPay.length === 0) {
       toast({
@@ -145,6 +165,7 @@ const StudioPayments: React.FC = () => {
     
     setShowPaymentModal(false);
     setSelectedOrder(null);
+    setSelectedOrderIds([]);
     setPaymentReference('');
     setPaymentDate('');
 
@@ -322,7 +343,11 @@ const StudioPayments: React.FC = () => {
       />
       
       <PaymentModal 
-        selectedOrders={selectedOrder ? [selectedOrder] : getFilteredUnpaidOrders()}
+        selectedOrders={
+          selectedOrderIds.length > 0 
+            ? getFilteredUnpaidOrders().filter(order => selectedOrderIds.includes(order.id))
+            : selectedOrder ? [selectedOrder] : []
+        }
         showPaymentModal={showPaymentModal}
         setShowPaymentModal={setShowPaymentModal}
         paymentReference={paymentReference}

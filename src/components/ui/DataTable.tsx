@@ -4,7 +4,7 @@ import { Search, X } from 'lucide-react';
 import { cn } from "@/lib/utils";
 
 interface TableColumn<T> {
-  header: string;
+  header: string | React.ReactNode;
   accessor: keyof T | ((row: T, index: number) => React.ReactNode);
   width?: string;
 }
@@ -20,6 +20,7 @@ interface DataTableProps<T> {
   searchSuggestions?: boolean;
   onSuggestionClick?: (value: string) => void;
   searchFields?: Array<keyof T>;
+  selectedRows?: string[];
 }
 
 function DataTable<T>({
@@ -32,7 +33,8 @@ function DataTable<T>({
   initialSearchQuery = '',
   searchSuggestions = false,
   onSuggestionClick,
-  searchFields = []
+  searchFields = [],
+  selectedRows = []
 }: DataTableProps<T>) {
   const [searchQuery, setSearchQuery] = useState(initialSearchQuery);
   const [showSuggestions, setShowSuggestions] = useState(false);
@@ -96,6 +98,10 @@ function DataTable<T>({
     setTimeout(() => {
       setShowSuggestions(false);
     }, 200);
+  };
+
+  const isRowSelected = (rowId: string) => {
+    return selectedRows.includes(rowId);
   };
 
   return (
@@ -164,9 +170,18 @@ function DataTable<T>({
             {data.length > 0 ? (
               data.map((row, rowIndex) => {
                 const rowId = String(row[keyField]);
+                const isSelected = isRowSelected(rowId);
                 
                 return (
-                  <tr key={rowId} className="hover:bg-gray-50 transition-colors">
+                  <tr 
+                    key={rowId} 
+                    className={cn(
+                      "transition-colors", 
+                      isSelected 
+                        ? "bg-emerald-50 hover:bg-emerald-100" 
+                        : "hover:bg-gray-50"
+                    )}
+                  >
                     {columns.map((column, index) => (
                       <td key={index} className="px-4 py-3 text-sm text-gray-700">
                         {typeof column.accessor === 'function'

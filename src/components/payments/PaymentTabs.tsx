@@ -1,5 +1,5 @@
 
-import React, { useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { UnpaidOrder, PaymentRecord } from '@/types/paymentTypes';
 import WashTypeTabs from './WashTypeTabs';
@@ -7,6 +7,7 @@ import SearchBar from './SearchBar';
 import DateFilterPopover from './DateFilterPopover';
 import DataTable from '../ui/DataTable';
 import { Button } from "@/components/ui/button";
+import { Checkbox } from "@/components/ui/checkbox";
 
 interface PaymentTabsProps {
   viewType: 'unpaid' | 'history';
@@ -47,6 +48,69 @@ const PaymentTabs: React.FC<PaymentTabsProps> = ({
   resetDateFilter,
   openBulkPaymentModal
 }) => {
+  // State for selected items
+  const [selectedItems, setSelectedItems] = useState<string[]>([]);
+  const [selectAll, setSelectAll] = useState(false);
+
+  // Reset selections when view type changes
+  useEffect(() => {
+    setSelectedItems([]);
+    setSelectAll(false);
+  }, [viewType, mainWashTypeTab, orderIdSearch, dateFilter]);
+
+  // Handle selection of individual items
+  const handleSelect = (id: string) => {
+    setSelectedItems(prev => {
+      if (prev.includes(id)) {
+        return prev.filter(item => item !== id);
+      } else {
+        return [...prev, id];
+      }
+    });
+  };
+
+  // Handle select all
+  const handleSelectAll = () => {
+    if (selectAll) {
+      setSelectedItems([]);
+    } else {
+      const allIds = (filteredData as any[]).map(item => item.id as string);
+      setSelectedItems(allIds);
+    }
+    setSelectAll(!selectAll);
+  };
+
+  // Update selectAll state when selections change
+  useEffect(() => {
+    if (filteredData.length > 0 && selectedItems.length === filteredData.length) {
+      setSelectAll(true);
+    } else {
+      setSelectAll(false);
+    }
+  }, [selectedItems, filteredData]);
+
+  // Add checkbox to columns
+  const unpaidColumnsWithCheckbox = [
+    {
+      header: (
+        <Checkbox 
+          checked={selectAll}
+          onCheckedChange={handleSelectAll}
+          aria-label="Select all"
+        />
+      ),
+      accessor: (row: UnpaidOrder) => (
+        <Checkbox 
+          checked={selectedItems.includes(row.id)}
+          onCheckedChange={() => handleSelect(row.id)}
+          aria-label={`Select order ${row.id}`}
+        />
+      ),
+      width: '40px'
+    },
+    ...unpaidColumns
+  ];
+
   return (
     <Tabs defaultValue="unpaid" className="w-full" onValueChange={(value) => setViewType(value as 'unpaid' | 'history')}>
       <TabsList className="mb-6 bg-background border border-input">
@@ -89,23 +153,27 @@ const PaymentTabs: React.FC<PaymentTabsProps> = ({
                   />
                 </div>
                 
-                {/* Bulk Payment Button - removed checkbox-related conditional */}
+                {/* Bulk Payment Button */}
                 <Button 
                   variant="success" 
                   onClick={openBulkPaymentModal}
                   className="ml-auto"
+                  disabled={selectedItems.length === 0}
                 >
-                  Mark All as Paid
+                  {selectedItems.length > 0 
+                    ? `Mark ${selectedItems.length} ${selectedItems.length === 1 ? 'Order' : 'Orders'} as Paid` 
+                    : 'Mark Selected as Paid'}
                 </Button>
               </div>
             </Tabs>
           </div>
           
           <DataTable
-            columns={unpaidColumns}
+            columns={unpaidColumnsWithCheckbox}
             data={filteredData as UnpaidOrder[]}
             keyField="id"
             emptyMessage="No unpaid orders found"
+            selectedRows={selectedItems}
           />
         </div>
       </TabsContent>
