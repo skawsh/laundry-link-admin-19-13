@@ -1,4 +1,3 @@
-
 import React, { useState, useMemo } from 'react';
 import AdminLayout from '@/components/layout/AdminLayout';
 import { 
@@ -11,7 +10,8 @@ import {
   Filter, 
   ArrowUpDown,
   Download,
-  Truck
+  Truck,
+  UserPlus
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import {
@@ -44,7 +44,6 @@ import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import PageHeader from '@/components/ui/PageHeader';
 
-// Define order statuses and their colors
 const ORDER_STATUS = {
   pending: { label: 'Pending', color: 'bg-yellow-500' },
   in_progress: { label: 'In Progress', color: 'bg-blue-500' },
@@ -55,7 +54,6 @@ const ORDER_STATUS = {
   picked_up: { label: 'Picked Up', color: 'bg-indigo-500' },
 };
 
-// Define types for better type safety
 interface OrderItem {
   id: string;
   name: string;
@@ -79,7 +77,6 @@ interface Order {
   notes: string;
 }
 
-// Mock data for orders
 const generateMockOrders = (): Order[] => {
   const statuses = Object.keys(ORDER_STATUS) as Array<keyof typeof ORDER_STATUS>;
   const studios = [
@@ -117,7 +114,6 @@ const generateMockOrders = (): Order[] => {
 
   const orders: Order[] = [];
 
-  // Generate 100 orders with realistic data
   for (let i = 1; i <= 100; i++) {
     const orderDate = getRandomDate(new Date(2023, 0, 1), new Date());
     const items: OrderItem[] = [];
@@ -136,7 +132,6 @@ const generateMockOrders = (): Order[] => {
     const statusIndex = Math.floor(Math.random() * statuses.length);
     const status = statuses[statusIndex];
     
-    // Assign driver only for certain statuses
     const driver = ['in_progress', 'in_delivery', 'picked_up'].includes(status) ? 
       drivers[Math.floor(Math.random() * drivers.length)] : null;
     
@@ -187,7 +182,6 @@ const Orders: React.FC = () => {
   const [selectedStudio, setSelectedStudio] = useState<string>('');
   const [selectedDriver, setSelectedDriver] = useState<string>('');
 
-  // Calculate statistics
   const stats = useMemo(() => {
     const total = mockOrders.length;
     const completed = mockOrders.filter(order => order.status === 'completed').length;
@@ -213,15 +207,12 @@ const Orders: React.FC = () => {
     };
   }, [mockOrders]);
 
-  // Filter orders based on current filters and search
   const filteredOrders = useMemo(() => {
     return mockOrders.filter(order => {
-      // Filter by tab
       if (selectedTab !== 'all' && order.status !== selectedTab) {
         return false;
       }
       
-      // Filter by search query
       if (searchQuery) {
         const searchLower = searchQuery.toLowerCase();
         const matchesID = order.id.toLowerCase().includes(searchLower);
@@ -233,12 +224,10 @@ const Orders: React.FC = () => {
         }
       }
       
-      // Filter by status
       if (!statusFilters[order.status]) {
         return false;
       }
       
-      // Filter by date range
       if (dateFilter.start && new Date(order.date) < new Date(dateFilter.start)) {
         return false;
       }
@@ -247,7 +236,6 @@ const Orders: React.FC = () => {
         return false;
       }
       
-      // Filter by price range
       if (priceFilter.min && parseFloat(order.total) < parseFloat(priceFilter.min)) {
         return false;
       }
@@ -256,12 +244,10 @@ const Orders: React.FC = () => {
         return false;
       }
       
-      // Filter by studio
       if (selectedStudio && order.studio !== selectedStudio) {
         return false;
       }
       
-      // Filter by driver
       if (selectedDriver && order.driver !== selectedDriver) {
         return false;
       }
@@ -279,7 +265,6 @@ const Orders: React.FC = () => {
     selectedDriver
   ]);
 
-  // Get unique studios and drivers for filters
   const uniqueStudios = useMemo(() => {
     return [...new Set(mockOrders.map(order => order.studio))];
   }, [mockOrders]);
@@ -288,7 +273,6 @@ const Orders: React.FC = () => {
     return [...new Set(mockOrders.filter(order => order.driver).map(order => order.driver || ''))];
   }, [mockOrders]);
 
-  // Calculate order status distribution for the chart
   const statusDistribution = useMemo(() => {
     const distribution: Record<string, number> = {};
     Object.keys(ORDER_STATUS).forEach(status => {
@@ -318,7 +302,6 @@ const Orders: React.FC = () => {
     setSelectedDriver('');
   };
 
-  // DataTable columns
   const columns = [
     {
       header: "Order ID",
@@ -382,10 +365,15 @@ const Orders: React.FC = () => {
             <Download className="h-4 w-4" />
             Export
           </Button>
+          <Button asChild>
+            <a href="/orders/assignment">
+              <UserPlus className="h-4 w-4" />
+              Order Assignment
+            </a>
+          </Button>
           <Button>Add New Order</Button>
         </PageHeader>
 
-        {/* Statistics */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
           <StatsCard
             title="Total Orders"
@@ -413,7 +401,6 @@ const Orders: React.FC = () => {
           />
         </div>
 
-        {/* Orders Overview */}
         <div className="bg-white rounded-lg shadow-subtle p-5 mb-6">
           <div className="flex flex-col md:flex-row md:items-center justify-between mb-6">
             <h2 className="text-lg font-medium mb-2 md:mb-0">Orders Overview</h2>
@@ -612,7 +599,6 @@ const Orders: React.FC = () => {
           </Tabs>
         </div>
 
-        {/* Analytics Section */}
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-6">
           <Card className="col-span-1">
             <CardHeader>
@@ -718,7 +704,6 @@ const Orders: React.FC = () => {
           </Card>
         </div>
 
-        {/* Recent Activity Section */}
         <div className="bg-white rounded-lg shadow-subtle p-5">
           <h2 className="text-lg font-medium mb-4">Recent Activity</h2>
           <div className="space-y-4">
@@ -744,7 +729,6 @@ const Orders: React.FC = () => {
         </div>
       </div>
 
-      {/* Order Details Dialog */}
       <Dialog open={orderDetailsOpen} onOpenChange={setOrderDetailsOpen}>
         <DialogContent className="max-w-4xl">
           <DialogHeader>

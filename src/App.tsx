@@ -12,6 +12,7 @@ import StudioAnalytics from "./pages/StudioAnalytics";
 import StudioDetails from "./pages/StudioDetails";
 import Drivers from "./pages/Drivers";
 import Orders from "./pages/Orders";
+import OrderAssignment from "./pages/OrderAssignment";
 import Revenue from "./pages/Revenue";
 import Users from "./pages/Users";
 import NotFound from "./pages/NotFound";
@@ -34,6 +35,7 @@ const App = () => (
           <Route path="/studios/details/:studioId" element={<StudioDetails />} />
           <Route path="/drivers" element={<Drivers />} />
           <Route path="/orders" element={<Orders />} />
+          <Route path="/orders/assignment" element={<OrderAssignment />} />
           <Route path="/revenue" element={<Revenue />} />
           <Route path="/users" element={<Users />} />
           
