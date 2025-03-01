@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { CheckCircle, Download, InfoIcon, ArrowLeft } from 'lucide-react';
+import { CheckCircle, Download, InfoIcon, ArrowLeft, Phone, MapPin, Calendar, Package } from 'lucide-react';
 import AdminLayout from '../components/layout/AdminLayout';
 import PageHeader from '../components/ui/PageHeader';
 import DataTable from '../components/ui/DataTable';
@@ -168,6 +168,35 @@ const StudioPayments: React.FC = () => {
     return `₹${amount.toLocaleString('en-IN')}`;
   };
 
+  const getServiceDetails = (washType: 'express' | 'standard' | 'combined') => {
+    const baseServices = [
+      { name: "Washing", price: 100 },
+      { name: "Drying", price: 80 },
+      { name: "Folding", price: 50 }
+    ];
+    
+    if (washType === 'express') {
+      return [
+        ...baseServices,
+        { name: "Express Processing", price: 120 },
+        { name: "Priority Handling", price: 70 }
+      ];
+    } else if (washType === 'standard') {
+      return [
+        ...baseServices,
+        { name: "Stain Treatment", price: 90 },
+        { name: "Fabric Care", price: 60 }
+      ];
+    } else {
+      return [
+        ...baseServices,
+        { name: "Express Processing", price: 120 },
+        { name: "Stain Treatment", price: 90 },
+        { name: "Premium Packaging", price: 60 }
+      ];
+    }
+  };
+
   const unpaidColumns = [
     {
       header: 'Order ID',
@@ -204,15 +233,6 @@ const StudioPayments: React.FC = () => {
       accessor: (row: UnpaidOrder) => (
         <div className="flex gap-2">
           <Button
-            onClick={() => openPaymentModal(row)}
-            variant="success"
-            size="sm"
-            className="flex items-center"
-          >
-            <CheckCircle className="h-4 w-4 mr-1" />
-            <span>Mark as Paid</span>
-          </Button>
-          <Button
             onClick={() => openOrderDetailsModal(row)}
             variant="outline"
             size="sm"
@@ -220,6 +240,15 @@ const StudioPayments: React.FC = () => {
           >
             <InfoIcon className="h-4 w-4 mr-1" />
             <span>Order Details</span>
+          </Button>
+          <Button
+            onClick={() => openPaymentModal(row)}
+            variant="success"
+            size="sm"
+            className="flex items-center"
+          >
+            <CheckCircle className="h-4 w-4 mr-1" />
+            <span>Mark as Paid</span>
           </Button>
         </div>
       ),
@@ -268,17 +297,18 @@ const StudioPayments: React.FC = () => {
       <PageHeader 
         title={studioId ? `${studioName} Payments` : "Laundry Studio Payments"} 
         subtitle={studioId ? `Manage payments for ${studioName}` : "Manage payments for all laundry studios"}
-      >
-        <div className="flex items-center gap-3">
+        backButton={
           <Button
-            variant="ghost"
+            variant="back"
             onClick={handleGoBack}
             size="icon"
-            className="mr-auto"
+            className="mr-2"
           >
             <ArrowLeft className="h-5 w-5" />
           </Button>
-          
+        }
+      >
+        <div className="flex items-center gap-3">
           <button className="flex items-center px-4 py-2 bg-white border border-gray-200 rounded-md text-gray-700 hover:bg-gray-50 transition-colors">
             <Download className="h-4 w-4 mr-2" />
             <span>Export</span>
@@ -500,7 +530,7 @@ const StudioPayments: React.FC = () => {
 
       {showOrderDetailsModal && selectedOrderDetails && (
         <Dialog open={showOrderDetailsModal} onOpenChange={setShowOrderDetailsModal}>
-          <DialogContent className="sm:max-w-md">
+          <DialogContent className="sm:max-w-lg">
             <DialogHeader>
               <DialogTitle>Order Details</DialogTitle>
               <DialogDescription>
@@ -508,56 +538,112 @@ const StudioPayments: React.FC = () => {
               </DialogDescription>
             </DialogHeader>
             
-            <div className="grid gap-4 py-4">
-              <div className="grid grid-cols-4 items-center gap-4">
-                <span className="text-sm font-medium">Order ID:</span>
-                <span className="col-span-3">{selectedOrderDetails.id}</span>
+            <div className="space-y-6">
+              <div className="bg-gray-50 p-4 rounded-lg border border-gray-100">
+                <h3 className="text-sm font-medium text-gray-600 mb-3">Order Information</h3>
+                <div className="grid grid-cols-2 gap-4">
+                  <div>
+                    <p className="text-xs text-gray-500">Order ID</p>
+                    <p className="font-medium">{selectedOrderDetails.id}</p>
+                  </div>
+                  <div>
+                    <p className="text-xs text-gray-500">Order Date</p>
+                    <p className="font-medium">{new Date(selectedOrderDetails.date).toLocaleDateString()}</p>
+                  </div>
+                  <div>
+                    <p className="text-xs text-gray-500">Wash Type</p>
+                    <span className={`inline-flex px-2 py-1 text-xs rounded-full ${
+                      selectedOrderDetails.washType === 'express' ? 'bg-purple-100 text-purple-800' : 
+                      selectedOrderDetails.washType === 'standard' ? 'bg-blue-100 text-blue-800' : 
+                      'bg-green-100 text-green-800'
+                    }`}>
+                      {selectedOrderDetails.washType === 'express' ? 'Express Wash' : 
+                      selectedOrderDetails.washType === 'standard' ? 'Standard Wash' : 
+                      'Combined Wash'}
+                    </span>
+                  </div>
+                  <div>
+                    <p className="text-xs text-gray-500">Status</p>
+                    <span className="inline-flex px-2 py-1 text-xs rounded-full bg-yellow-100 text-yellow-800">
+                      Unpaid
+                    </span>
+                  </div>
+                </div>
               </div>
-              <div className="grid grid-cols-4 items-center gap-4">
-                <span className="text-sm font-medium">Customer:</span>
-                <span className="col-span-3">{selectedOrderDetails.customerName}</span>
+              
+              <div className="bg-gray-50 p-4 rounded-lg border border-gray-100">
+                <h3 className="text-sm font-medium text-gray-600 mb-3">Customer Information</h3>
+                <div className="space-y-2">
+                  <div className="flex items-start">
+                    <span className="flex-shrink-0 mt-0.5 mr-3 text-gray-400"><Phone className="h-4 w-4" /></span>
+                    <div>
+                      <p className="text-xs text-gray-500">Customer</p>
+                      <p className="font-medium">{selectedOrderDetails.customerName}</p>
+                    </div>
+                  </div>
+                  <div className="flex items-start">
+                    <span className="flex-shrink-0 mt-0.5 mr-3 text-gray-400"><Phone className="h-4 w-4" /></span>
+                    <div>
+                      <p className="text-xs text-gray-500">Contact</p>
+                      <p className="font-medium">+91 {Math.floor(Math.random() * 9000000000) + 1000000000}</p>
+                    </div>
+                  </div>
+                  <div className="flex items-start">
+                    <span className="flex-shrink-0 mt-0.5 mr-3 text-gray-400"><MapPin className="h-4 w-4" /></span>
+                    <div>
+                      <p className="text-xs text-gray-500">Address</p>
+                      <p className="font-medium">123 Main Street, Apartment 4B</p>
+                    </div>
+                  </div>
+                </div>
               </div>
-              <div className="grid grid-cols-4 items-center gap-4">
-                <span className="text-sm font-medium">Order Date:</span>
-                <span className="col-span-3">{new Date(selectedOrderDetails.date).toLocaleDateString()}</span>
+              
+              <div className="bg-gray-50 p-4 rounded-lg border border-gray-100">
+                <h3 className="text-sm font-medium text-gray-600 mb-3">Service Details</h3>
+                <div className="space-y-2">
+                  <div className="flex items-center justify-between text-sm">
+                    <span className="text-gray-600 font-medium">Services</span>
+                    <span className="text-gray-600 font-medium">Price</span>
+                  </div>
+                  <div className="h-px bg-gray-200 my-2"></div>
+                  
+                  {getServiceDetails(selectedOrderDetails.washType).map((service, index) => (
+                    <div key={index} className="flex items-center justify-between text-sm">
+                      <span className="text-gray-600">{service.name}</span>
+                      <span className="text-gray-600">{formatIndianRupees(service.price)}</span>
+                    </div>
+                  ))}
+                  
+                  <div className="h-px bg-gray-200 my-2"></div>
+                  <div className="flex items-center justify-between text-sm font-medium">
+                    <span>Total Amount</span>
+                    <span>{formatIndianRupees(selectedOrderDetails.amount)}</span>
+                  </div>
+                </div>
               </div>
-              <div className="grid grid-cols-4 items-center gap-4">
-                <span className="text-sm font-medium">Wash Type:</span>
-                <span className="col-span-3">
-                  <span className={`px-2 py-1 text-xs rounded-full ${
-                    selectedOrderDetails.washType === 'express' ? 'bg-purple-100 text-purple-800' : 
-                    selectedOrderDetails.washType === 'standard' ? 'bg-blue-100 text-blue-800' : 
-                    'bg-green-100 text-green-800'
-                  }`}>
-                    {selectedOrderDetails.washType === 'express' ? 'Express Wash' : 
-                     selectedOrderDetails.washType === 'standard' ? 'Standard Wash' : 
-                     'Combined Wash'}
-                  </span>
-                </span>
-              </div>
-              <div className="grid grid-cols-4 items-center gap-4">
-                <span className="text-sm font-medium">Amount:</span>
-                <span className="col-span-3 font-semibold">{formatIndianRupees(selectedOrderDetails.amount)}</span>
-              </div>
-              <div className="grid grid-cols-4 items-center gap-4">
-                <span className="text-sm font-medium">Studio:</span>
-                <span className="col-span-3">{selectedOrderDetails.studioName}</span>
-              </div>
-              <div className="grid grid-cols-4 items-center gap-4">
-                <span className="text-sm font-medium">Status:</span>
-                <span className="col-span-3">
-                  <span className="px-2 py-1 text-xs rounded-full bg-yellow-100 text-yellow-800">
-                    Unpaid
-                  </span>
-                </span>
-              </div>
-              <div className="grid grid-cols-4 items-center gap-4">
-                <span className="text-sm font-medium">Delivery:</span>
-                <span className="col-span-3">Scheduled for {new Date(new Date(selectedOrderDetails.date).getTime() + 86400000 * 2).toLocaleDateString()}</span>
+              
+              <div className="bg-gray-50 p-4 rounded-lg border border-gray-100">
+                <h3 className="text-sm font-medium text-gray-600 mb-3">Delivery Information</h3>
+                <div className="space-y-2">
+                  <div className="flex items-start">
+                    <span className="flex-shrink-0 mt-0.5 mr-3 text-gray-400"><Calendar className="h-4 w-4" /></span>
+                    <div>
+                      <p className="text-xs text-gray-500">Expected Delivery</p>
+                      <p className="font-medium">{new Date(new Date(selectedOrderDetails.date).getTime() + 86400000 * 2).toLocaleDateString()}</p>
+                    </div>
+                  </div>
+                  <div className="flex items-start">
+                    <span className="flex-shrink-0 mt-0.5 mr-3 text-gray-400"><Package className="h-4 w-4" /></span>
+                    <div>
+                      <p className="text-xs text-gray-500">Items Count</p>
+                      <p className="font-medium">{Math.floor(Math.random() * 10) + 5} items</p>
+                    </div>
+                  </div>
+                </div>
               </div>
             </div>
             
-            <DialogFooter className="sm:justify-between">
+            <DialogFooter className="sm:justify-between mt-4">
               <Button
                 variant="outline"
                 onClick={() => setShowOrderDetailsModal(false)}
