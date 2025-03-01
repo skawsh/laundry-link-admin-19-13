@@ -2,7 +2,7 @@
 import React, { useEffect, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import AdminLayout from '@/components/layout/AdminLayout';
-import { User, Phone, Calendar, Mail, MapPin, AlertTriangle, Truck, FileText, Award, ChevronLeft, Pencil, Save, X } from 'lucide-react';
+import { User, Phone, Calendar, Mail, MapPin, AlertTriangle, Truck, FileText, ChevronLeft, Pencil, Save, X } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Separator } from '@/components/ui/separator';
 import { Badge } from '@/components/ui/badge';
@@ -10,8 +10,7 @@ import { toast } from '@/hooks/use-toast';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Textarea } from '@/components/ui/textarea';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import StatusBadge from '@/components/ui/StatusBadge';
 import {
   Dialog,
   DialogContent,
@@ -323,15 +322,7 @@ const DriverProfile = () => {
                   Driver Information
                 </CardTitle>
                 <div className="flex items-center gap-2">
-                  <Badge 
-                    variant={driver.status === 'active' ? 'default' : 'secondary'}
-                  >
-                    {driver.status === 'active' ? 'Active' : 'Inactive'}
-                  </Badge>
-                  <div className="flex items-center">
-                    <Award className="h-4 w-4 text-yellow-500 mr-1" />
-                    <span className="text-sm text-gray-600">Rating: {driver.rating}/5</span>
-                  </div>
+                  <StatusBadge status={driver.status} />
                 </div>
               </div>
             </CardHeader>
