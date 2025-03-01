@@ -1,7 +1,9 @@
+
 import React, { useState, useEffect, useMemo } from 'react';
+import { useNavigate } from 'react-router-dom';
 import AdminLayout from '@/components/layout/AdminLayout';
 import { 
-  Search, User, Package, Clock, Info, MoreVertical, 
+  Search, User, Package, Clock, Info, MoreHorizontal, 
   Phone, Calendar, Truck, UserCog, XCircle, Filter
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -34,6 +36,7 @@ import ToggleSwitch from '@/components/ui/ToggleSwitch';
 import { toast } from '@/hooks/use-toast';
 
 const Drivers = () => {
+  const navigate = useNavigate();
   const [orderDetailsOpen, setOrderDetailsOpen] = useState(false);
   const [driverProfileOpen, setDriverProfileOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
@@ -534,8 +537,8 @@ const Drivers = () => {
   };
 
   const handleOpenDriverProfile = (driver: any) => {
-    setSelectedDriver(driver);
-    setDriverProfileOpen(true);
+    // Navigate to the driver profile page instead of opening a dialog
+    navigate(`/driver-profile/${driver.id}`);
   };
 
   const handleSearch = (query: string) => {
@@ -788,9 +791,15 @@ const Drivers = () => {
                     <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
                       <DropdownMenu>
                         <DropdownMenuTrigger asChild>
-                          <Button size="sm" variant="ghost" className="h-8 w-8 p-0">
+                          <Button size="sm" variant="ghost" className="h-8 w-8 p-0 rounded-full bg-gray-100">
                             <span className="sr-only">Open menu</span>
-                            <MoreVertical className="h-4 w-4" />
+                            <div className="flex items-center justify-center">
+                              <div className="flex space-x-1">
+                                <div className="h-1 w-1 rounded-full bg-gray-700"></div>
+                                <div className="h-1 w-1 rounded-full bg-gray-700"></div>
+                                <div className="h-1 w-1 rounded-full bg-gray-700"></div>
+                              </div>
+                            </div>
                           </Button>
                         </DropdownMenuTrigger>
                         <DropdownMenuContent align="end">
