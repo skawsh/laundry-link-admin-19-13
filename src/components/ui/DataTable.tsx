@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect, useMemo } from 'react';
 import { Search, X, Check } from 'lucide-react';
 import { Checkbox } from "@/components/ui/checkbox";
@@ -47,7 +46,6 @@ function DataTable<T>({
   const [selectedRows, setSelectedRows] = useState<Set<string>>(new Set());
   const [selectAll, setSelectAll] = useState(false);
 
-  // Filter data based on search fields and query
   const getSuggestions = (query: string): string[] => {
     if (!query || query.length < 2 || !searchFields.length) return [];
     
@@ -62,7 +60,7 @@ function DataTable<T>({
       });
     });
     
-    return Array.from(suggestionSet).slice(0, 5); // Return top 5 suggestions
+    return Array.from(suggestionSet).slice(0, 5);
   };
 
   useEffect(() => {
@@ -75,7 +73,6 @@ function DataTable<T>({
     }
   }, [searchQuery, data, searchSuggestions]);
 
-  // Reset selection when data changes
   useEffect(() => {
     setSelectedRows(new Set());
     setSelectAll(false);
@@ -109,7 +106,6 @@ function DataTable<T>({
   };
 
   const handleBlur = () => {
-    // Small delay to allow click events on suggestions to fire
     setTimeout(() => {
       setShowSuggestions(false);
     }, 200);
@@ -128,7 +124,6 @@ function DataTable<T>({
       onSelectionChange(Array.from(newSelectedRows));
     }
     
-    // Update selectAll state based on whether all rows are selected
     setSelectAll(newSelectedRows.size === data.length);
   };
 
@@ -137,14 +132,12 @@ function DataTable<T>({
     setSelectAll(newSelectAll);
     
     if (newSelectAll) {
-      // Select all rows
       const allIds = data.map(row => String(row[keyField]));
       setSelectedRows(new Set(allIds));
       if (onSelectionChange) {
         onSelectionChange(allIds);
       }
     } else {
-      // Deselect all rows
       setSelectedRows(new Set());
       if (onSelectionChange) {
         onSelectionChange([]);
@@ -213,10 +206,6 @@ function DataTable<T>({
                       checked={selectAll}
                       onCheckedChange={handleSelectAll}
                       aria-label="Select all"
-                      className={cn(
-                        "border-gray-300",
-                        selectAll && "bg-emerald-500 border-emerald-500 text-white"
-                      )}
                     />
                   </div>
                 </th>
@@ -244,10 +233,6 @@ function DataTable<T>({
                           checked={selectedRows.has(String(row[keyField]))}
                           onCheckedChange={() => handleRowSelect(String(row[keyField]))}
                           aria-label={`Select row ${rowIndex + 1}`}
-                          className={cn(
-                            "border-gray-300",
-                            selectedRows.has(String(row[keyField])) && "bg-emerald-500 border-emerald-500 text-white"
-                          )}
                         />
                       </div>
                     </td>
