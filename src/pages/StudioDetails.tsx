@@ -45,7 +45,6 @@ interface StudioDetail {
   washCategory?: 'standard' | 'express' | 'both';
   
   // Business Details
-  businessName?: string;
   businessRegistrationNumber?: string;
   gstNumber?: string;
   panNumber?: string;
@@ -97,7 +96,6 @@ const sampleStudioData: StudioDetail = {
   washCategory: "both",
   
   // Business Details
-  businessName: "Saiteja Laundry Services",
   businessRegistrationNumber: "UADJFDFJ4427287",
   gstNumber: "GST9876541",
   panNumber: "ABCDE1234F",
@@ -500,20 +498,6 @@ const StudioDetails: React.FC = () => {
             <CardContent>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div className="space-y-2">
-                  <label className="text-sm font-medium text-gray-700">Business Name</label>
-                  {isEditing ? (
-                    <Input 
-                      name="businessName" 
-                      value={studio.businessName || ''} 
-                      onChange={handleInputChange} 
-                      placeholder="Business Name" 
-                    />
-                  ) : (
-                    <p className="text-base">{studio.businessName || 'N/A'}</p>
-                  )}
-                </div>
-                
-                <div className="space-y-2">
                   <label className="text-sm font-medium text-gray-700">Business Registration Number</label>
                   {isEditing ? (
                     <Input 
@@ -785,7 +769,7 @@ const StudioDetails: React.FC = () => {
                 </div>
                 
                 <div className="space-y-2 md:col-span-2">
-                  <label className="text-sm font-medium text-gray-700">Select Payment Schedule</label>
+                  <label className="text-sm font-medium text-gray-700">{isEditing ? "Select Payment Schedule" : "Selected Payment Schedule"}</label>
                   {isEditing ? (
                     <RadioGroup
                       value={studio.paymentSchedule || 'daily'}
