@@ -1,3 +1,4 @@
+<lov-code>
 import React, { useState, useEffect, useRef } from 'react';
 import { Plus, ChevronDown, Search, Filter, Star, MoreHorizontal, X, ArrowUpDown, CreditCard, Settings, Package, Trash2, Frown } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
@@ -802,4 +803,4 @@ const Studios: React.FC = () => {
                     <div className="font-medium">{studio.name}</div>
                     <div className="text-xs text-gray-500 flex justify-between">
                       <span>{studio.studioId}</span>
-                      <span>{studio.contactNumber}
+                      <span>{studio.
