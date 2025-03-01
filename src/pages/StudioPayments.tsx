@@ -7,6 +7,7 @@ import PageHeader from '../components/ui/PageHeader';
 import DataTable from '../components/ui/DataTable';
 import { useToast } from "@/hooks/use-toast";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import {
   Select,
   SelectContent,
@@ -292,26 +293,34 @@ const StudioPayments: React.FC = () => {
         <TabsContent value="unpaid">
           {/* Filter options */}
           <div className="mb-5 flex justify-between items-center">
-            <div className="flex items-center">
-              <span className="text-sm text-gray-500 mr-2">Filter by:</span>
-              <div className="relative inline-block text-left mr-3">
-                <Select
-                  value={washTypeFilter}
-                  onValueChange={(value) => setWashTypeFilter(value as 'all' | 'express' | 'standard')}
-                >
-                  <SelectTrigger className="w-[150px] h-9">
-                    <SelectValue placeholder="Wash Type" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectGroup>
-                      <SelectItem value="all">All Wash Types</SelectItem>
-                      <SelectItem value="express">Express Wash</SelectItem>
-                      <SelectItem value="standard">Standard Wash</SelectItem>
-                    </SelectGroup>
-                  </SelectContent>
-                </Select>
-              </div>
-              <div className="relative inline-block text-left mr-3">
+            <div className="flex items-center space-x-4">
+              <span className="text-sm text-gray-500">Wash Type:</span>
+              <RadioGroup 
+                value={washTypeFilter}
+                onValueChange={(value) => setWashTypeFilter(value as 'all' | 'express' | 'standard')}
+                className="flex space-x-4"
+              >
+                <div className="flex items-center space-x-2">
+                  <RadioGroupItem value="all" id="all" />
+                  <label htmlFor="all" className="text-sm cursor-pointer">
+                    All Wash Types
+                  </label>
+                </div>
+                <div className="flex items-center space-x-2">
+                  <RadioGroupItem value="express" id="express" />
+                  <label htmlFor="express" className="text-sm cursor-pointer text-purple-800">
+                    Express Wash
+                  </label>
+                </div>
+                <div className="flex items-center space-x-2">
+                  <RadioGroupItem value="standard" id="standard" />
+                  <label htmlFor="standard" className="text-sm cursor-pointer text-blue-800">
+                    Standard Wash
+                  </label>
+                </div>
+              </RadioGroup>
+              
+              <div className="relative inline-block text-left ml-4">
                 <button className="px-3 py-1.5 text-sm border border-gray-200 rounded-md flex items-center bg-white">
                   <span>Date Range</span>
                   <Calendar className="ml-1 h-4 w-4" />
@@ -392,26 +401,34 @@ const StudioPayments: React.FC = () => {
         <TabsContent value="history">
           {/* Filter options */}
           <div className="mb-5 flex justify-between items-center">
-            <div className="flex items-center">
-              <span className="text-sm text-gray-500 mr-2">Filter by:</span>
-              <div className="relative inline-block text-left mr-3">
-                <Select
-                  value={washTypeFilter}
-                  onValueChange={(value) => setWashTypeFilter(value as 'all' | 'express' | 'standard')}
-                >
-                  <SelectTrigger className="w-[150px] h-9">
-                    <SelectValue placeholder="Wash Type" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectGroup>
-                      <SelectItem value="all">All Wash Types</SelectItem>
-                      <SelectItem value="express">Express Wash</SelectItem>
-                      <SelectItem value="standard">Standard Wash</SelectItem>
-                    </SelectGroup>
-                  </SelectContent>
-                </Select>
-              </div>
-              <div className="relative inline-block text-left mr-3">
+            <div className="flex items-center space-x-4">
+              <span className="text-sm text-gray-500">Wash Type:</span>
+              <RadioGroup 
+                value={washTypeFilter}
+                onValueChange={(value) => setWashTypeFilter(value as 'all' | 'express' | 'standard')}
+                className="flex space-x-4"
+              >
+                <div className="flex items-center space-x-2">
+                  <RadioGroupItem value="all" id="hist-all" />
+                  <label htmlFor="hist-all" className="text-sm cursor-pointer">
+                    All Wash Types
+                  </label>
+                </div>
+                <div className="flex items-center space-x-2">
+                  <RadioGroupItem value="express" id="hist-express" />
+                  <label htmlFor="hist-express" className="text-sm cursor-pointer text-purple-800">
+                    Express Wash
+                  </label>
+                </div>
+                <div className="flex items-center space-x-2">
+                  <RadioGroupItem value="standard" id="hist-standard" />
+                  <label htmlFor="hist-standard" className="text-sm cursor-pointer text-blue-800">
+                    Standard Wash
+                  </label>
+                </div>
+              </RadioGroup>
+              
+              <div className="relative inline-block text-left ml-4">
                 <button className="px-3 py-1.5 text-sm border border-gray-200 rounded-md flex items-center bg-white">
                   <span>Date Range</span>
                   <Calendar className="ml-1 h-4 w-4" />
