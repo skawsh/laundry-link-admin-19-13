@@ -1,7 +1,9 @@
+
 import React, { useState, useEffect, useMemo } from 'react';
+import { useNavigate } from 'react-router-dom';
 import AdminLayout from '@/components/layout/AdminLayout';
 import { 
-  Search, User, Package, Clock, Info, MoreVertical, 
+  Search, User, Package, Clock, Info, MoreHorizontal,
   Phone, Calendar, Truck, UserCog, XCircle, Filter
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -34,8 +36,8 @@ import ToggleSwitch from '@/components/ui/ToggleSwitch';
 import { toast } from '@/hooks/use-toast';
 
 const Drivers = () => {
+  const navigate = useNavigate();
   const [orderDetailsOpen, setOrderDetailsOpen] = useState(false);
-  const [driverProfileOpen, setDriverProfileOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
   const [filtersOpen, setFiltersOpen] = useState(false);
   const [filters, setFilters] = useState({
@@ -60,7 +62,6 @@ const Drivers = () => {
     rating?: number;
     joinDate?: string;
     status?: string;
-    lastActive?: string;
     email?: string;
     address?: string;
     emergencyContact?: string;
@@ -477,6 +478,12 @@ const Drivers = () => {
     if (!driver) return;
     
     switch(action) {
+      case 'viewProfile':
+        navigate(`/driver-profile/${driverId}`);
+        break;
+      case 'viewOrders':
+        handleOpenOrderDetails(driver);
+        break;
       case 'changeStatus':
         toggleDriverStatus(driverId);
         break;
@@ -788,25 +795,25 @@ const Drivers = () => {
                     <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
                       <DropdownMenu>
                         <DropdownMenuTrigger asChild>
-                          <Button size="sm" variant="ghost" className="h-8 w-8 p-0">
+                          <Button size="sm" variant="ghost" className="h-8 w-8 p-0 rounded-full bg-gray-100">
                             <span className="sr-only">Open menu</span>
-                            <MoreVertical className="h-4 w-4" />
+                            <MoreHorizontal className="h-4 w-4" />
                           </Button>
                         </DropdownMenuTrigger>
-                        <DropdownMenuContent align="end">
+                        <DropdownMenuContent align="end" className="bg-white">
                           <DropdownMenuItem 
                             className="flex items-center cursor-pointer"
-                            onClick={() => handleOpenOrderDetails(driver)}
-                          >
-                            <Info className="mr-2 h-4 w-4" />
-                            <span>Order Details</span>
-                          </DropdownMenuItem>
-                          <DropdownMenuItem 
-                            className="flex items-center cursor-pointer"
-                            onClick={() => handleOpenDriverProfile(driver)}
+                            onClick={() => handleActionMenuItem('viewProfile', driver.id)}
                           >
                             <User className="mr-2 h-4 w-4" />
                             <span>Driver Profile</span>
+                          </DropdownMenuItem>
+                          <DropdownMenuItem 
+                            className="flex items-center cursor-pointer"
+                            onClick={() => handleActionMenuItem('viewOrders', driver.id)}
+                          >
+                            <Info className="mr-2 h-4 w-4" />
+                            <span>Order Details</span>
                           </DropdownMenuItem>
                           <DropdownMenuItem 
                             className="flex items-center cursor-pointer"
