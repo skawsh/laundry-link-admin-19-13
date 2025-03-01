@@ -41,6 +41,7 @@ interface UnpaidOrder {
   isPaid: boolean;
   washType: 'express' | 'standard' | 'combined';
   customerName: string;
+  deliveredDate?: string;
 }
 
 interface PaymentRecord {
@@ -52,6 +53,7 @@ interface PaymentRecord {
   paymentDate: string;
   referenceNumber: string;
   washType: 'express' | 'standard' | 'combined';
+  deliveredDate?: string;
 }
 
 // Sample data with combined wash type added and amount below 1000
@@ -63,34 +65,34 @@ const initialUnpaidOrders: UnpaidOrder[] = [
   { id: 'ORD-1005', studioId: 2, studioName: 'Sparkle Clean Laundry', date: '2023-06-18', amount: 280, isPaid: false, washType: 'standard', customerName: 'Michael Brown' },
   { id: 'ORD-1006', studioId: 1, studioName: 'Saiteja Laundry', date: '2023-06-20', amount: 380, isPaid: false, washType: 'standard', customerName: 'Sarah Davis' },
   { id: 'ORD-1007', studioId: 1, studioName: 'Saiteja Laundry', date: '2023-06-22', amount: 290, isPaid: false, washType: 'express', customerName: 'Thomas Miller' },
-  { id: 'ORD-1008', studioId: 3, studioName: 'Fresh Fold Services', date: '2023-06-25', amount: 650, isPaid: false, washType: 'combined', customerName: 'Laura Wilson' },
-  { id: 'ORD-1009', studioId: 2, studioName: 'Sparkle Clean Laundry', date: '2023-06-26', amount: 520, isPaid: false, washType: 'combined', customerName: 'Alex Johnson' },
-  { id: 'ORD-1010', studioId: 1, studioName: 'Saiteja Laundry', date: '2023-06-28', amount: 470, isPaid: false, washType: 'combined', customerName: 'Maya Patel' },
+  { id: 'ORD-1008', studioId: 3, studioName: 'Fresh Fold Services', date: '2023-06-25', amount: 650, isPaid: false, washType: 'combined', customerName: 'Laura Wilson', deliveredDate: '2023-06-28' },
+  { id: 'ORD-1009', studioId: 2, studioName: 'Sparkle Clean Laundry', date: '2023-06-26', amount: 520, isPaid: false, washType: 'combined', customerName: 'Alex Johnson', deliveredDate: '2023-06-29' },
+  { id: 'ORD-1010', studioId: 1, studioName: 'Saiteja Laundry', date: '2023-06-28', amount: 470, isPaid: false, washType: 'combined', customerName: 'Maya Patel', deliveredDate: '2023-07-01' },
   // Add today, yesterday, this week and this month orders
   { id: 'ORD-2001', studioId: 1, studioName: 'Saiteja Laundry', date: new Date().toISOString().split('T')[0], amount: 540, isPaid: false, washType: 'express', customerName: 'Today Order 1' },
   { id: 'ORD-2002', studioId: 1, studioName: 'Saiteja Laundry', date: new Date().toISOString().split('T')[0], amount: 320, isPaid: false, washType: 'standard', customerName: 'Today Order 2' },
-  { id: 'ORD-2003', studioId: 1, studioName: 'Saiteja Laundry', date: new Date(Date.now() - 86400000).toISOString().split('T')[0], amount: 410, isPaid: false, washType: 'combined', customerName: 'Yesterday Order 1' },
-  { id: 'ORD-2004', studioId: 1, studioName: 'Saiteja Laundry', date: new Date(Date.now() - 86400000).toISOString().split('T')[0], amount: 380, isPaid: false, washType: 'express', customerName: 'Yesterday Order 2' },
+  { id: 'ORD-2003', studioId: 1, studioName: 'Saiteja Laundry', date: new Date(Date.now() - 86400000).toISOString().split('T')[0], amount: 410, isPaid: false, washType: 'combined', customerName: 'Yesterday Order 1', deliveredDate: new Date(Date.now() - 86400000 + 3600000).toISOString().split('T')[0] },
+  { id: 'ORD-2004', studioId: 1, studioName: 'Saiteja Laundry', date: new Date(Date.now() - 86400000).toISOString().split('T')[0], amount: 380, isPaid: false, washType: 'express', customerName: 'Yesterday Order 2', deliveredDate: new Date(Date.now() - 86400000 + 7200000).toISOString().split('T')[0] },
   { id: 'ORD-2005', studioId: 1, studioName: 'Saiteja Laundry', date: new Date(Date.now() - 86400000 * 2).toISOString().split('T')[0], amount: 430, isPaid: false, washType: 'standard', customerName: 'This Week Order 1' },
   { id: 'ORD-2006', studioId: 1, studioName: 'Saiteja Laundry', date: new Date(Date.now() - 86400000 * 3).toISOString().split('T')[0], amount: 390, isPaid: false, washType: 'combined', customerName: 'This Week Order 2' },
-  { id: 'ORD-2007', studioId: 1, studioName: 'Saiteja Laundry', date: new Date(Date.now() - 86400000 * 15).toISOString().split('T')[0], amount: 520, isPaid: false, washType: 'express', customerName: 'This Month Order 1' },
-  { id: 'ORD-2008', studioId: 1, studioName: 'Saiteja Laundry', date: new Date(Date.now() - 86400000 * 20).toISOString().split('T')[0], amount: 480, isPaid: false, washType: 'standard', customerName: 'This Month Order 2' },
+  { id: 'ORD-2007', studioId: 1, studioName: 'Saiteja Laundry', date: new Date(Date.now() - 86400000 * 15).toISOString().split('T')[0], amount: 520, isPaid: false, washType: 'express', customerName: 'This Month Order 1', deliveredDate: new Date(Date.now() - 86400000 * 13).toISOString().split('T')[0] },
+  { id: 'ORD-2008', studioId: 1, studioName: 'Saiteja Laundry', date: new Date(Date.now() - 86400000 * 20).toISOString().split('T')[0], amount: 480, isPaid: false, washType: 'standard', customerName: 'This Month Order 2', deliveredDate: new Date(Date.now() - 86400000 * 17).toISOString().split('T')[0] },
 ];
 
 const initialPaymentHistory: PaymentRecord[] = [
-  { id: 'PMT-2001', studioId: 1, studioName: 'Saiteja Laundry', orderId: 'ORD-1000', amount: 520, paymentDate: '2023-06-05', referenceNumber: 'UTR12345678', washType: 'standard' },
-  { id: 'PMT-2002', studioId: 2, studioName: 'Sparkle Clean Laundry', orderId: 'ORD-995', amount: 420, paymentDate: '2023-06-04', referenceNumber: 'UTR87654321', washType: 'express' },
-  { id: 'PMT-2003', studioId: 1, studioName: 'Saiteja Laundry', orderId: 'ORD-990', amount: 350, paymentDate: '2023-06-02', referenceNumber: 'UTR23456789', washType: 'standard' },
-  { id: 'PMT-2004', studioId: 3, studioName: 'Fresh Fold Services', orderId: 'ORD-985', amount: 600, paymentDate: '2023-05-30', referenceNumber: 'UTR98765432', washType: 'express' },
-  { id: 'PMT-2005', studioId: 4, studioName: 'Royal Wash', orderId: 'ORD-980', amount: 480, paymentDate: '2023-05-28', referenceNumber: 'UTR34567890', washType: 'standard' },
-  { id: 'PMT-2006', studioId: 1, studioName: 'Saiteja Laundry', orderId: 'ORD-975', amount: 410, paymentDate: '2023-05-25', referenceNumber: 'UTR45678901', washType: 'express' },
-  { id: 'PMT-2007', studioId: 3, studioName: 'Fresh Fold Services', orderId: 'ORD-970', amount: 580, paymentDate: '2023-05-22', referenceNumber: 'UTR56789012', washType: 'combined' },
-  { id: 'PMT-2008', studioId: 2, studioName: 'Sparkle Clean Laundry', orderId: 'ORD-965', amount: 490, paymentDate: '2023-05-20', referenceNumber: 'UTR67890123', washType: 'combined' },
+  { id: 'PMT-2001', studioId: 1, studioName: 'Saiteja Laundry', orderId: 'ORD-1000', amount: 520, paymentDate: '2023-06-05', referenceNumber: 'UTR12345678', washType: 'standard', deliveredDate: '2023-06-07' },
+  { id: 'PMT-2002', studioId: 2, studioName: 'Sparkle Clean Laundry', orderId: 'ORD-995', amount: 420, paymentDate: '2023-06-04', referenceNumber: 'UTR87654321', washType: 'express', deliveredDate: '2023-06-06' },
+  { id: 'PMT-2003', studioId: 1, studioName: 'Saiteja Laundry', orderId: 'ORD-990', amount: 350, paymentDate: '2023-06-02', referenceNumber: 'UTR23456789', washType: 'standard', deliveredDate: '2023-06-05' },
+  { id: 'PMT-2004', studioId: 3, studioName: 'Fresh Fold Services', orderId: 'ORD-985', amount: 600, paymentDate: '2023-05-30', referenceNumber: 'UTR98765432', washType: 'express', deliveredDate: '2023-06-01' },
+  { id: 'PMT-2005', studioId: 4, studioName: 'Royal Wash', orderId: 'ORD-980', amount: 480, paymentDate: '2023-05-28', referenceNumber: 'UTR34567890', washType: 'standard', deliveredDate: '2023-05-31' },
+  { id: 'PMT-2006', studioId: 1, studioName: 'Saiteja Laundry', orderId: 'ORD-975', amount: 410, paymentDate: '2023-05-25', referenceNumber: 'UTR45678901', washType: 'express', deliveredDate: '2023-05-27' },
+  { id: 'PMT-2007', studioId: 3, studioName: 'Fresh Fold Services', orderId: 'ORD-970', amount: 580, paymentDate: '2023-05-22', referenceNumber: 'UTR56789012', washType: 'combined', deliveredDate: '2023-05-25' },
+  { id: 'PMT-2008', studioId: 2, studioName: 'Sparkle Clean Laundry', orderId: 'ORD-965', amount: 490, paymentDate: '2023-05-20', referenceNumber: 'UTR67890123', washType: 'combined', deliveredDate: '2023-05-23' },
   // Add today, yesterday, this week and this month payment records
-  { id: 'PMT-3001', studioId: 1, studioName: 'Saiteja Laundry', orderId: 'ORD-3001', amount: 550, paymentDate: new Date().toISOString().split('T')[0], referenceNumber: 'UTR11223344', washType: 'express' },
-  { id: 'PMT-3002', studioId: 1, studioName: 'Saiteja Laundry', orderId: 'ORD-3002', amount: 470, paymentDate: new Date(Date.now() - 86400000).toISOString().split('T')[0], referenceNumber: 'UTR22334455', washType: 'standard' },
-  { id: 'PMT-3003', studioId: 1, studioName: 'Saiteja Laundry', orderId: 'ORD-3003', amount: 510, paymentDate: new Date(Date.now() - 86400000 * 2).toISOString().split('T')[0], referenceNumber: 'UTR33445566', washType: 'combined' },
-  { id: 'PMT-3004', studioId: 1, studioName: 'Saiteja Laundry', orderId: 'ORD-3004', amount: 490, paymentDate: new Date(Date.now() - 86400000 * 15).toISOString().split('T')[0], referenceNumber: 'UTR44556677', washType: 'express' },
+  { id: 'PMT-3001', studioId: 1, studioName: 'Saiteja Laundry', orderId: 'ORD-3001', amount: 550, paymentDate: new Date().toISOString().split('T')[0], referenceNumber: 'UTR11223344', washType: 'express', deliveredDate: new Date().toISOString().split('T')[0] },
+  { id: 'PMT-3002', studioId: 1, studioName: 'Saiteja Laundry', orderId: 'ORD-3002', amount: 470, paymentDate: new Date(Date.now() - 86400000).toISOString().split('T')[0], referenceNumber: 'UTR22334455', washType: 'standard', deliveredDate: new Date(Date.now() - 86400000 + 3600000).toISOString().split('T')[0] },
+  { id: 'PMT-3003', studioId: 1, studioName: 'Saiteja Laundry', orderId: 'ORD-3003', amount: 510, paymentDate: new Date(Date.now() - 86400000 * 2).toISOString().split('T')[0], referenceNumber: 'UTR33445566', washType: 'combined', deliveredDate: new Date(Date.now() - 86400000 * 2 + 7200000).toISOString().split('T')[0] },
+  { id: 'PMT-3004', studioId: 1, studioName: 'Saiteja Laundry', orderId: 'ORD-3004', amount: 490, paymentDate: new Date(Date.now() - 86400000 * 15).toISOString().split('T')[0], referenceNumber: 'UTR44556677', washType: 'express', deliveredDate: new Date(Date.now() - 86400000 * 15 + 3600000).toISOString().split('T')[0] },
 ];
 
 // Date filtering options type
@@ -107,7 +109,6 @@ const StudioPayments: React.FC = () => {
   const [paymentReference, setPaymentReference] = useState('');
   const [paymentDate, setPaymentDate] = useState('');
   const [mainWashTypeTab, setMainWashTypeTab] = useState<'all' | 'express' | 'standard' | 'combined'>('all');
-  const [washTypeFilter, setWashTypeFilter] = useState<'all' | 'express' | 'standard' | 'combined'>('all');
   const [showOrderDetailsModal, setShowOrderDetailsModal] = useState(false);
   const [selectedOrderDetails, setSelectedOrderDetails] = useState<UnpaidOrder | null>(null);
   const { toast } = useToast();
@@ -197,11 +198,6 @@ const StudioPayments: React.FC = () => {
       return orders.filter(order => order.washType === mainWashTypeTab);
     }
     
-    // If on 'all' tab but specific filter is selected
-    if (washTypeFilter !== 'all') {
-      return orders.filter(order => order.washType === washTypeFilter);
-    }
-    
     return orders;
   };
 
@@ -281,7 +277,8 @@ const StudioPayments: React.FC = () => {
       amount: selectedOrder.amount,
       paymentDate: paymentDate,
       referenceNumber: paymentReference,
-      washType: selectedOrder.washType
+      washType: selectedOrder.washType,
+      deliveredDate: selectedOrder.deliveredDate
     };
 
     setUnpaidOrders(unpaidOrders.filter(order => order.id !== selectedOrder.id));
@@ -348,7 +345,7 @@ const StudioPayments: React.FC = () => {
       accessor: 'customerName' as keyof UnpaidOrder,
     },
     {
-      header: 'Order Date',
+      header: 'Ordered Date',
       accessor: (row: UnpaidOrder) => new Date(row.date).toLocaleDateString(),
     },
     {
@@ -368,6 +365,10 @@ const StudioPayments: React.FC = () => {
     {
       header: 'Amount',
       accessor: (row: UnpaidOrder) => formatIndianRupees(row.amount),
+    },
+    {
+      header: 'Delivered Date',
+      accessor: (row: UnpaidOrder) => row.deliveredDate ? new Date(row.deliveredDate).toLocaleDateString() : "—",
     },
     {
       header: 'Actions',
@@ -426,6 +427,10 @@ const StudioPayments: React.FC = () => {
     {
       header: 'Payment Date',
       accessor: (row: PaymentRecord) => new Date(row.paymentDate).toLocaleDateString(),
+    },
+    {
+      header: 'Delivered Date',
+      accessor: (row: PaymentRecord) => row.deliveredDate ? new Date(row.deliveredDate).toLocaleDateString() : "—",
     },
     {
       header: 'Reference No.',
@@ -502,7 +507,7 @@ const StudioPayments: React.FC = () => {
                     <TabsTrigger value="combined">Combined Wash</TabsTrigger>
                   </TabsList>
                   
-                  {/* Search Bar - Now positioned to the right */}
+                  {/* Search Bar - Right aligned */}
                   <div className="relative">
                     <div className="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none">
                       <Search className="h-4 w-4 text-gray-400" />
@@ -512,7 +517,7 @@ const StudioPayments: React.FC = () => {
                       placeholder="Search by Order ID..."
                       value={orderIdSearch}
                       onChange={(e) => setOrderIdSearch(e.target.value)}
-                      className="pl-10 pr-4 py-2 w-full sm:w-60"
+                      className="pl-10 pr-10 py-2 w-full sm:w-60"
                     />
                     {orderIdSearch && (
                       <button
@@ -665,66 +670,23 @@ const StudioPayments: React.FC = () => {
                     </PopoverContent>
                   </Popover>
                   
-                  {/* Additional Wash Type Filter - Only for "All Wash Types" tab */}
-                  {mainWashTypeTab === 'all' && (
-                    <Select 
-                      value={washTypeFilter} 
-                      onValueChange={(value) => setWashTypeFilter(value as 'all' | 'express' | 'standard' | 'combined')}
-                    >
-                      <SelectTrigger className="w-[180px]">
-                        <SelectValue placeholder="Select Wash Type" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="all">All Wash Types</SelectItem>
-                        <SelectItem value="express">Express Wash</SelectItem>
-                        <SelectItem value="standard">Standard Wash</SelectItem>
-                        <SelectItem value="combined">Combined Wash</SelectItem>
-                      </SelectContent>
-                    </Select>
-                  )}
-                  
-                  {/* Active Filters Display */}
-                  {(dateFilter !== 'all' || orderIdSearch || (mainWashTypeTab === 'all' && washTypeFilter !== 'all')) && (
+                  {/* Active Filters Display - Only for date filter */}
+                  {dateFilter !== 'all' && (
                     <div className="flex items-center gap-2 text-sm text-gray-500">
                       <span>Active Filters:</span>
-                      {dateFilter !== 'all' && (
-                        <span className="inline-flex items-center px-2 py-1 rounded-full bg-gray-100 text-gray-700 text-xs">
-                          {dateFilter === 'today' ? 'Today' :
-                          dateFilter === 'yesterday' ? 'Yesterday' :
-                          dateFilter === 'this_week' ? 'This Week' :
-                          dateFilter === 'this_month' ? 'This Month' :
-                          'Custom Date Range'}
-                          <button
-                            onClick={resetDateFilter}
-                            className="ml-1 text-gray-400 hover:text-gray-600"
-                          >
-                            <X className="h-3 w-3" />
-                          </button>
-                        </span>
-                      )}
-                      {orderIdSearch && (
-                        <span className="inline-flex items-center px-2 py-1 rounded-full bg-gray-100 text-gray-700 text-xs">
-                          Order ID: {orderIdSearch}
-                          <button
-                            onClick={() => setOrderIdSearch('')}
-                            className="ml-1 text-gray-400 hover:text-gray-600"
-                          >
-                            <X className="h-3 w-3" />
-                          </button>
-                        </span>
-                      )}
-                      {mainWashTypeTab === 'all' && washTypeFilter !== 'all' && (
-                        <span className="inline-flex items-center px-2 py-1 rounded-full bg-gray-100 text-gray-700 text-xs">
-                          Wash Type: {washTypeFilter === 'express' ? 'Express' : 
-                                     washTypeFilter === 'standard' ? 'Standard' : 'Combined'}
-                          <button
-                            onClick={() => setWashTypeFilter('all')}
-                            className="ml-1 text-gray-400 hover:text-gray-600"
-                          >
-                            <X className="h-3 w-3" />
-                          </button>
-                        </span>
-                      )}
+                      <span className="inline-flex items-center px-2 py-1 rounded-full bg-gray-100 text-gray-700 text-xs">
+                        {dateFilter === 'today' ? 'Today' :
+                        dateFilter === 'yesterday' ? 'Yesterday' :
+                        dateFilter === 'this_week' ? 'This Week' :
+                        dateFilter === 'this_month' ? 'This Month' :
+                        'Custom Date Range'}
+                        <button
+                          onClick={resetDateFilter}
+                          className="ml-1 text-gray-400 hover:text-gray-600"
+                        >
+                          <X className="h-3 w-3" />
+                        </button>
+                      </span>
                     </div>
                   )}
                 </div>
@@ -735,6 +697,7 @@ const StudioPayments: React.FC = () => {
                     data={getFilteredUnpaidOrders()}
                     keyField="id"
                     emptyMessage="No unpaid orders found"
+                    searchPlaceholder="Search by Order ID..."
                   />
                 </TabsContent>
                 
@@ -744,6 +707,7 @@ const StudioPayments: React.FC = () => {
                     data={applyDateFilter(applyOrderIdSearch(filteredUnpaidOrders.filter(order => order.washType === 'express')))}
                     keyField="id"
                     emptyMessage="No unpaid express wash orders found"
+                    searchPlaceholder="Search by Order ID..."
                   />
                 </TabsContent>
                 
@@ -753,6 +717,7 @@ const StudioPayments: React.FC = () => {
                     data={applyDateFilter(applyOrderIdSearch(filteredUnpaidOrders.filter(order => order.washType === 'standard')))}
                     keyField="id"
                     emptyMessage="No unpaid standard wash orders found"
+                    searchPlaceholder="Search by Order ID..."
                   />
                 </TabsContent>
                 
@@ -762,6 +727,7 @@ const StudioPayments: React.FC = () => {
                     data={applyDateFilter(applyOrderIdSearch(filteredUnpaidOrders.filter(order => order.washType === 'combined')))}
                     keyField="id"
                     emptyMessage="No unpaid combined wash orders found"
+                    searchPlaceholder="Search by Order ID..."
                   />
                 </TabsContent>
               </Tabs>
@@ -785,7 +751,7 @@ const StudioPayments: React.FC = () => {
                     <TabsTrigger value="combined">Combined Wash</TabsTrigger>
                   </TabsList>
                   
-                  {/* Search Bar - Now positioned to the right */}
+                  {/* Search Bar - Right aligned */}
                   <div className="relative">
                     <div className="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none">
                       <Search className="h-4 w-4 text-gray-400" />
@@ -795,7 +761,7 @@ const StudioPayments: React.FC = () => {
                       placeholder="Search by Order ID..."
                       value={orderIdSearch}
                       onChange={(e) => setOrderIdSearch(e.target.value)}
-                      className="pl-10 pr-4 py-2 w-full sm:w-60"
+                      className="pl-10 pr-10 py-2 w-full sm:w-60"
                     />
                     {orderIdSearch && (
                       <button
@@ -948,66 +914,23 @@ const StudioPayments: React.FC = () => {
                     </PopoverContent>
                   </Popover>
                   
-                  {/* Additional Wash Type Filter - Only for "All Wash Types" tab */}
-                  {mainWashTypeTab === 'all' && (
-                    <Select 
-                      value={washTypeFilter} 
-                      onValueChange={(value) => setWashTypeFilter(value as 'all' | 'express' | 'standard' | 'combined')}
-                    >
-                      <SelectTrigger className="w-[180px]">
-                        <SelectValue placeholder="Select Wash Type" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="all">All Wash Types</SelectItem>
-                        <SelectItem value="express">Express Wash</SelectItem>
-                        <SelectItem value="standard">Standard Wash</SelectItem>
-                        <SelectItem value="combined">Combined Wash</SelectItem>
-                      </SelectContent>
-                    </Select>
-                  )}
-                  
-                  {/* Active Filters Display */}
-                  {(dateFilter !== 'all' || orderIdSearch || (mainWashTypeTab === 'all' && washTypeFilter !== 'all')) && (
+                  {/* Active Filters Display - Only for date filter */}
+                  {dateFilter !== 'all' && (
                     <div className="flex items-center gap-2 text-sm text-gray-500">
                       <span>Active Filters:</span>
-                      {dateFilter !== 'all' && (
-                        <span className="inline-flex items-center px-2 py-1 rounded-full bg-gray-100 text-gray-700 text-xs">
-                          {dateFilter === 'today' ? 'Today' :
-                          dateFilter === 'yesterday' ? 'Yesterday' :
-                          dateFilter === 'this_week' ? 'This Week' :
-                          dateFilter === 'this_month' ? 'This Month' :
-                          'Custom Date Range'}
-                          <button
-                            onClick={resetDateFilter}
-                            className="ml-1 text-gray-400 hover:text-gray-600"
-                          >
-                            <X className="h-3 w-3" />
-                          </button>
-                        </span>
-                      )}
-                      {orderIdSearch && (
-                        <span className="inline-flex items-center px-2 py-1 rounded-full bg-gray-100 text-gray-700 text-xs">
-                          Order ID: {orderIdSearch}
-                          <button
-                            onClick={() => setOrderIdSearch('')}
-                            className="ml-1 text-gray-400 hover:text-gray-600"
-                          >
-                            <X className="h-3 w-3" />
-                          </button>
-                        </span>
-                      )}
-                      {mainWashTypeTab === 'all' && washTypeFilter !== 'all' && (
-                        <span className="inline-flex items-center px-2 py-1 rounded-full bg-gray-100 text-gray-700 text-xs">
-                          Wash Type: {washTypeFilter === 'express' ? 'Express' : 
-                                     washTypeFilter === 'standard' ? 'Standard' : 'Combined'}
-                          <button
-                            onClick={() => setWashTypeFilter('all')}
-                            className="ml-1 text-gray-400 hover:text-gray-600"
-                          >
-                            <X className="h-3 w-3" />
-                          </button>
-                        </span>
-                      )}
+                      <span className="inline-flex items-center px-2 py-1 rounded-full bg-gray-100 text-gray-700 text-xs">
+                        {dateFilter === 'today' ? 'Today' :
+                        dateFilter === 'yesterday' ? 'Yesterday' :
+                        dateFilter === 'this_week' ? 'This Week' :
+                        dateFilter === 'this_month' ? 'This Month' :
+                        'Custom Date Range'}
+                        <button
+                          onClick={resetDateFilter}
+                          className="ml-1 text-gray-400 hover:text-gray-600"
+                        >
+                          <X className="h-3 w-3" />
+                        </button>
+                      </span>
                     </div>
                   )}
                 </div>
@@ -1018,6 +941,7 @@ const StudioPayments: React.FC = () => {
                     data={getFilteredPaymentHistory()}
                     keyField="id"
                     emptyMessage="No payment history found"
+                    searchPlaceholder="Search by Order ID..."
                   />
                 </TabsContent>
                 
@@ -1027,6 +951,7 @@ const StudioPayments: React.FC = () => {
                     data={applyDateFilter(applyOrderIdSearch(filteredPaymentHistory.filter(payment => payment.washType === 'express')))}
                     keyField="id"
                     emptyMessage="No express wash payment history found"
+                    searchPlaceholder="Search by Order ID..."
                   />
                 </TabsContent>
                 
@@ -1036,6 +961,7 @@ const StudioPayments: React.FC = () => {
                     data={applyDateFilter(applyOrderIdSearch(filteredPaymentHistory.filter(payment => payment.washType === 'standard')))}
                     keyField="id"
                     emptyMessage="No standard wash payment history found"
+                    searchPlaceholder="Search by Order ID..."
                   />
                 </TabsContent>
                 
@@ -1045,6 +971,7 @@ const StudioPayments: React.FC = () => {
                     data={applyDateFilter(applyOrderIdSearch(filteredPaymentHistory.filter(payment => payment.washType === 'combined')))}
                     keyField="id"
                     emptyMessage="No combined wash payment history found"
+                    searchPlaceholder="Search by Order ID..."
                   />
                 </TabsContent>
               </Tabs>
@@ -1146,7 +1073,7 @@ const StudioPayments: React.FC = () => {
                     <p className="font-medium">{selectedOrderDetails.id}</p>
                   </div>
                   <div>
-                    <p className="text-xs text-gray-500">Order Date</p>
+                    <p className="text-xs text-gray-500">Ordered Date</p>
                     <p className="font-medium">{new Date(selectedOrderDetails.date).toLocaleDateString()}</p>
                   </div>
                   <div>
@@ -1167,6 +1094,12 @@ const StudioPayments: React.FC = () => {
                       Unpaid
                     </span>
                   </div>
+                  {selectedOrderDetails.deliveredDate && (
+                    <div>
+                      <p className="text-xs text-gray-500">Delivered Date</p>
+                      <p className="font-medium">{new Date(selectedOrderDetails.deliveredDate).toLocaleDateString()}</p>
+                    </div>
+                  )}
                 </div>
               </div>
               
@@ -1231,6 +1164,15 @@ const StudioPayments: React.FC = () => {
                       <p className="font-medium">{new Date(new Date(selectedOrderDetails.date).getTime() + 86400000 * 2).toLocaleDateString()}</p>
                     </div>
                   </div>
+                  {selectedOrderDetails.deliveredDate && (
+                    <div className="flex items-start">
+                      <span className="flex-shrink-0 mt-0.5 mr-3 text-gray-400"><Calendar className="h-4 w-4" /></span>
+                      <div>
+                        <p className="text-xs text-gray-500">Delivered Date</p>
+                        <p className="font-medium">{new Date(selectedOrderDetails.deliveredDate).toLocaleDateString()}</p>
+                      </div>
+                    </div>
+                  )}
                   <div className="flex items-start">
                     <span className="flex-shrink-0 mt-0.5 mr-3 text-gray-400"><Package className="h-4 w-4" /></span>
                     <div>
