@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect, useMemo } from 'react';
 import AdminLayout from '@/components/layout/AdminLayout';
 import { 
@@ -31,7 +32,7 @@ import {
 } from "@/components/ui/popover";
 import { Checkbox } from "@/components/ui/checkbox";
 import ToggleSwitch from '@/components/ui/ToggleSwitch';
-import { toast } from 'sonner';
+import { toast } from '@/hooks/use-toast';
 
 const Drivers = () => {
   const [orderDetailsOpen, setOrderDetailsOpen] = useState(false);
@@ -461,13 +462,38 @@ const Drivers = () => {
       )
     );
     
-    // Show toast notification for status change
+    // Show toast notification for status change with shorter duration
     const driver = mockDrivers.find(d => d.id === driverId);
     const newStatus = driver?.status === 'active' ? 'inactive' : 'active';
-    toast.success(`${driver?.name}'s status updated to ${newStatus}`, {
-      duration: 3000,
-      position: 'top-right',
+    toast({
+      title: `Status updated`,
+      description: `${driver?.name}'s status changed to ${newStatus}`,
+      duration: 2000,
     });
+  };
+
+  const handleActionMenuItem = (action: string, driverId: number) => {
+    const driver = mockDrivers.find(d => d.id === driverId);
+    
+    if (!driver) return;
+    
+    switch(action) {
+      case 'changeStatus':
+        toggleDriverStatus(driverId);
+        break;
+      case 'removeDriver':
+        // Implementation for removing driver
+        toast({
+          title: "Driver removed",
+          description: `${driver.name} has been removed from the system`,
+          variant: "destructive",
+          duration: 2000,
+        });
+        setMockDrivers(prevDrivers => prevDrivers.filter(d => d.id !== driverId));
+        break;
+      default:
+        break;
+    }
   };
 
   const filteredDrivers = useMemo(() => {
@@ -730,9 +756,6 @@ const Drivers = () => {
                     Assigned Orders
                   </th>
                   <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    Rating
-                  </th>
-                  <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                     Actions
                   </th>
                 </tr>
@@ -747,7 +770,6 @@ const Drivers = () => {
                         </div>
                         <div className="ml-4">
                           <div className="text-sm font-medium text-gray-900">{driver.name}</div>
-                          <div className="text-sm text-gray-500">Last active: {driver.lastActive}</div>
                         </div>
                       </div>
                     </td>
@@ -763,12 +785,6 @@ const Drivers = () => {
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
                       {driver.assignedOrders.length}
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                      <div className="flex items-center">
-                        <span className="text-yellow-500 mr-1">★</span>
-                        <span>{driver.rating}</span>
-                      </div>
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
                       <div className="flex space-x-2">
@@ -813,12 +829,18 @@ const Drivers = () => {
                                     <MoreVertical className="h-4 w-4" />
                                   </Button>
                                 </DropdownMenuTrigger>
-                                <DropdownMenuContent align="end">
-                                  <DropdownMenuItem className="flex items-center">
+                                <DropdownMenuContent align="end" className="bg-white">
+                                  <DropdownMenuItem 
+                                    className="flex items-center cursor-pointer"
+                                    onClick={() => handleActionMenuItem('changeStatus', driver.id)}
+                                  >
                                     <UserCog className="mr-2 h-4 w-4" />
                                     <span>Change Status</span>
                                   </DropdownMenuItem>
-                                  <DropdownMenuItem className="flex items-center text-red-600">
+                                  <DropdownMenuItem 
+                                    className="flex items-center text-red-600 cursor-pointer"
+                                    onClick={() => handleActionMenuItem('removeDriver', driver.id)}
+                                  >
                                     <XCircle className="mr-2 h-4 w-4" />
                                     <span>Remove Driver</span>
                                   </DropdownMenuItem>
@@ -920,7 +942,6 @@ const Drivers = () => {
                   <Badge variant={selectedDriver?.status === 'active' ? 'default' : 'secondary'} className="mr-2">
                     {selectedDriver?.status === 'active' ? 'Active' : 'Inactive'}
                   </Badge>
-                  <span className="text-sm text-gray-500">Last active: {selectedDriver?.lastActive}</span>
                 </div>
               </div>
             </div>
@@ -973,14 +994,10 @@ const Drivers = () => {
             
             <Separator />
             
-            <div className="grid grid-cols-3 gap-4">
+            <div className="grid grid-cols-2 gap-4">
               <div className="bg-gray-50 p-3 rounded-lg text-center">
                 <p className="text-sm font-medium text-gray-900">{selectedDriver?.totalOrders}</p>
                 <p className="text-xs text-gray-500">Total Orders</p>
-              </div>
-              <div className="bg-gray-50 p-3 rounded-lg text-center">
-                <p className="text-sm font-medium text-gray-900">{selectedDriver?.rating} ★</p>
-                <p className="text-xs text-gray-500">Rating</p>
               </div>
               <div className="bg-gray-50 p-3 rounded-lg text-center">
                 <p className="text-sm font-medium text-gray-900">{selectedDriver?.assignedOrders?.length || 0}</p>
