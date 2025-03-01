@@ -1,25 +1,16 @@
+
 import React from 'react';
-import { useNavigate } from 'react-router-dom';
-import { 
-  Dialog, 
-  DialogContent, 
-  DialogHeader, 
-  DialogTitle,
-  DialogFooter,
-} from "@/components/ui/dialog";
+import { useParams, useNavigate } from 'react-router-dom';
+import AdminLayout from '../components/layout/AdminLayout';
+import PageHeader from '../components/ui/PageHeader';
 import { Button } from "@/components/ui/button";
-import { UnpaidOrder } from '@/types/paymentTypes';
-import { formatIndianRupees } from '@/utils/dateUtils';
 import { Card, CardContent } from "@/components/ui/card";
-import { Check, Info, Truck, User, DollarSign } from "lucide-react";
+import { ArrowLeft, Check, Info, Truck, User, DollarSign } from "lucide-react";
+import { formatIndianRupees } from '@/utils/dateUtils';
+import { initialUnpaidOrders } from '@/data/mockPaymentData';
+import { UnpaidOrder } from '@/types/paymentTypes';
 
-interface OrderDetailsModalProps {
-  selectedOrderDetails: UnpaidOrder | null;
-  showOrderDetailsModal: boolean;
-  setShowOrderDetailsModal: (value: boolean) => void;
-  openPaymentModal: (order: UnpaidOrder) => void;
-}
-
+// Import sample data from OrderDetailsModal
 const clothingItemsByOrderId: Record<string, {name: string, quantity: number}[]> = {
   'ORD-1001': [
     {name: 'Shirt', quantity: 2},
@@ -54,6 +45,7 @@ const clothingItemsByOrderId: Record<string, {name: string, quantity: number}[]>
   ],
 };
 
+// Sample delivery information for each order
 const deliveryInfoByOrderId: Record<string, {assignedTo: string, vehicleDetails: string, phoneNumber: string}> = {
   'ORD-1001': {
     assignedTo: 'Deepak Bagade',
@@ -87,6 +79,7 @@ const deliveryInfoByOrderId: Record<string, {assignedTo: string, vehicleDetails:
   },
 };
 
+// Sample customer information for each order
 const customerInfoByOrderId: Record<string, {name: string, phone: string, address: string}> = {
   'ORD-1001': {
     name: 'Mahesh BM',
@@ -120,48 +113,77 @@ const customerInfoByOrderId: Record<string, {name: string, phone: string, addres
   },
 };
 
-const OrderDetailsModal: React.FC<OrderDetailsModalProps> = ({
-  selectedOrderDetails,
-  showOrderDetailsModal,
-  setShowOrderDetailsModal,
-  openPaymentModal,
-}) => {
+const OrderDetails: React.FC = () => {
+  const { orderId } = useParams<{ orderId: string }>();
   const navigate = useNavigate();
-  
+
+  // Find the order from the mock data
+  const orderDetails = initialUnpaidOrders.find(order => order.id === orderId) || null;
+
+  if (!orderDetails) {
+    return (
+      <AdminLayout>
+        <PageHeader 
+          title="Order Not Found" 
+          subtitle="The requested order could not be found"
+          backButton={
+            <Button
+              variant="back"
+              onClick={() => navigate(-1)}
+              size="icon"
+              className="mr-2"
+            >
+              <ArrowLeft className="h-5 w-5" />
+            </Button>
+          }
+        />
+        <div className="p-6 text-center">
+          <p>The order you are looking for does not exist or has been removed.</p>
+          <Button onClick={() => navigate(-1)} className="mt-4">Go Back</Button>
+        </div>
+      </AdminLayout>
+    );
+  }
+
+  // Format date in DD/MM/YYYY format
   const formatDate = (dateString: string) => {
     const date = new Date(dateString);
     return `${date.getDate().toString().padStart(2, '0')}/${(date.getMonth() + 1).toString().padStart(2, '0')}/${date.getFullYear()}`;
   };
 
+  // Get clothing items for the current order
   const getClothingItems = () => {
-    const orderId = selectedOrderDetails?.id || '';
-    return clothingItemsByOrderId[orderId] || clothingItemsByOrderId['ORD-1001'];
+    return clothingItemsByOrderId[orderDetails.id] || clothingItemsByOrderId['ORD-1001'];
   };
 
+  // Get delivery info for the current order
   const getDeliveryInfo = () => {
-    const orderId = selectedOrderDetails?.id || '';
-    return deliveryInfoByOrderId[orderId] || deliveryInfoByOrderId['ORD-1001'];
+    return deliveryInfoByOrderId[orderDetails.id] || deliveryInfoByOrderId['ORD-1001'];
   };
 
+  // Get customer info for the current order
   const getCustomerInfo = () => {
-    const orderId = selectedOrderDetails?.id || '';
-    return customerInfoByOrderId[orderId] || customerInfoByOrderId['ORD-1001'];
+    return customerInfoByOrderId[orderDetails.id] || customerInfoByOrderId['ORD-1001'];
   };
 
+  // Get wash type display text
   const getWashTypeText = (washType: string | undefined) => {
     if (washType === 'express') return 'Quick Wash';
     if (washType === 'standard') return 'Standard Wash';
     return 'Combined Wash';
   };
 
+  // Fixed per kg rate at 49 rs/kg as requested
   const getPerKgRate = () => {
-    return 49; // Fixed at 49 rs/kg as requested
+    return 49;
   };
 
+  // Fixed total weight at 2.5 kg as requested
   const getTotalWeight = () => {
-    return 2.5; // Fixed at 2.5 kg as requested
+    return 2.5;
   };
 
+  // Calculate delivery date based on order date and wash type
   const calculateDeliveryDate = (orderDate: string, washType: 'express' | 'standard' | 'combined' | undefined): string => {
     if (!orderDate) return '';
     
@@ -176,58 +198,69 @@ const OrderDetailsModal: React.FC<OrderDetailsModalProps> = ({
     return `${date.getDate().toString().padStart(2, '0')}/${(date.getMonth() + 1).toString().padStart(2, '0')}/${date.getFullYear()}`;
   };
 
-  const handleViewOrderDetails = () => {
-    if (selectedOrderDetails) {
-      setShowOrderDetailsModal(false);
-      navigate(`/order-details/${selectedOrderDetails.id}`);
-    }
-  };
-
-  if (!selectedOrderDetails) return null;
-
   return (
-    <Dialog open={showOrderDetailsModal} onOpenChange={setShowOrderDetailsModal}>
-      <DialogContent className="sm:max-w-[600px]">
-        <DialogHeader>
-          <DialogTitle className="text-center text-xl pb-2 pt-0 text-blue-700 bg-blue-50 mx-[-24px] rounded-t-lg">
-            Order details
-          </DialogTitle>
-        </DialogHeader>
-        
-        <div className="space-y-4 mt-0">
+    <AdminLayout>
+      <PageHeader 
+        title={`Order Details: ${orderDetails.id}`} 
+        subtitle={`View details for order ${orderDetails.id}`}
+        backButton={
+          <Button
+            variant="back"
+            onClick={() => navigate(-1)}
+            size="icon"
+            className="mr-2"
+          >
+            <ArrowLeft className="h-5 w-5" />
+          </Button>
+        }
+      >
+        <Button
+          variant="success"
+          onClick={() => navigate(`/studios/payments/${orderDetails.studioId}`)}
+          className="flex items-center"
+        >
+          <Check className="h-4 w-4 mr-2" />
+          <span>Back to Payments</span>
+        </Button>
+      </PageHeader>
+
+      <div className="container mx-auto p-6 space-y-6">
+        <div className="space-y-6">
+          {/* Order Information Card */}
           <Card className="border-green-100 rounded-xl overflow-hidden shadow-sm">
-            <div className="bg-green-100 py-1 px-3 flex items-center">
-              <Info className="h-4 w-4 mr-2 text-green-800" />
-              <h3 className="text-sm font-medium text-green-800">Order Information</h3>
+            <div className="bg-green-100 py-2 px-4 flex items-center">
+              <Info className="h-5 w-5 mr-2 text-green-800" />
+              <h3 className="text-md font-medium text-green-800">Order Information</h3>
             </div>
-            <CardContent className="p-3 text-sm space-y-1">
-              <div className="grid grid-cols-2 gap-2">
+            <CardContent className="p-4 text-sm space-y-2">
+              <div className="grid grid-cols-2 gap-4">
                 <div>
                   <span className="text-gray-600">Order ID - </span>
-                  <span className="font-medium">{selectedOrderDetails.id}</span>
+                  <span className="font-medium">{orderDetails.id}</span>
                 </div>
                 <div>
                   <span className="text-gray-600">Ordered Date - </span>
-                  <span className="font-medium">{formatDate(selectedOrderDetails.date)}</span>
+                  <span className="font-medium">{formatDate(orderDetails.date)}</span>
                 </div>
                 <div>
                   <span className="text-gray-600">Order Delivered date - </span>
-                  <span className="font-medium">{calculateDeliveryDate(selectedOrderDetails.date, selectedOrderDetails.washType)}</span>
+                  <span className="font-medium">{calculateDeliveryDate(orderDetails.date, orderDetails.washType)}</span>
                 </div>
                 <div>
                   <span className="text-gray-600">Wash Type - </span>
-                  <span className="font-medium text-red-600">{getWashTypeText(selectedOrderDetails.washType)}</span>
+                  <span className="font-medium text-red-600">{getWashTypeText(orderDetails.washType)}</span>
                 </div>
               </div>
             </CardContent>
           </Card>
           
+          {/* Customer Information Card */}
           <Card className="border-green-100 rounded-xl overflow-hidden shadow-sm">
-            <div className="bg-green-100 py-1 px-3 flex items-center">
-              <User className="h-4 w-4 mr-2 text-green-800" />
-              <h3 className="text-sm font-medium text-green-800">Customer Information</h3>
+            <div className="bg-green-100 py-2 px-4 flex items-center">
+              <User className="h-5 w-5 mr-2 text-green-800" />
+              <h3 className="text-md font-medium text-green-800">Customer Information</h3>
             </div>
-            <CardContent className="p-3 text-sm space-y-1">
+            <CardContent className="p-4 text-sm space-y-2">
               <div>
                 <span className="text-gray-600">Customer Name - </span>
                 <span className="font-medium">{getCustomerInfo().name}</span>
@@ -243,60 +276,64 @@ const OrderDetailsModal: React.FC<OrderDetailsModalProps> = ({
             </CardContent>
           </Card>
           
+          {/* Services Information Card */}
           <Card className="border-green-100 rounded-xl overflow-hidden shadow-sm">
-            <div className="bg-green-100 py-1 px-3 flex items-center">
-              <DollarSign className="h-4 w-4 mr-2 text-green-800" />
-              <h3 className="text-sm font-medium text-green-800">Services Information</h3>
+            <div className="bg-green-100 py-2 px-4 flex items-center">
+              <DollarSign className="h-5 w-5 mr-2 text-green-800" />
+              <h3 className="text-md font-medium text-green-800">Services Information</h3>
             </div>
-            <CardContent className="p-3 text-sm">
-              <div className="mb-2">
+            <CardContent className="p-4 text-sm">
+              <div className="mb-3">
                 <span className="text-gray-600">Wash Type - </span>
-                <span className="font-medium text-red-600">{getWashTypeText(selectedOrderDetails.washType)}</span>
+                <span className="font-medium text-red-600">{getWashTypeText(orderDetails.washType)}</span>
               </div>
               
-              <div className="border-b border-gray-200 mb-2">
-                <div className="grid grid-cols-3 gap-1 font-medium mb-1">
+              <div className="border-b border-gray-200 mb-3">
+                <div className="grid grid-cols-3 gap-1 font-medium mb-2">
                   <div>Services</div>
                   <div>Quantity</div>
                   <div className="text-right">Price</div>
                 </div>
                 
-                <div className="grid grid-cols-3 gap-1 mb-1">
+                <div className="grid grid-cols-3 gap-1 mb-2">
                   <div>1. Wash & Fold</div>
                   <div>{getTotalWeight()} X {getPerKgRate()}/kg</div>
                   <div className="text-right">{formatIndianRupees(getTotalWeight() * getPerKgRate())}</div>
                 </div>
               </div>
               
-              <div className="mb-3">
-                <div className="font-medium">Clothing Items</div>
-                {getClothingItems().map((item, index) => (
-                  <div key={index} className="ml-2">
-                    {index + 1}. {item.name}({item.quantity})
-                  </div>
-                ))}
+              <div className="mb-4">
+                <div className="font-medium mb-2">Clothing Items</div>
+                <div className="grid grid-cols-2 gap-2">
+                  {getClothingItems().map((item, index) => (
+                    <div key={index} className="ml-2">
+                      {index + 1}. {item.name} ({item.quantity})
+                    </div>
+                  ))}
+                </div>
               </div>
               
-              <div className="flex justify-between font-medium border-t border-gray-200 pt-2">
+              <div className="flex justify-between font-medium border-t border-gray-200 pt-3 text-base">
                 <div>Total</div>
                 <div>{formatIndianRupees(getTotalWeight() * getPerKgRate())}</div>
               </div>
             </CardContent>
           </Card>
           
+          {/* Delivery Information Card */}
           <Card className="border-green-100 rounded-xl overflow-hidden shadow-sm">
-            <div className="bg-green-100 py-1 px-3 flex items-center">
-              <Truck className="h-4 w-4 mr-2 text-green-800" />
-              <h3 className="text-sm font-medium text-green-800">Delivery Information</h3>
+            <div className="bg-green-100 py-2 px-4 flex items-center">
+              <Truck className="h-5 w-5 mr-2 text-green-800" />
+              <h3 className="text-md font-medium text-green-800">Delivery Information</h3>
             </div>
-            <CardContent className="p-3 text-sm space-y-1">
+            <CardContent className="p-4 text-sm space-y-2">
               <div>
                 <span className="text-gray-600">Assigned to - </span>
                 <span className="font-medium">{getDeliveryInfo().assignedTo} / {getDeliveryInfo().phoneNumber}</span>
               </div>
               <div>
                 <span className="text-gray-600">Delivered date - </span>
-                <span className="font-medium">{calculateDeliveryDate(selectedOrderDetails.date, selectedOrderDetails.washType)}</span>
+                <span className="font-medium">{calculateDeliveryDate(orderDetails.date, orderDetails.washType)}</span>
               </div>
               <div>
                 <span className="text-gray-600">Vehicle details - </span>
@@ -305,36 +342,9 @@ const OrderDetailsModal: React.FC<OrderDetailsModalProps> = ({
             </CardContent>
           </Card>
         </div>
-        
-        <DialogFooter className="gap-2 sm:gap-0">
-          <Button 
-            variant="outline" 
-            onClick={() => setShowOrderDetailsModal(false)}
-            className="flex-1 sm:flex-none"
-          >
-            Close
-          </Button>
-          <Button
-            onClick={handleViewOrderDetails}
-            variant="default"
-            className="flex-1 sm:flex-none"
-          >
-            View Details
-          </Button>
-          <Button
-            onClick={() => {
-              setShowOrderDetailsModal(false);
-              openPaymentModal(selectedOrderDetails);
-            }}
-            variant="success"
-            className="flex-1 sm:flex-none"
-          >
-            Mark as paid
-          </Button>
-        </DialogFooter>
-      </DialogContent>
-    </Dialog>
+      </div>
+    </AdminLayout>
   );
 };
 
-export default OrderDetailsModal;
+export default OrderDetails;
