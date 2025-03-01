@@ -10,39 +10,70 @@ import { formatIndianRupees } from '@/utils/dateUtils';
 import { initialUnpaidOrders } from '@/data/mockPaymentData';
 import { UnpaidOrder } from '@/types/paymentTypes';
 
-// Import sample data from OrderDetailsModal
-const clothingItemsByOrderId: Record<string, {name: string, quantity: number}[]> = {
-  'ORD-1001': [
-    {name: 'Shirt', quantity: 2},
-    {name: 'Pant', quantity: 1},
-    {name: 'T-shirt', quantity: 1},
-    {name: 'Shorts', quantity: 2},
-  ],
-  'ORD-1002': [
-    {name: 'Saree', quantity: 1},
-    {name: 'Blouse', quantity: 2},
-    {name: 'Dress', quantity: 1},
-  ],
-  'ORD-1003': [
-    {name: 'Suit', quantity: 1},
-    {name: 'Tie', quantity: 2},
-    {name: 'Formal Shirt', quantity: 3},
-  ],
-  'ORD-1004': [
-    {name: 'Jeans', quantity: 2},
-    {name: 'T-shirt', quantity: 3},
-    {name: 'Jacket', quantity: 1},
-  ],
-  'ORD-1005': [
-    {name: 'Kurta', quantity: 1},
-    {name: 'Pajama', quantity: 1},
-    {name: 'Shawl', quantity: 1},
-  ],
-  'ORD-1006': [
-    {name: 'Sweater', quantity: 2},
-    {name: 'Socks', quantity: 4},
-    {name: 'Gloves', quantity: 1},
-  ],
+// Import sample data for OrderDetails
+const clothingItemsByOrderId: Record<string, {
+  standard: {name: string, quantity: number}[],
+  express: {name: string, quantity: number}[]
+}> = {
+  'ORD-1001': {
+    standard: [
+      {name: 'Shirt', quantity: 1},
+      {name: 'Pant', quantity: 1},
+    ],
+    express: [
+      {name: 'T-shirt', quantity: 1},
+      {name: 'Shorts', quantity: 2},
+    ]
+  },
+  'ORD-1002': {
+    standard: [
+      {name: 'Saree', quantity: 1},
+    ],
+    express: [
+      {name: 'Blouse', quantity: 2},
+      {name: 'Dress', quantity: 1},
+    ]
+  },
+  'ORD-1003': {
+    standard: [
+      {name: 'Suit', quantity: 1},
+      {name: 'Formal Shirt', quantity: 1},
+    ],
+    express: [
+      {name: 'Tie', quantity: 2},
+      {name: 'Formal Shirt', quantity: 2},
+    ]
+  },
+  'ORD-1004': {
+    standard: [
+      {name: 'Jeans', quantity: 1},
+      {name: 'Jacket', quantity: 1},
+    ],
+    express: [
+      {name: 'T-shirt', quantity: 3},
+      {name: 'Jeans', quantity: 1},
+    ]
+  },
+  'ORD-1005': {
+    standard: [
+      {name: 'Kurta', quantity: 1},
+      {name: 'Pajama', quantity: 1},
+    ],
+    express: [
+      {name: 'Shawl', quantity: 1},
+    ]
+  },
+  'ORD-1006': {
+    standard: [
+      {name: 'Sweater', quantity: 1},
+      {name: 'Socks', quantity: 2},
+    ],
+    express: [
+      {name: 'Sweater', quantity: 1},
+      {name: 'Socks', quantity: 2},
+      {name: 'Gloves', quantity: 1},
+    ]
+  },
 };
 
 // Sample delivery information for each order
@@ -174,15 +205,15 @@ const OrderDetails: React.FC = () => {
 
   // Get wash type display text
   const getWashTypeText = (washType: string | undefined) => {
-    if (washType === 'express') return 'Quick Wash';
+    if (washType === 'express') return 'Express Wash';
     if (washType === 'standard') return 'Standard Wash';
     if (washType === 'combined') return 'Standard Wash & Express Wash';
     return 'Standard Wash';
   };
 
-  // Fixed per kg rate at 49 rs/kg as requested
-  const getPerKgRate = () => {
-    return 49;
+  // Fixed per kg rate with different rates for standard and express
+  const getPerKgRate = (type: 'standard' | 'express') => {
+    return type === 'standard' ? 49 : 69; // Express wash is more expensive
   };
 
   // Fixed total weight at 2.5 kg as requested
@@ -207,6 +238,13 @@ const OrderDetails: React.FC = () => {
 
   // Determine if we need to show both standard and express services
   const isCombinedWash = orderDetails.washType === 'combined';
+  const showExpressWash = orderDetails.washType === 'express' || isCombinedWash;
+  const showStandardWash = orderDetails.washType === 'standard' || isCombinedWash;
+
+  // Calculate total amounts
+  const standardAmount = showStandardWash ? getTotalWeight() * getPerKgRate('standard') : 0;
+  const expressAmount = showExpressWash ? getTotalWeight() * getPerKgRate('express') : 0;
+  const totalAmount = standardAmount + expressAmount;
 
   return (
     <AdminLayout>
@@ -298,48 +336,9 @@ const OrderDetails: React.FC = () => {
                 <span className="font-medium text-red-600">{getWashTypeText(orderDetails.washType)}</span>
               </div>
               
-              {isCombinedWash ? (
-                <>
-                  {/* Standard Wash Section */}
-                  <div className="border-b border-gray-200 mb-3">
-                    <div className="font-medium mb-2 text-blue-700">Standard Wash</div>
-                    <div className="grid grid-cols-3 gap-1 font-medium mb-2">
-                      <div>Services</div>
-                      <div>Quantity</div>
-                      <div className="text-right">Price</div>
-                    </div>
-                    
-                    <div className="grid grid-cols-3 gap-1 mb-2">
-                      <div>1. Wash & Fold</div>
-                      <div>{getTotalWeight()} X {getPerKgRate()}/kg</div>
-                      <div className="text-right">{formatIndianRupees(getTotalWeight() * getPerKgRate())}</div>
-                    </div>
-                    <div className="text-xs text-gray-500 mb-2">
-                      Delivery in 4 days
-                    </div>
-                  </div>
-                  
-                  {/* Express Wash Section */}
-                  <div className="border-b border-gray-200 mb-3">
-                    <div className="font-medium mb-2 text-purple-700">Express Wash</div>
-                    <div className="grid grid-cols-3 gap-1 font-medium mb-2">
-                      <div>Services</div>
-                      <div>Quantity</div>
-                      <div className="text-right">Price</div>
-                    </div>
-                    
-                    <div className="grid grid-cols-3 gap-1 mb-2">
-                      <div>1. Express Wash & Fold</div>
-                      <div>{getTotalWeight()} X {getPerKgRate()}/kg</div>
-                      <div className="text-right">{formatIndianRupees(getTotalWeight() * getPerKgRate())}</div>
-                    </div>
-                    <div className="text-xs text-gray-500 mb-2">
-                      Delivery in 1 day
-                    </div>
-                  </div>
-                </>
-              ) : (
+              {showStandardWash && (
                 <div className="border-b border-gray-200 mb-3">
+                  <div className="font-medium mb-2 text-blue-700">Standard Wash</div>
                   <div className="grid grid-cols-3 gap-1 font-medium mb-2">
                     <div>Services</div>
                     <div>Quantity</div>
@@ -348,28 +347,56 @@ const OrderDetails: React.FC = () => {
                   
                   <div className="grid grid-cols-3 gap-1 mb-2">
                     <div>1. Wash & Fold</div>
-                    <div>{getTotalWeight()} X {getPerKgRate()}/kg</div>
-                    <div className="text-right">{formatIndianRupees(getTotalWeight() * getPerKgRate())}</div>
+                    <div>{getTotalWeight()} X {getPerKgRate('standard')}/kg</div>
+                    <div className="text-right">{formatIndianRupees(getTotalWeight() * getPerKgRate('standard'))}</div>
+                  </div>
+                  
+                  {/* Clothing items for Standard Wash */}
+                  <div className="mb-4">
+                    <div className="font-medium mb-2">Clothing Items</div>
+                    <div className="grid grid-cols-2 gap-2">
+                      {getClothingItems().standard.map((item, index) => (
+                        <div key={index} className="ml-2">
+                          {index + 1}. {item.name} ({item.quantity})
+                        </div>
+                      ))}
+                    </div>
                   </div>
                 </div>
               )}
               
-              <div className="mb-4">
-                <div className="font-medium mb-2">Clothing Items</div>
-                <div className="grid grid-cols-2 gap-2">
-                  {getClothingItems().map((item, index) => (
-                    <div key={index} className="ml-2">
-                      {index + 1}. {item.name} ({item.quantity})
+              {showExpressWash && (
+                <div className="border-b border-gray-200 mb-3">
+                  <div className="font-medium mb-2 text-purple-700">Express Wash</div>
+                  <div className="grid grid-cols-3 gap-1 font-medium mb-2">
+                    <div>Services</div>
+                    <div>Quantity</div>
+                    <div className="text-right">Price</div>
+                  </div>
+                  
+                  <div className="grid grid-cols-3 gap-1 mb-2">
+                    <div>1. Express Wash & Fold</div>
+                    <div>{getTotalWeight()} X {getPerKgRate('express')}/kg</div>
+                    <div className="text-right">{formatIndianRupees(getTotalWeight() * getPerKgRate('express'))}</div>
+                  </div>
+                  
+                  {/* Clothing items for Express Wash */}
+                  <div className="mb-4">
+                    <div className="font-medium mb-2">Clothing Items</div>
+                    <div className="grid grid-cols-2 gap-2">
+                      {getClothingItems().express.map((item, index) => (
+                        <div key={index} className="ml-2">
+                          {index + 1}. {item.name} ({item.quantity})
+                        </div>
+                      ))}
                     </div>
-                  ))}
+                  </div>
                 </div>
-              </div>
+              )}
               
               <div className="flex justify-between font-medium border-t border-gray-200 pt-3 text-base">
                 <div>Total</div>
-                <div>{isCombinedWash ? 
-                  formatIndianRupees(getTotalWeight() * getPerKgRate() * 2) : 
-                  formatIndianRupees(getTotalWeight() * getPerKgRate())}</div>
+                <div>{formatIndianRupees(totalAmount)}</div>
               </div>
             </CardContent>
           </Card>
