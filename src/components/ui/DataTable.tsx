@@ -1,5 +1,5 @@
 
-import React, { useState, useEffect, useMemo } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Search, X, Check } from 'lucide-react';
 import { Checkbox } from "@/components/ui/checkbox";
 import { cn } from "@/lib/utils";
@@ -129,7 +129,7 @@ function DataTable<T>({
     }
     
     // Update selectAll state based on whether all rows are selected
-    setSelectAll(newSelectedRows.size === data.length);
+    setSelectAll(newSelectedRows.size === data.length && data.length > 0);
   };
 
   const handleSelectAll = () => {
