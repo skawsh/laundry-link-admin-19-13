@@ -1,7 +1,7 @@
 
 import React, { useState, useEffect } from 'react';
-import { useParams } from 'react-router-dom';
-import { CheckCircle, Download, InfoIcon } from 'lucide-react';
+import { useParams, useNavigate } from 'react-router-dom';
+import { CheckCircle, Download, InfoIcon, ArrowLeft } from 'lucide-react';
 import AdminLayout from '../components/layout/AdminLayout';
 import PageHeader from '../components/ui/PageHeader';
 import DataTable from '../components/ui/DataTable';
@@ -68,6 +68,7 @@ const initialPaymentHistory: PaymentRecord[] = [
 
 const StudioPayments: React.FC = () => {
   const { studioId } = useParams<{ studioId?: string }>();
+  const navigate = useNavigate();
   const [unpaidOrders, setUnpaidOrders] = useState<UnpaidOrder[]>(initialUnpaidOrders);
   const [paymentHistory, setPaymentHistory] = useState<PaymentRecord[]>(initialPaymentHistory);
   const [viewType, setViewType] = useState<'unpaid' | 'history'>('unpaid');
@@ -118,6 +119,11 @@ const StudioPayments: React.FC = () => {
   
   // Total unpaid amount across all wash types
   const totalUnpaidAmount = expressWashAmount + standardWashAmount + combinedWashAmount;
+
+  // Handle back navigation
+  const handleGoBack = () => {
+    navigate(-1);
+  };
 
   // Mark order as paid
   const openPaymentModal = (order: UnpaidOrder) => {
@@ -282,10 +288,22 @@ const StudioPayments: React.FC = () => {
         title={studioId ? `${studioName} Payments` : "Laundry Studio Payments"} 
         subtitle={studioId ? `Manage payments for ${studioName}` : "Manage payments for all laundry studios"}
       >
-        <button className="flex items-center px-4 py-2 bg-white border border-gray-200 rounded-md text-gray-700 hover:bg-gray-50 transition-colors">
-          <Download className="h-4 w-4 mr-2" />
-          <span>Export</span>
-        </button>
+        <div className="flex items-center gap-3">
+          {/* Back button */}
+          <Button
+            variant="back"
+            onClick={handleGoBack}
+            className="flex items-center"
+          >
+            <ArrowLeft className="h-4 w-4 mr-1" />
+            <span>Back</span>
+          </Button>
+          
+          <button className="flex items-center px-4 py-2 bg-white border border-gray-200 rounded-md text-gray-700 hover:bg-gray-50 transition-colors">
+            <Download className="h-4 w-4 mr-2" />
+            <span>Export</span>
+          </button>
+        </div>
       </PageHeader>
       
       {/* Payment summary cards */}
@@ -296,17 +314,17 @@ const StudioPayments: React.FC = () => {
           subtext={`${totalUnpaidCount} orders pending`}
         />
         <StatsCard
-          title="Express Wash Unpaid"
+          title="Express Wash Unpaid Amount"
           value={formatIndianRupees(expressWashAmount)}
           subtext={`${expressWashCount} orders pending`}
         />
         <StatsCard
-          title="Standard Wash Unpaid"
+          title="Standard Wash Unpaid Amount"
           value={formatIndianRupees(standardWashAmount)}
           subtext={`${standardWashCount} orders pending`}
         />
         <StatsCard
-          title="Combined Wash Unpaid"
+          title="Combined Wash Unpaid Amount"
           value={formatIndianRupees(combinedWashAmount)}
           subtext={`${combinedWashCount} orders pending`}
         />
@@ -325,25 +343,25 @@ const StudioPayments: React.FC = () => {
             <TabsList className="bg-background border border-input mb-5">
               <TabsTrigger 
                 value="all" 
-                className={washTypeFilter === 'all' ? 'bg-green-100 text-green-800' : ''}
+                className={washTypeFilter === 'all' ? 'bg-green-600 text-white' : ''}
               >
                 All Wash Types
               </TabsTrigger>
               <TabsTrigger 
                 value="express" 
-                className={washTypeFilter === 'express' ? 'bg-green-100 text-green-800' : 'text-purple-800'}
+                className={washTypeFilter === 'express' ? 'bg-green-600 text-white' : 'text-purple-800'}
               >
                 Express Wash
               </TabsTrigger>
               <TabsTrigger 
                 value="standard" 
-                className={washTypeFilter === 'standard' ? 'bg-green-100 text-green-800' : 'text-blue-800'}
+                className={washTypeFilter === 'standard' ? 'bg-green-600 text-white' : 'text-blue-800'}
               >
                 Standard Wash
               </TabsTrigger>
               <TabsTrigger 
                 value="combined" 
-                className={washTypeFilter === 'combined' ? 'bg-green-100 text-green-800' : 'text-green-800'}
+                className={washTypeFilter === 'combined' ? 'bg-green-600 text-white' : 'text-green-800'}
               >
                 Combined Wash
               </TabsTrigger>
@@ -393,25 +411,25 @@ const StudioPayments: React.FC = () => {
             <TabsList className="bg-background border border-input mb-5">
               <TabsTrigger 
                 value="all" 
-                className={washTypeFilter === 'all' ? 'bg-green-100 text-green-800' : ''}
+                className={washTypeFilter === 'all' ? 'bg-green-600 text-white' : ''}
               >
                 All Wash Types
               </TabsTrigger>
               <TabsTrigger 
                 value="express" 
-                className={washTypeFilter === 'express' ? 'bg-green-100 text-green-800' : 'text-purple-800'}
+                className={washTypeFilter === 'express' ? 'bg-green-600 text-white' : 'text-purple-800'}
               >
                 Express Wash
               </TabsTrigger>
               <TabsTrigger 
                 value="standard" 
-                className={washTypeFilter === 'standard' ? 'bg-green-100 text-green-800' : 'text-blue-800'}
+                className={washTypeFilter === 'standard' ? 'bg-green-600 text-white' : 'text-blue-800'}
               >
                 Standard Wash
               </TabsTrigger>
               <TabsTrigger 
                 value="combined" 
-                className={washTypeFilter === 'combined' ? 'bg-green-100 text-green-800' : 'text-green-800'}
+                className={washTypeFilter === 'combined' ? 'bg-green-600 text-white' : 'text-green-800'}
               >
                 Combined Wash
               </TabsTrigger>
