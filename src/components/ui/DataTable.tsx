@@ -1,7 +1,6 @@
 
 import React, { useState, useEffect } from 'react';
-import { Search, X, Check } from 'lucide-react';
-import { Checkbox } from "@/components/ui/checkbox";
+import { Search, X } from 'lucide-react';
 import { cn } from "@/lib/utils";
 
 interface TableColumn<T> {
@@ -21,9 +20,6 @@ interface DataTableProps<T> {
   searchSuggestions?: boolean;
   onSuggestionClick?: (value: string) => void;
   searchFields?: Array<keyof T>;
-  selectable?: boolean;
-  onSelectionChange?: (selectedIds: string[]) => void;
-  onSelectAll?: (isSelected: boolean) => void;
 }
 
 function DataTable<T>({
@@ -36,16 +32,11 @@ function DataTable<T>({
   initialSearchQuery = '',
   searchSuggestions = false,
   onSuggestionClick,
-  searchFields = [],
-  selectable = false,
-  onSelectionChange,
-  onSelectAll
+  searchFields = []
 }: DataTableProps<T>) {
   const [searchQuery, setSearchQuery] = useState(initialSearchQuery);
   const [showSuggestions, setShowSuggestions] = useState(false);
   const [suggestions, setSuggestions] = useState<string[]>([]);
-  const [selectedRows, setSelectedRows] = useState<Set<string>>(new Set());
-  const [selectAll, setSelectAll] = useState(false);
 
   const getSuggestions = (query: string): string[] => {
     if (!query || query.length < 2 || !searchFields.length) return [];
@@ -73,12 +64,6 @@ function DataTable<T>({
       setShowSuggestions(false);
     }
   }, [searchQuery, data, searchSuggestions]);
-
-  // Reset selection when data changes
-  useEffect(() => {
-    setSelectedRows(new Set());
-    setSelectAll(false);
-  }, [data]);
 
   const handleSearch = (e: React.ChangeEvent<HTMLInputElement>) => {
     const query = e.target.value;
@@ -111,51 +96,6 @@ function DataTable<T>({
     setTimeout(() => {
       setShowSuggestions(false);
     }, 200);
-  };
-
-  const handleRowSelect = (id: string) => {
-    const newSelectedRows = new Set(selectedRows);
-    
-    if (newSelectedRows.has(id)) {
-      newSelectedRows.delete(id);
-    } else {
-      newSelectedRows.add(id);
-    }
-    
-    setSelectedRows(newSelectedRows);
-    console.log("Row selected/deselected:", id, "New selection:", Array.from(newSelectedRows));
-    
-    if (onSelectionChange) {
-      onSelectionChange(Array.from(newSelectedRows));
-    }
-    
-    // Update selectAll state based on whether all rows are selected
-    setSelectAll(newSelectedRows.size === data.length && data.length > 0);
-  };
-
-  const handleSelectAll = () => {
-    const newSelectAll = !selectAll;
-    setSelectAll(newSelectAll);
-    
-    let newSelectedRows: Set<string>;
-    if (newSelectAll) {
-      // Select all rows
-      newSelectedRows = new Set(data.map(row => String(row[keyField])));
-    } else {
-      // Deselect all rows
-      newSelectedRows = new Set();
-    }
-    
-    setSelectedRows(newSelectedRows);
-    console.log("Select all toggled to:", newSelectAll, "Selected rows:", Array.from(newSelectedRows));
-    
-    if (onSelectionChange) {
-      onSelectionChange(Array.from(newSelectedRows));
-    }
-    
-    if (onSelectAll) {
-      onSelectAll(newSelectAll);
-    }
   };
 
   return (
@@ -208,17 +148,6 @@ function DataTable<T>({
         <table className="min-w-full divide-y divide-gray-100">
           <thead>
             <tr className="bg-gray-50">
-              {selectable && (
-                <th className="w-12 px-4 py-3">
-                  <div className="flex items-center justify-center">
-                    <Checkbox
-                      checked={data.length > 0 && selectAll}
-                      onCheckedChange={handleSelectAll}
-                      aria-label="Select all"
-                    />
-                  </div>
-                </th>
-              )}
               {columns.map((column, index) => (
                 <th
                   key={index}
@@ -235,24 +164,9 @@ function DataTable<T>({
             {data.length > 0 ? (
               data.map((row, rowIndex) => {
                 const rowId = String(row[keyField]);
-                const isSelected = selectedRows.has(rowId);
                 
                 return (
-                  <tr key={rowId} className={cn(
-                    "hover:bg-gray-50 transition-colors",
-                    isSelected ? "bg-emerald-50" : ""
-                  )}>
-                    {selectable && (
-                      <td className="w-12 px-4 py-3">
-                        <div className="flex items-center justify-center">
-                          <Checkbox
-                            checked={isSelected}
-                            onCheckedChange={() => handleRowSelect(rowId)}
-                            aria-label={`Select row ${rowIndex + 1}`}
-                          />
-                        </div>
-                      </td>
-                    )}
+                  <tr key={rowId} className="hover:bg-gray-50 transition-colors">
                     {columns.map((column, index) => (
                       <td key={index} className="px-4 py-3 text-sm text-gray-700">
                         {typeof column.accessor === 'function'
@@ -266,7 +180,7 @@ function DataTable<T>({
             ) : (
               <tr>
                 <td
-                  colSpan={selectable ? columns.length + 1 : columns.length}
+                  colSpan={columns.length}
                   className="px-4 py-8 text-sm text-center text-gray-400"
                 >
                   {emptyMessage}

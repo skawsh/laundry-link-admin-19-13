@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { CheckCircle, Download, InfoIcon, ArrowLeft } from 'lucide-react';
@@ -29,7 +30,6 @@ const StudioPayments: React.FC = () => {
   const [viewType, setViewType] = useState<'unpaid' | 'history'>('unpaid');
   const [showPaymentModal, setShowPaymentModal] = useState(false);
   const [selectedOrder, setSelectedOrder] = useState<UnpaidOrder | null>(null);
-  const [selectedOrders, setSelectedOrders] = useState<UnpaidOrder[]>([]);
   const [paymentReference, setPaymentReference] = useState('');
   const [paymentDate, setPaymentDate] = useState('');
   const [mainWashTypeTab, setMainWashTypeTab] = useState<'all' | 'express' | 'standard' | 'combined'>('all');
@@ -86,11 +86,11 @@ const StudioPayments: React.FC = () => {
 
   const openPaymentModal = (order: UnpaidOrder) => {
     setSelectedOrder(order);
-    setSelectedOrders([order]);
     setShowPaymentModal(true);
   };
 
   const openBulkPaymentModal = () => {
+    // Open payment modal for all filtered unpaid orders
     setShowPaymentModal(true);
   };
 
@@ -100,7 +100,7 @@ const StudioPayments: React.FC = () => {
   };
 
   const confirmPayment = () => {
-    if (selectedOrders.length === 0 || !paymentReference || !paymentDate) {
+    if (!paymentReference || !paymentDate) {
       toast({
         title: "Error",
         description: "Please fill in all payment details",
@@ -110,8 +110,21 @@ const StudioPayments: React.FC = () => {
       return;
     }
 
-    // Create payment records for all selected orders
-    const newPayments: PaymentRecord[] = selectedOrders.map(order => ({
+    // Determine which orders to mark as paid (either selected single order or all filtered orders)
+    const ordersToPay = selectedOrder ? [selectedOrder] : getFilteredUnpaidOrders();
+    
+    if (ordersToPay.length === 0) {
+      toast({
+        title: "Error",
+        description: "No orders to mark as paid",
+        variant: "destructive",
+        duration: 3000,
+      });
+      return;
+    }
+
+    // Create payment records for all orders
+    const newPayments: PaymentRecord[] = ordersToPay.map(order => ({
       id: `PMT-${Math.floor(Math.random() * 10000)}`,
       studioId: order.studioId,
       studioName: order.studioName,
@@ -123,23 +136,22 @@ const StudioPayments: React.FC = () => {
       deliveredDate: order.deliveredDate
     }));
 
-    // Remove all selected orders from unpaid orders
-    const selectedOrderIds = selectedOrders.map(order => order.id);
-    setUnpaidOrders(unpaidOrders.filter(order => !selectedOrderIds.includes(order.id)));
+    // Remove all paid orders from unpaid orders
+    const paidOrderIds = ordersToPay.map(order => order.id);
+    setUnpaidOrders(unpaidOrders.filter(order => !paidOrderIds.includes(order.id)));
     
     // Add all new payment records to payment history
     setPaymentHistory([...newPayments, ...paymentHistory]);
     
     setShowPaymentModal(false);
     setSelectedOrder(null);
-    setSelectedOrders([]);
     setPaymentReference('');
     setPaymentDate('');
 
-    const totalAmount = selectedOrders.reduce((sum, order) => sum + order.amount, 0);
+    const totalAmount = ordersToPay.reduce((sum, order) => sum + order.amount, 0);
     toast({
       title: "Payment Recorded",
-      description: `Payment of ${formatIndianRupees(totalAmount)} for ${selectedOrders.length} order(s) has been marked as paid.`,
+      description: `Payment of ${formatIndianRupees(totalAmount)} for ${ordersToPay.length} order(s) has been marked as paid.`,
       duration: 3000,
     });
   };
@@ -147,14 +159,6 @@ const StudioPayments: React.FC = () => {
   const resetDateFilter = () => {
     setDateFilter('all');
     setCustomDateRange({ start: '', end: '' });
-  };
-
-  const toggleSelectAllOrders = (isSelected: boolean) => {
-    if (isSelected) {
-      setSelectedOrders(getFilteredUnpaidOrders());
-    } else {
-      setSelectedOrders([]);
-    }
   };
 
   // Define table columns with an S.No column
@@ -314,14 +318,11 @@ const StudioPayments: React.FC = () => {
         showDateFilterPopover={showDateFilterPopover}
         setShowDateFilterPopover={setShowDateFilterPopover}
         resetDateFilter={resetDateFilter}
-        selectedOrders={selectedOrders}
-        setSelectedOrders={setSelectedOrders}
-        toggleSelectAllOrders={toggleSelectAllOrders}
         openBulkPaymentModal={openBulkPaymentModal}
       />
       
       <PaymentModal 
-        selectedOrders={selectedOrders}
+        selectedOrders={selectedOrder ? [selectedOrder] : getFilteredUnpaidOrders()}
         showPaymentModal={showPaymentModal}
         setShowPaymentModal={setShowPaymentModal}
         paymentReference={paymentReference}

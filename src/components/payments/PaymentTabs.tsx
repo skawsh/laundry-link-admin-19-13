@@ -7,7 +7,6 @@ import SearchBar from './SearchBar';
 import DateFilterPopover from './DateFilterPopover';
 import DataTable from '../ui/DataTable';
 import { Button } from "@/components/ui/button";
-import { Check, Square } from 'lucide-react';
 
 interface PaymentTabsProps {
   viewType: 'unpaid' | 'history';
@@ -26,9 +25,6 @@ interface PaymentTabsProps {
   showDateFilterPopover: boolean;
   setShowDateFilterPopover: (value: boolean) => void;
   resetDateFilter: () => void;
-  selectedOrders: UnpaidOrder[];
-  setSelectedOrders: (orders: UnpaidOrder[]) => void;
-  toggleSelectAllOrders: (isSelected: boolean) => void;
   openBulkPaymentModal: () => void;
 }
 
@@ -49,36 +45,8 @@ const PaymentTabs: React.FC<PaymentTabsProps> = ({
   showDateFilterPopover,
   setShowDateFilterPopover,
   resetDateFilter,
-  selectedOrders,
-  setSelectedOrders,
-  toggleSelectAllOrders,
   openBulkPaymentModal
 }) => {
-  // Add useEffect to track changes to selectedOrders for debugging
-  useEffect(() => {
-    console.log("Selected orders updated:", selectedOrders.length, selectedOrders.map(o => o.id));
-  }, [selectedOrders]);
-
-  // Update the selection handling to properly track selected orders
-  const handleSelectionChange = (selectedOrderIds: string[]) => {
-    console.log("Selection changed to:", selectedOrderIds);
-    if (viewType === 'unpaid') {
-      const ordersToSelect = (filteredData as UnpaidOrder[]).filter(order => 
-        selectedOrderIds.includes(order.id)
-      );
-      setSelectedOrders(ordersToSelect);
-    }
-  };
-
-  // Determine if the select/deselect all button should be shown
-  const showSelectionControls = viewType === 'unpaid' && (filteredData as UnpaidOrder[]).length > 0;
-  
-  // Helper function to select/deselect all orders
-  const handleToggleAll = () => {
-    const allSelected = selectedOrders.length === (filteredData as UnpaidOrder[]).length;
-    toggleSelectAllOrders(!allSelected);
-  };
-
   return (
     <Tabs defaultValue="unpaid" className="w-full" onValueChange={(value) => setViewType(value as 'unpaid' | 'history')}>
       <TabsList className="mb-6 bg-background border border-input">
@@ -119,40 +87,16 @@ const PaymentTabs: React.FC<PaymentTabsProps> = ({
                     setShowDateFilterPopover={setShowDateFilterPopover}
                     resetDateFilter={resetDateFilter}
                   />
-                  
-                  {/* Select/Deselect All Button */}
-                  {showSelectionControls && selectedOrders.length > 0 && (
-                    <Button 
-                      variant="outline" 
-                      size="sm"
-                      onClick={handleToggleAll}
-                      className="gap-2 items-center"
-                    >
-                      {selectedOrders.length === (filteredData as UnpaidOrder[]).length ? (
-                        <>
-                          <Square className="h-4 w-4" />
-                          Deselect All
-                        </>
-                      ) : (
-                        <>
-                          <Check className="h-4 w-4" />
-                          Select All
-                        </>
-                      )}
-                    </Button>
-                  )}
                 </div>
                 
-                {/* Bulk Payment Button */}
-                {selectedOrders.length > 0 && (
-                  <Button 
-                    variant="success" 
-                    onClick={openBulkPaymentModal}
-                    className="ml-auto"
-                  >
-                    Mark {selectedOrders.length} {selectedOrders.length === 1 ? 'Order' : 'Orders'} as Paid
-                  </Button>
-                )}
+                {/* Bulk Payment Button - removed checkbox-related conditional */}
+                <Button 
+                  variant="success" 
+                  onClick={openBulkPaymentModal}
+                  className="ml-auto"
+                >
+                  Mark All as Paid
+                </Button>
               </div>
             </Tabs>
           </div>
@@ -162,9 +106,6 @@ const PaymentTabs: React.FC<PaymentTabsProps> = ({
             data={filteredData as UnpaidOrder[]}
             keyField="id"
             emptyMessage="No unpaid orders found"
-            selectable={true}
-            onSelectionChange={handleSelectionChange}
-            onSelectAll={toggleSelectAllOrders}
           />
         </div>
       </TabsContent>
