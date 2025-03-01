@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { Plus, ChevronDown, Search, Filter, Star, MoreHorizontal, X, ArrowUpDown, CreditCard, Settings, Package, Trash2, Frown, AlertCircle } from 'lucide-react';
+import { Plus, ChevronDown, Search, Filter, Star, MoreHorizontal, X, ArrowUpDown, CreditCard, Settings, Package, Trash2, Frown, AlertCircle, CheckCircle } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import AdminLayout from '../components/layout/AdminLayout';
 import PageHeader from '../components/ui/PageHeader';
@@ -8,6 +8,8 @@ import StatusBadge from '../components/ui/StatusBadge';
 import ToggleSwitch from '../components/ui/ToggleSwitch';
 import { useToast } from "@/hooks/use-toast";
 import { ConfirmationDialog } from "@/components/ui/confirmation-dialog";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from "@/components/ui/dialog";
+import { Button } from "@/components/ui/button";
 
 interface Studio {
   id: number;
@@ -230,6 +232,11 @@ const Studios: React.FC = () => {
   const [studioToDelete, setStudioToDelete] = useState<{id: number, name: string} | null>(null);
   const [isDeactivateDialogOpen, setIsDeactivateDialogOpen] = useState(false);
   const [studioToDeactivate, setStudioToDeactivate] = useState<{id: number, name: string} | null>(null);
+  const [isSuccessDialogOpen, setIsSuccessDialogOpen] = useState(false);
+  const [successDialogInfo, setSuccessDialogInfo] = useState<{title: string, message: string}>({
+    title: '',
+    message: ''
+  });
   
   const searchRef = useRef<HTMLDivElement>(null);
   const statusFilterRef = useRef<HTMLDivElement>(null);
@@ -339,11 +346,12 @@ const Studios: React.FC = () => {
     
     updateStudioStatus(studioToDeactivate.id, 'inactive');
     
-    toast({
+    // Show success dialog instead of toast
+    setSuccessDialogInfo({
       title: "Studio Disabled",
-      description: `${studioToDeactivate.name} has been successfully disabled.`,
-      duration: 3000,
+      message: `${studioToDeactivate.name} has been successfully disabled.`
     });
+    setIsSuccessDialogOpen(true);
     
     setStudioToDeactivate(null);
   };
@@ -1099,6 +1107,26 @@ const Studios: React.FC = () => {
         confirmText="OK"
         cancelText="Cancel"
       />
+      
+      {/* Success Dialog */}
+      <Dialog open={isSuccessDialogOpen} onOpenChange={setIsSuccessDialogOpen}>
+        <DialogContent className="sm:max-w-[425px]">
+          <DialogHeader>
+            <DialogTitle>{successDialogInfo.title}</DialogTitle>
+            <DialogDescription>
+              <div className="flex items-center space-x-2 mt-2">
+                <CheckCircle className="h-5 w-5 text-green-500" />
+                <span>{successDialogInfo.message}</span>
+              </div>
+            </DialogDescription>
+          </DialogHeader>
+          <DialogFooter>
+            <Button onClick={() => setIsSuccessDialogOpen(false)}>
+              Close
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </AdminLayout>
   );
 };
