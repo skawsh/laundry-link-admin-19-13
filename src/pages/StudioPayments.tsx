@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { CheckCircle, Download, InfoIcon, ArrowLeft, Phone, MapPin, Calendar, Package, Search, Filter, X } from 'lucide-react';
@@ -621,4 +622,440 @@ const StudioPayments: React.FC = () => {
                             />
                             <label htmlFor="custom-range" className="text-sm">Custom Range</label>
                           </div>
+                          
+                          {dateFilter === 'custom' && (
+                            <div className="pt-2 space-y-2">
+                              <div className="grid grid-cols-2 gap-2">
+                                <div>
+                                  <label htmlFor="start-date" className="text-xs text-gray-500">Start Date</label>
+                                  <input
+                                    type="date"
+                                    id="start-date"
+                                    value={customDateRange.start}
+                                    onChange={(e) => setCustomDateRange({ ...customDateRange, start: e.target.value })}
+                                    className="w-full text-sm p-1.5 border border-gray-300 rounded-md"
+                                  />
+                                </div>
+                                <div>
+                                  <label htmlFor="end-date" className="text-xs text-gray-500">End Date</label>
+                                  <input
+                                    type="date"
+                                    id="end-date"
+                                    value={customDateRange.end}
+                                    onChange={(e) => setCustomDateRange({ ...customDateRange, end: e.target.value })}
+                                    className="w-full text-sm p-1.5 border border-gray-300 rounded-md"
+                                  />
+                                </div>
+                              </div>
+                            </div>
+                          )}
                         </div>
+                        
+                        <div className="flex justify-between">
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            onClick={resetDateFilter}
+                          >
+                            Reset
+                          </Button>
+                          <Button
+                            size="sm"
+                            onClick={() => setShowDateFilterPopover(false)}
+                          >
+                            Apply
+                          </Button>
+                        </div>
+                      </div>
+                    </PopoverContent>
+                  </Popover>
+                </div>
+              </Tabs>
+            </div>
+            
+            <DataTable
+              columns={unpaidColumns}
+              data={filteredData as UnpaidOrder[]}
+              keyField="id"
+              emptyMessage="No unpaid orders found"
+            />
+          </div>
+        </TabsContent>
+        
+        <TabsContent value="history">
+          <div className="flex flex-col space-y-4">
+            <div className="flex justify-between items-center mb-4">
+              <Tabs 
+                defaultValue="all" 
+                className="w-full" 
+                onValueChange={(value) => setMainWashTypeTab(value as 'all' | 'express' | 'standard' | 'combined')}
+              >
+                <div className="flex justify-between items-center mb-4">
+                  <TabsList className="bg-background border border-input">
+                    <TabsTrigger value="all">All Wash Types</TabsTrigger>
+                    <TabsTrigger value="express">Express Wash</TabsTrigger>
+                    <TabsTrigger value="standard">Standard Wash</TabsTrigger>
+                    <TabsTrigger value="combined">Both</TabsTrigger>
+                  </TabsList>
+
+                  {/* Search Bar */}
+                  <div className="relative">
+                    <div className="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none">
+                      <Search className="h-4 w-4 text-gray-400" />
+                    </div>
+                    <Input
+                      type="text"
+                      placeholder="Search by Order ID..."
+                      value={orderIdSearch}
+                      onChange={(e) => setOrderIdSearch(e.target.value)}
+                      className="pl-10 pr-10 py-2 w-full sm:w-60"
+                    />
+                    {orderIdSearch && (
+                      <button
+                        onClick={() => setOrderIdSearch('')}
+                        className="absolute inset-y-0 right-0 flex items-center pr-3 text-gray-400 hover:text-gray-500"
+                      >
+                        <X className="h-4 w-4" />
+                      </button>
+                    )}
+                  </div>
+                </div>
+
+                {/* Date Filter */}
+                <div className="flex flex-wrap items-center gap-3 mb-5">
+                  <Popover open={showDateFilterPopover} onOpenChange={setShowDateFilterPopover}>
+                    <PopoverTrigger asChild>
+                      <Button variant="outline" className="flex items-center gap-2">
+                        <Calendar className="h-4 w-4" />
+                        <span>
+                          {dateFilter === 'all' ? 'All Dates' :
+                          dateFilter === 'today' ? 'Today' :
+                          dateFilter === 'yesterday' ? 'Yesterday' :
+                          dateFilter === 'this_week' ? 'This Week' :
+                          dateFilter === 'this_month' ? 'This Month' :
+                          'Custom Date Range'}
+                        </span>
+                      </Button>
+                    </PopoverTrigger>
+                    <PopoverContent className="w-72 p-4">
+                      <div className="space-y-4">
+                        <h3 className="font-medium">Filter by Date</h3>
+                        
+                        <div className="space-y-2">
+                          <div className="flex items-center gap-2">
+                            <input
+                              type="radio"
+                              id="all-dates-history"
+                              name="date-filter-history"
+                              checked={dateFilter === 'all'}
+                              onChange={() => setDateFilter('all')}
+                              className="h-4 w-4 text-primary"
+                            />
+                            <label htmlFor="all-dates-history" className="text-sm">All Dates</label>
+                          </div>
+                          
+                          <div className="flex items-center gap-2">
+                            <input
+                              type="radio"
+                              id="today-history"
+                              name="date-filter-history"
+                              checked={dateFilter === 'today'}
+                              onChange={() => setDateFilter('today')}
+                              className="h-4 w-4 text-primary"
+                            />
+                            <label htmlFor="today-history" className="text-sm">Today</label>
+                          </div>
+                          
+                          <div className="flex items-center gap-2">
+                            <input
+                              type="radio"
+                              id="yesterday-history"
+                              name="date-filter-history"
+                              checked={dateFilter === 'yesterday'}
+                              onChange={() => setDateFilter('yesterday')}
+                              className="h-4 w-4 text-primary"
+                            />
+                            <label htmlFor="yesterday-history" className="text-sm">Yesterday</label>
+                          </div>
+                          
+                          <div className="flex items-center gap-2">
+                            <input
+                              type="radio"
+                              id="this-week-history"
+                              name="date-filter-history"
+                              checked={dateFilter === 'this_week'}
+                              onChange={() => setDateFilter('this_week')}
+                              className="h-4 w-4 text-primary"
+                            />
+                            <label htmlFor="this-week-history" className="text-sm">This Week</label>
+                          </div>
+                          
+                          <div className="flex items-center gap-2">
+                            <input
+                              type="radio"
+                              id="this-month-history"
+                              name="date-filter-history"
+                              checked={dateFilter === 'this_month'}
+                              onChange={() => setDateFilter('this_month')}
+                              className="h-4 w-4 text-primary"
+                            />
+                            <label htmlFor="this-month-history" className="text-sm">This Month</label>
+                          </div>
+                          
+                          <div className="flex items-center gap-2">
+                            <input
+                              type="radio"
+                              id="custom-range-history"
+                              name="date-filter-history"
+                              checked={dateFilter === 'custom'}
+                              onChange={() => setDateFilter('custom')}
+                              className="h-4 w-4 text-primary"
+                            />
+                            <label htmlFor="custom-range-history" className="text-sm">Custom Range</label>
+                          </div>
+                          
+                          {dateFilter === 'custom' && (
+                            <div className="pt-2 space-y-2">
+                              <div className="grid grid-cols-2 gap-2">
+                                <div>
+                                  <label htmlFor="start-date-history" className="text-xs text-gray-500">Start Date</label>
+                                  <input
+                                    type="date"
+                                    id="start-date-history"
+                                    value={customDateRange.start}
+                                    onChange={(e) => setCustomDateRange({ ...customDateRange, start: e.target.value })}
+                                    className="w-full text-sm p-1.5 border border-gray-300 rounded-md"
+                                  />
+                                </div>
+                                <div>
+                                  <label htmlFor="end-date-history" className="text-xs text-gray-500">End Date</label>
+                                  <input
+                                    type="date"
+                                    id="end-date-history"
+                                    value={customDateRange.end}
+                                    onChange={(e) => setCustomDateRange({ ...customDateRange, end: e.target.value })}
+                                    className="w-full text-sm p-1.5 border border-gray-300 rounded-md"
+                                  />
+                                </div>
+                              </div>
+                            </div>
+                          )}
+                        </div>
+                        
+                        <div className="flex justify-between">
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            onClick={resetDateFilter}
+                          >
+                            Reset
+                          </Button>
+                          <Button
+                            size="sm"
+                            onClick={() => setShowDateFilterPopover(false)}
+                          >
+                            Apply
+                          </Button>
+                        </div>
+                      </div>
+                    </PopoverContent>
+                  </Popover>
+                </div>
+              </Tabs>
+            </div>
+            
+            <DataTable
+              columns={historyColumns}
+              data={filteredData as PaymentRecord[]}
+              keyField="id"
+              emptyMessage="No payment history found"
+            />
+          </div>
+        </TabsContent>
+      </Tabs>
+      
+      {/* Payment Modal */}
+      <Dialog open={showPaymentModal} onOpenChange={setShowPaymentModal}>
+        <DialogContent className="sm:max-w-[450px] p-0">
+          <DialogHeader className="p-6 pb-2">
+            <DialogTitle>Record Payment</DialogTitle>
+            <DialogDescription>
+              Enter payment details for order {selectedOrder?.id}
+            </DialogDescription>
+          </DialogHeader>
+          
+          <div className="px-6 py-4">
+            <div className="space-y-4">
+              <div>
+                <label className="text-sm font-medium text-gray-700 block mb-1">
+                  Order ID
+                </label>
+                <div className="text-sm text-gray-800 bg-gray-50 p-2 rounded-md">
+                  {selectedOrder?.id}
+                </div>
+              </div>
+              
+              <div>
+                <label className="text-sm font-medium text-gray-700 block mb-1">
+                  Amount
+                </label>
+                <div className="text-sm text-gray-800 bg-gray-50 p-2 rounded-md">
+                  {selectedOrder ? formatIndianRupees(selectedOrder.amount) : ''}
+                </div>
+              </div>
+              
+              <div>
+                <label htmlFor="payment-date" className="text-sm font-medium text-gray-700 block mb-1">
+                  Payment Date
+                </label>
+                <input
+                  type="date"
+                  id="payment-date"
+                  value={paymentDate}
+                  onChange={(e) => setPaymentDate(e.target.value)}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md"
+                  required
+                />
+              </div>
+              
+              <div>
+                <label htmlFor="payment-reference" className="text-sm font-medium text-gray-700 block mb-1">
+                  Payment Reference / UTR
+                </label>
+                <input
+                  type="text"
+                  id="payment-reference"
+                  value={paymentReference}
+                  onChange={(e) => setPaymentReference(e.target.value)}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md"
+                  required
+                />
+              </div>
+            </div>
+          </div>
+          
+          <DialogFooter className="p-6 pt-0">
+            <Button
+              variant="outline"
+              onClick={() => setShowPaymentModal(false)}
+            >
+              Cancel
+            </Button>
+            <Button
+              onClick={confirmPayment}
+              variant="success"
+              className="ml-2"
+            >
+              Record Payment
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+      
+      {/* Order Details Modal */}
+      <Dialog open={showOrderDetailsModal} onOpenChange={setShowOrderDetailsModal}>
+        <DialogContent className="sm:max-w-[550px]">
+          <DialogHeader>
+            <DialogTitle>Order Details</DialogTitle>
+            <DialogDescription>
+              Details for order {selectedOrderDetails?.id}
+            </DialogDescription>
+          </DialogHeader>
+          
+          <div className="space-y-4">
+            <div className="grid grid-cols-2 gap-4">
+              <div>
+                <h3 className="text-sm font-medium text-gray-500">Order ID</h3>
+                <p className="text-sm font-semibold">{selectedOrderDetails?.id}</p>
+              </div>
+              <div>
+                <h3 className="text-sm font-medium text-gray-500">Date</h3>
+                <p className="text-sm font-semibold">
+                  {selectedOrderDetails?.date ? new Date(selectedOrderDetails.date).toLocaleDateString() : ''}
+                </p>
+              </div>
+              <div>
+                <h3 className="text-sm font-medium text-gray-500">Customer</h3>
+                <p className="text-sm font-semibold">{selectedOrderDetails?.customerName}</p>
+              </div>
+              <div>
+                <h3 className="text-sm font-medium text-gray-500">Service Type</h3>
+                <p className="text-sm font-semibold">
+                  {selectedOrderDetails?.washType === 'express' ? 'Express Wash' : 
+                   selectedOrderDetails?.washType === 'standard' ? 'Standard Wash' : 'Both'}
+                </p>
+              </div>
+              <div>
+                <h3 className="text-sm font-medium text-gray-500">Status</h3>
+                <p className="text-sm font-semibold text-amber-600">Pending Payment</p>
+              </div>
+              <div>
+                <h3 className="text-sm font-medium text-gray-500">Total Amount</h3>
+                <p className="text-sm font-semibold">
+                  {selectedOrderDetails ? formatIndianRupees(selectedOrderDetails.amount) : ''}
+                </p>
+              </div>
+            </div>
+            
+            <div>
+              <h3 className="text-sm font-medium text-gray-700 mb-2">Service Details</h3>
+              <div className="border rounded-md overflow-hidden">
+                <table className="min-w-full divide-y divide-gray-200">
+                  <thead className="bg-gray-50">
+                    <tr>
+                      <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                        Service
+                      </th>
+                      <th className="px-4 py-2 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
+                        Price
+                      </th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-gray-200 bg-white">
+                    {selectedOrderDetails && getServiceDetails(selectedOrderDetails.washType).map((service, index) => (
+                      <tr key={index}>
+                        <td className="px-4 py-2 text-sm text-gray-700">
+                          {service.name}
+                        </td>
+                        <td className="px-4 py-2 text-sm text-gray-700 text-right">
+                          {formatIndianRupees(service.price)}
+                        </td>
+                      </tr>
+                    ))}
+                    <tr className="bg-gray-50">
+                      <td className="px-4 py-2 text-sm font-medium text-gray-700">
+                        Total
+                      </td>
+                      <td className="px-4 py-2 text-sm font-medium text-gray-700 text-right">
+                        {selectedOrderDetails ? formatIndianRupees(selectedOrderDetails.amount) : ''}
+                      </td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+          
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setShowOrderDetailsModal(false)}>
+              Close
+            </Button>
+            {selectedOrderDetails && (
+              <Button
+                onClick={() => {
+                  setShowOrderDetailsModal(false);
+                  openPaymentModal(selectedOrderDetails);
+                }}
+                variant="success"
+              >
+                Mark as Paid
+              </Button>
+            )}
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+    </AdminLayout>
+  );
+};
+
+export default StudioPayments;
