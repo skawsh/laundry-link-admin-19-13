@@ -269,10 +269,6 @@ const StudioPayments: React.FC = () => {
       width: '60px'
     },
     {
-      header: 'Payment ID',
-      accessor: 'id' as keyof PaymentRecord,
-    },
-    {
       header: 'Order ID',
       accessor: 'orderId' as keyof PaymentRecord,
     },
@@ -299,19 +295,6 @@ const StudioPayments: React.FC = () => {
       accessor: (row: PaymentRecord) => {
         const date = new Date(row.paymentDate);
         return `${date.getDate().toString().padStart(2, '0')}/${(date.getMonth() + 1).toString().padStart(2, '0')}/${date.getFullYear()}`;
-      },
-    },
-    {
-      header: 'Delivered Date',
-      accessor: (row: PaymentRecord) => {
-        if (row.deliveredDate) {
-          const date = new Date(row.deliveredDate);
-          return `${date.getDate().toString().padStart(2, '0')}/${(date.getMonth() + 1).toString().padStart(2, '0')}/${date.getFullYear()}`;
-        } else {
-          const orderDate = new Date(row.paymentDate);
-          orderDate.setDate(orderDate.getDate() - (row.washType === 'express' ? 1 : 4));
-          return calculateDeliveryDate(orderDate.toISOString(), row.washType);
-        }
       },
     },
     {
