@@ -310,6 +310,11 @@ const Orders: React.FC = () => {
     setSelectedDriver('');
   };
 
+  const getWashTypeLabel = (type: string) => {
+    if (type === 'combined') return 'Both';
+    return type.charAt(0).toUpperCase() + type.slice(1);
+  };
+
   const columns = [
     {
       header: "Order ID",

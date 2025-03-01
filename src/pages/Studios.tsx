@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect, useRef } from 'react';
 import { Plus, ChevronDown, Search, Filter, Star, MoreHorizontal, X, ArrowUpDown, CreditCard, Settings, Package, Trash2 } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
@@ -560,6 +559,12 @@ const Studios: React.FC = () => {
     return (totalSackValue / studios.length).toFixed(0);
   };
 
+  // Make sure to rename "Combined Wash" to "Both" in any relevant places
+  const getWashTypeLabel = (type: string) => {
+    if (type === 'combined') return 'Both';
+    return type.charAt(0).toUpperCase() + type.slice(1);
+  };
+
   // Table columns configuration
   const columns = [
     {
@@ -1059,7 +1064,7 @@ const Studios: React.FC = () => {
                 <div className="space-y-2">
                   {selectedStudio.serviceTimes.map((service, index) => (
                     <div key={index} className="flex justify-between items-center p-2 rounded bg-gray-50">
-                      <span className="font-medium">{service.type}</span>
+                      <span className="font-medium">{service.type === 'Combined Wash' ? 'Both' : service.type}</span>
                       <span className="text-sm text-gray-700">{service.time}</span>
                     </div>
                   ))}
