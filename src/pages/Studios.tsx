@@ -1,3 +1,4 @@
+
 import React from 'react';
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
@@ -24,9 +25,18 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table"
-import { getAllStudios } from '@/lib/api';
+import { getAllStudios, deleteStudio } from '@/lib/api';
 import { Studio } from '@/types';
 import { ConfirmationDialog } from '@/components/ui/confirmation-dialog';
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
+import { CheckCircle } from 'lucide-react';
 
 interface DataTableProps {
   data: Studio[]
@@ -37,6 +47,8 @@ const Studios = () => {
   const [searchQuery, setSearchQuery] = useState('');
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
   const [studioToDelete, setStudioToDelete] = useState<{ id: string; name: string } | null>(null);
+  const [isSuccessDialogOpen, setIsSuccessDialogOpen] = useState(false);
+  const [successMessage, setSuccessMessage] = useState<{ title: string; message: string } | null>(null);
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -72,15 +84,21 @@ const Studios = () => {
   };
 
   const handleDeleteConfirm = async () => {
-    // try {
-    //   await deleteStudio(studioToDelete.id);
-    //   setStudios(studios.filter(studio => studio.id !== studioToDelete.id));
-    // } catch (error) {
-    //   console.error("Error deleting studio:", error);
-    // } finally {
+    try {
+      if (studioToDelete) {
+        await deleteStudio(studioToDelete.id);
+        setStudios(studios.filter(studio => studio.id !== studioToDelete.id));
+        setSuccessMessage({
+          title: "Studio Disabled",
+          message: `${studioToDelete.name} has been successfully disabled.`
+        });
+        setIsSuccessDialogOpen(true);
+      }
+    } catch (error) {
+      console.error("Error deleting studio:", error);
+    } finally {
       setIsDeleteDialogOpen(false);
-      setStudioToDelete(null);
-    // }
+    }
   };
 
   const handleDeleteCancel = () => {
@@ -128,11 +146,33 @@ const Studios = () => {
         open={isDeleteDialogOpen}
         onOpenChange={setIsDeleteDialogOpen}
         onConfirm={handleDeleteConfirm}
-        title="Delete Studio"
-        description={`Are you sure you want to delete ${studioToDelete?.name}? This action cannot be undone.`}
+        title="Deactivate Studio"
+        description={`Are you sure you want to deactivate ${studioToDelete?.name}? This action cannot be undone.`}
       />
+      
+      {/* Success Dialog */}
+      <Dialog open={isSuccessDialogOpen} onOpenChange={setIsSuccessDialogOpen}>
+        <DialogContent className="sm:max-w-[425px]">
+          <DialogHeader>
+            <DialogTitle>{successMessage?.title}</DialogTitle>
+            <DialogDescription className="flex items-center pt-2">
+              <CheckCircle className="text-green-500 mr-2 h-5 w-5" />
+              {successMessage?.message}
+            </DialogDescription>
+          </DialogHeader>
+          <DialogFooter>
+            <Button onClick={() => setIsSuccessDialogOpen(false)}>
+              OK
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+      
       <div className="md:px-10 px-3">
-        <PageHeader title="Studios" description="Manage your studios" />
+        <PageHeader
+          title="Studios"
+          subtitle="Manage your studios"
+        />
         <div className="flex justify-between items-center mb-4">
           <div className="relative w-1/3">
             <Label htmlFor="search">Search by studio name:</Label>
