@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { CheckCircle, Download, InfoIcon, ArrowLeft } from 'lucide-react';
@@ -8,7 +9,6 @@ import { Button } from "@/components/ui/button";
 
 import PaymentStats from '@/components/payments/PaymentStats';
 import PaymentModal from '@/components/payments/PaymentModal';
-import OrderDetailsModal from '@/components/payments/OrderDetailsModal';
 import PaymentTabs from '@/components/payments/PaymentTabs';
 
 import { UnpaidOrder, PaymentRecord, DateFilterOption } from '@/types/paymentTypes';
@@ -43,8 +43,6 @@ const StudioPayments: React.FC = () => {
   const [paymentReference, setPaymentReference] = useState('');
   const [paymentDate, setPaymentDate] = useState('');
   const [mainWashTypeTab, setMainWashTypeTab] = useState<'all' | 'express' | 'standard' | 'combined'>('all');
-  const [showOrderDetailsModal, setShowOrderDetailsModal] = useState(false);
-  const [selectedOrderDetails, setSelectedOrderDetails] = useState<UnpaidOrder | null>(null);
   const { toast } = useToast();
 
   const [dateFilter, setDateFilter] = useState<DateFilterOption>('all');
@@ -102,9 +100,8 @@ const StudioPayments: React.FC = () => {
     setShowPaymentModal(true);
   };
 
-  const openOrderDetailsModal = (order: UnpaidOrder) => {
-    setSelectedOrderDetails(order);
-    setShowOrderDetailsModal(true);
+  const navigateToOrderDetails = (order: UnpaidOrder) => {
+    navigate(`/order-details/${order.id}`);
   };
 
   const confirmPayment = () => {
@@ -240,7 +237,7 @@ const StudioPayments: React.FC = () => {
       accessor: (row: UnpaidOrder) => (
         <div className="flex gap-2">
           <Button
-            onClick={() => openOrderDetailsModal(row)}
+            onClick={() => navigateToOrderDetails(row)}
             variant="outline"
             size="sm"
             className="flex items-center"
@@ -365,13 +362,6 @@ const StudioPayments: React.FC = () => {
         setPaymentDate={setPaymentDate}
         confirmPayment={confirmPayment}
         toggleOrderSelection={toggleOrderSelection}
-      />
-      
-      <OrderDetailsModal 
-        selectedOrderDetails={selectedOrderDetails}
-        showOrderDetailsModal={showOrderDetailsModal}
-        setShowOrderDetailsModal={setShowOrderDetailsModal}
-        openPaymentModal={openPaymentModal}
       />
     </AdminLayout>
   );
