@@ -1,3 +1,4 @@
+
 import React, { useState, useMemo } from 'react';
 import AdminLayout from '@/components/layout/AdminLayout';
 import { 
@@ -116,7 +117,7 @@ const generateMockOrders = (): Order[] => {
   const orders: Order[] = [];
 
   for (let i = 1; i <= 100; i++) {
-    const orderDate = getRandomDate(new Date(2023, 0, 1), new Date());
+    const orderDate = getRandomDate(new Date(2023, 0, 1), new Date(2023, 11, 31));
     const items: OrderItem[] = [];
     const itemCount = Math.floor(Math.random() * 5) + 1;
     
@@ -236,6 +237,7 @@ const Orders: React.FC = () => {
         return false;
       }
       
+      // All date filtering is based on ordered date only
       if (dateFilter.start && new Date(order.date) < new Date(dateFilter.start)) {
         return false;
       }
