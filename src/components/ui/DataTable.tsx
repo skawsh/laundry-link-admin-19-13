@@ -1,6 +1,6 @@
 
 import React, { useState, useEffect, useMemo } from 'react';
-import { Search, X } from 'lucide-react';
+import { Search } from 'lucide-react';
 
 interface TableColumn<T> {
   header: string;
@@ -73,13 +73,6 @@ function DataTable<T>({
     }
   };
 
-  const handleClearSearch = () => {
-    setSearchQuery('');
-    if (onSearch) {
-      onSearch('');
-    }
-  };
-
   const handleSuggestionClick = (suggestion: string) => {
     setSearchQuery(suggestion);
     setShowSuggestions(false);
@@ -113,16 +106,8 @@ function DataTable<T>({
               onChange={handleSearch}
               onFocus={() => searchQuery.length >= 2 && setSuggestions(getSuggestions(searchQuery))}
               onBlur={handleBlur}
-              className="block w-full bg-gray-50 border border-gray-200 rounded-md py-2 pl-10 pr-10 text-sm placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-transparent"
+              className="block w-full bg-gray-50 border border-gray-200 rounded-md py-2 pl-10 pr-4 text-sm placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-transparent"
             />
-            {searchQuery && (
-              <button 
-                className="absolute inset-y-0 right-0 flex items-center pr-3"
-                onClick={handleClearSearch}
-              >
-                <X className="h-4 w-4 text-gray-400 hover:text-gray-600" />
-              </button>
-            )}
             
             {showSuggestions && searchSuggestions && suggestions.length > 0 && (
               <div className="absolute z-10 w-full mt-1 bg-white border border-gray-200 rounded-md shadow-lg">
