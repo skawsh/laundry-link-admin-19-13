@@ -187,12 +187,15 @@ const DriverProfile = () => {
         vehicleNumber,
         vehicleName,
         vehicleModel,
-        licenseNumber
+        licenseNumber,
+        // Update the vehicleInfo to reflect updated vehicle details
+        vehicleInfo: `${vehicleName} (${vehicleModel}), License: ${vehicleNumber}`
       };
       
       setDriver(updatedDriver);
       setIsEditing(false);
       
+      // Show success toast that will auto-dismiss
       toast({
         title: "Profile updated",
         description: "Driver profile has been updated successfully.",
