@@ -1,4 +1,3 @@
-
 import * as React from "react"
 import * as TabsPrimitive from "@radix-ui/react-tabs"
 
@@ -51,35 +50,4 @@ const TabsContent = React.forwardRef<
 ))
 TabsContent.displayName = TabsPrimitive.Content.displayName
 
-// Custom collapsible tab
-const CollapsibleTab = React.forwardRef<
-  HTMLDivElement,
-  React.HTMLAttributes<HTMLDivElement> & {
-    title: React.ReactNode;
-    isOpen: boolean;
-    onToggle: () => void;
-    icon?: React.ReactNode;
-  }
->(({ className, title, isOpen, onToggle, icon, children, ...props }, ref) => {
-  return (
-    <div className={cn("border rounded-md overflow-hidden", className)} {...props} ref={ref}>
-      <div
-        className={cn(
-          "flex items-center justify-between p-3 cursor-pointer bg-gray-50",
-          isOpen ? "border-b" : ""
-        )}
-        onClick={onToggle}
-      >
-        <div className="flex items-center gap-2">
-          {icon}
-          <h3 className="text-sm font-medium">{title}</h3>
-        </div>
-        <div>{isOpen ? "▲" : "▼"}</div>
-      </div>
-      {isOpen && <div className="p-3">{children}</div>}
-    </div>
-  );
-});
-CollapsibleTab.displayName = "CollapsibleTab";
-
-export { Tabs, TabsList, TabsTrigger, TabsContent, CollapsibleTab }
+export { Tabs, TabsList, TabsTrigger, TabsContent }

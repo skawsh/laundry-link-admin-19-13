@@ -1,23 +1,27 @@
-export type DateFilterOption = 'all' | 'today' | 'yesterday' | 'this_week' | 'this_month' | 'custom';
 
-// Add address field to UnpaidOrder interface
 export interface UnpaidOrder {
   id: string;
-  customerName: string;
+  studioId: number;
+  studioName: string;
   date: string;
   amount: number;
-  status: 'pending' | 'processing' | 'delivered' | 'cancelled';
-  washType?: 'express' | 'standard' | 'combined';
-  address?: string;
-  assignedTo?: string;
+  isPaid: boolean;
+  washType: 'express' | 'standard' | 'combined';
+  customerName: string;
+  deliveredDate: string; // Changed from optional to required
+  selected?: boolean; // For multi-selection
 }
 
 export interface PaymentRecord {
+  id: string;
+  studioId: number;
+  studioName: string;
   orderId: string;
-  customerName: string;
-  paymentDate: string;
   amount: number;
-  paymentMethod: 'card' | 'upi' | 'cash';
-  status: 'success' | 'failed' | 'refunded';
+  paymentDate: string;
+  referenceNumber: string;
   washType: 'express' | 'standard' | 'combined';
+  deliveredDate: string; // Changed from optional to required
 }
+
+export type DateFilterOption = 'all' | 'today' | 'yesterday' | 'this_week' | 'this_month' | 'custom';

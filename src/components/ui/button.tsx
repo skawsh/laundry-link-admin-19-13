@@ -21,14 +21,12 @@ const buttonVariants = cva(
         link: "text-primary underline-offset-4 hover:underline",
         success: "bg-green-600 text-white hover:bg-green-700", // Added green variant
         back: "bg-gray-50 text-gray-600 hover:bg-gray-100 border border-gray-200 rounded-full", // Updated back button variant for icon-only
-        driver: "bg-blue-600 text-white hover:bg-blue-700", // Added driver variant for driver-specific actions
       },
       size: {
         default: "h-10 px-4 py-2",
         sm: "h-9 rounded-md px-3",
         lg: "h-11 rounded-md px-8",
         icon: "h-9 w-9 rounded-full", // Updated icon size for round back button
-        wide: "h-10 px-6 py-2", // Added wider button option
       },
     },
     defaultVariants: {
