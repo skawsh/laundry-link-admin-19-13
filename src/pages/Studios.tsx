@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { Plus, ChevronDown, Search, Filter, Star, MoreHorizontal, X, ArrowUpDown, CreditCard, Settings, Package, Trash2, Frown } from 'lucide-react';
+import { Plus, ChevronDown, Search, Filter, Star, MoreHorizontal, X, ArrowUpDown, CreditCard, Settings, Package, Trash2, Frown, AlertCircle } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import AdminLayout from '../components/layout/AdminLayout';
 import PageHeader from '../components/ui/PageHeader';
@@ -9,7 +9,6 @@ import ToggleSwitch from '../components/ui/ToggleSwitch';
 import { useToast } from "@/hooks/use-toast";
 import { ConfirmationDialog } from "@/components/ui/confirmation-dialog";
 
-// Studio data type
 interface Studio {
   id: number;
   studioId: string; 
@@ -31,7 +30,6 @@ interface Studio {
   }[];
 }
 
-// Sample data
 const initialStudios: Studio[] = [
   {
     id: 1,
@@ -230,6 +228,8 @@ const Studios: React.FC = () => {
   const [activeDropdownId, setActiveDropdownId] = useState<number | null>(null);
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
   const [studioToDelete, setStudioToDelete] = useState<{id: number, name: string} | null>(null);
+  const [isDeactivateDialogOpen, setIsDeactivateDialogOpen] = useState(false);
+  const [studioToDeactivate, setStudioToDeactivate] = useState<{id: number, name: string} | null>(null);
   
   const searchRef = useRef<HTMLDivElement>(null);
   const statusFilterRef = useRef<HTMLDivElement>(null);
@@ -238,7 +238,6 @@ const Studios: React.FC = () => {
   const { toast } = useToast();
   const navigate = useNavigate();
 
-  // Handle outside click to close dropdowns
   useEffect(() => {
     function handleClickOutside(event: MouseEvent) {
       if (searchRef.current && !searchRef.current.contains(event.target as Node)) {
@@ -251,7 +250,6 @@ const Studios: React.FC = () => {
         setShowRatingFilter(false);
       }
       
-      // Handle three dots menu dropdown
       if (activeDropdownId !== null) {
         const activeDropdownRef = dropdownRefs.current[activeDropdownId];
         if (activeDropdownRef && !activeDropdownRef.contains(event.target as Node)) {
@@ -266,27 +264,22 @@ const Studios: React.FC = () => {
     };
   }, [activeDropdownId]);
 
-  // Toggle dropdown menu
   const toggleDropdown = (id: number, event: React.MouseEvent) => {
     event.stopPropagation();
     setActiveDropdownId(activeDropdownId === id ? null : id);
   };
 
-  // Apply filters
   useEffect(() => {
     let result = [...studios];
 
-    // Apply status filter
     if (filterStatus !== 'all') {
       result = result.filter(studio => studio.status === filterStatus);
     }
 
-    // Apply rating filter
     if (filterRating !== null) {
       result = result.filter(studio => Math.floor(studio.rating) >= filterRating);
     }
 
-    // Apply search query
     if (searchQuery.trim() !== '') {
       result = result.filter(
         studio =>
@@ -297,7 +290,6 @@ const Studios: React.FC = () => {
       );
     }
 
-    // Apply sorting
     if (sortField) {
       result.sort((a, b) => {
         if (a[sortField] < b[sortField]) return sortDirection === 'asc' ? -1 : 1;
@@ -309,20 +301,29 @@ const Studios: React.FC = () => {
     setFilteredStudios(result);
   }, [studios, filterStatus, filterRating, searchQuery, sortField, sortDirection]);
 
-  // Toggle studio status
   const toggleStudioStatus = (id: number) => {
+    const studio = studios.find(s => s.id === id);
+    if (!studio) return;
+    
+    const newStatus = studio.status === 'active' ? 'inactive' : 'active';
+    
+    if (newStatus === 'inactive') {
+      setStudioToDeactivate({ id, name: studio.name });
+      setIsDeactivateDialogOpen(true);
+    } else {
+      updateStudioStatus(id, newStatus);
+      toast({
+        title: "Studio Activated",
+        description: `${studio.name} has been successfully enabled.`,
+        duration: 3000,
+      });
+    }
+  };
+
+  const updateStudioStatus = (id: number, newStatus: 'active' | 'inactive') => {
     setStudios(prevStudios =>
       prevStudios.map(studio => {
         if (studio.id === id) {
-          const newStatus = studio.status === 'active' ? 'inactive' : 'active';
-          
-          // Show toast notification
-          toast({
-            title: `Studio status updated`,
-            description: `${studio.name} is now ${newStatus}`,
-            duration: 3000,
-          });
-          
           return {
             ...studio,
             status: newStatus
@@ -333,13 +334,25 @@ const Studios: React.FC = () => {
     );
   };
 
-  // View studio details
+  const confirmDeactivation = () => {
+    if (!studioToDeactivate) return;
+    
+    updateStudioStatus(studioToDeactivate.id, 'inactive');
+    
+    toast({
+      title: "Studio Disabled",
+      description: `${studioToDeactivate.name} has been successfully disabled.`,
+      duration: 3000,
+    });
+    
+    setStudioToDeactivate(null);
+  };
+
   const viewStudioDetails = (studio: Studio) => {
     setSelectedStudio(studio);
     setIsViewStudioModalOpen(true);
   };
 
-  // Open studio analytics
   const openStudioAnalytics = (studioId: number) => {
     navigate(`/studios/analytics/${studioId}`);
     toast({
@@ -349,7 +362,6 @@ const Studios: React.FC = () => {
     });
   };
 
-  // Navigate to studio payments
   const navigateToStudioPayments = (studioId: number, studioName: string) => {
     navigate(`/studios/payments/${studioId}`);
     toast({
@@ -359,7 +371,6 @@ const Studios: React.FC = () => {
     });
   };
 
-  // Navigate to studio details
   const navigateToStudioDetails = (studioId: number) => {
     navigate(`/studios/details/${studioId}`);
     toast({
@@ -369,7 +380,6 @@ const Studios: React.FC = () => {
     });
   };
 
-  // Navigate to studio services
   const navigateToStudioServices = (studioId: number) => {
     navigate(`/studios/services/${studioId}`);
     toast({
@@ -379,13 +389,11 @@ const Studios: React.FC = () => {
     });
   };
 
-  // Edit studio
   const editStudio = (studio: Studio) => {
     setSelectedStudio(studio);
     setIsEditStudioModalOpen(true);
   };
 
-  // Save edited studio
   const saveEditedStudio = () => {
     if (!selectedStudio) return;
     
@@ -404,18 +412,15 @@ const Studios: React.FC = () => {
     });
   };
 
-  // Open add studio page
   const openAddStudioPage = () => {
     navigate('/studios/add');
   };
 
-  // Confirm delete studio
   const confirmDeleteStudio = (studioId: number, studioName: string) => {
     setStudioToDelete({ id: studioId, name: studioName });
     setIsDeleteDialogOpen(true);
   };
 
-  // Execute delete studio
   const executeDeleteStudio = () => {
     if (!studioToDelete) return;
     
@@ -430,7 +435,6 @@ const Studios: React.FC = () => {
     setStudioToDelete(null);
   };
 
-  // Handle search
   const handleSearch = (query: string) => {
     setSearchQuery(query);
     
@@ -439,41 +443,34 @@ const Studios: React.FC = () => {
       return;
     }
     
-    // Filter studios based on query
     const results = studios.filter(
       studio =>
         studio.name.toLowerCase().includes(query.toLowerCase()) ||
         studio.ownerName.toLowerCase().includes(query.toLowerCase()) ||
         studio.contactNumber.includes(query) ||
         studio.studioId.toLowerCase().includes(query.toLowerCase())
-    ).slice(0, 5); // Limit to 5 results for dropdown
+    ).slice(0, 5);
     
     setSearchResults(results);
     setShowSearchDropdown(results.length > 0);
   };
 
-  // Handle search result selection
   const selectSearchResult = (studio: Studio) => {
     setSearchQuery(studio.name);
     setShowSearchDropdown(false);
     
-    // Apply filter immediately
     setFilteredStudios([studio]);
   };
 
-  // Clear search
   const clearSearch = () => {
     setSearchQuery('');
     setShowSearchDropdown(false);
   };
 
-  // Handle sorting
   const handleSort = (field: keyof Studio) => {
     if (sortField === field) {
-      // Toggle direction if same field
       setSortDirection(sortDirection === 'asc' ? 'desc' : 'asc');
     } else {
-      // New field, set to ascending
       setSortField(field);
       setSortDirection('asc');
     }
@@ -485,7 +482,6 @@ const Studios: React.FC = () => {
     });
   };
 
-  // Reset all filters
   const resetFilters = () => {
     setFilterStatus('all');
     setFilterRating(null);
@@ -499,19 +495,16 @@ const Studios: React.FC = () => {
     });
   };
 
-  // Calculate average sack value across all studios
   const calculateAvgSackValue = () => {
     const totalSackValue = studios.reduce((sum, studio) => sum + (studio.avgSackValue || 0), 0);
     return (totalSackValue / studios.length).toFixed(0);
   };
 
-  // Make sure to rename "Combined Wash" to "Both" in any relevant places
   const getWashTypeLabel = (type: string) => {
     if (type === 'combined') return 'Both';
     return type.charAt(0).toUpperCase() + type.slice(1);
   };
 
-  // Table columns configuration
   const columns = [
     {
       header: 'S.NO',
@@ -649,7 +642,6 @@ const Studios: React.FC = () => {
         </div>
       </PageHeader>
       
-      {/* Studio analytics cards */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5 mb-6">
         <div className="bg-white p-4 rounded-lg shadow-subtle">
           <p className="text-sm text-gray-500">Total Studios</p>
@@ -675,12 +667,10 @@ const Studios: React.FC = () => {
         </div>
       </div>
       
-      {/* Search and filter section */}
       <div className="mb-5 flex flex-col sm:flex-row justify-between items-start sm:items-center space-y-3 sm:space-y-0">
         <div className="flex items-center space-x-3">
           <span className="text-sm text-gray-500 whitespace-nowrap">Filter by:</span>
           
-          {/* Status filter */}
           <div className="relative inline-block text-left" ref={statusFilterRef}>
             <button 
               onClick={() => setShowStatusFilter(!showStatusFilter)}
@@ -729,7 +719,6 @@ const Studios: React.FC = () => {
             )}
           </div>
           
-          {/* Rating filter */}
           <div className="relative inline-block text-left" ref={ratingFilterRef}>
             <button 
               onClick={() => setShowRatingFilter(!showRatingFilter)}
@@ -764,7 +753,6 @@ const Studios: React.FC = () => {
             )}
           </div>
           
-          {/* Sort button */}
           <div className="relative inline-block text-left">
             <button 
               onClick={() => handleSort('name')}
@@ -776,7 +764,6 @@ const Studios: React.FC = () => {
           </div>
         </div>
         
-        {/* Search with dropdown */}
         <div className="relative w-full sm:w-auto" ref={searchRef}>
           <div className="relative">
             <div className="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none">
@@ -799,7 +786,6 @@ const Studios: React.FC = () => {
             )}
           </div>
           
-          {/* Search results dropdown */}
           {showSearchDropdown && (
             <div className="absolute mt-1 w-full bg-white border border-gray-200 rounded-md shadow-lg py-1 z-10">
               {searchResults.length > 0 ? (
@@ -824,7 +810,6 @@ const Studios: React.FC = () => {
         </div>
       </div>
       
-      {/* Studios table */}
       <DataTable
         columns={columns}
         data={filteredStudios}
@@ -833,7 +818,6 @@ const Studios: React.FC = () => {
         emptyMessage="No studios found"
       />
       
-      {/* View Studio Modal */}
       {isViewStudioModalOpen && selectedStudio && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
           <div className="bg-white rounded-lg shadow-lg w-full max-w-lg p-6 max-h-[90vh] overflow-y-auto">
@@ -932,7 +916,6 @@ const Studios: React.FC = () => {
         </div>
       )}
       
-      {/* Edit Studio Modal */}
       {isEditStudioModalOpen && selectedStudio && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
           <div className="bg-white rounded-lg shadow-lg w-full max-w-lg p-6 max-h-[90vh] overflow-y-auto">
@@ -1087,7 +1070,6 @@ const Studios: React.FC = () => {
         </div>
       )}
       
-      {/* Delete Confirmation Dialog */}
       <ConfirmationDialog
         open={isDeleteDialogOpen}
         onOpenChange={setIsDeleteDialogOpen}
@@ -1101,6 +1083,21 @@ const Studios: React.FC = () => {
         }
         confirmText="Delete"
         confirmWithTimer={5}
+      />
+      
+      <ConfirmationDialog
+        open={isDeactivateDialogOpen}
+        onOpenChange={setIsDeactivateDialogOpen}
+        onConfirm={confirmDeactivation}
+        title="Deactivate Studio"
+        description={
+          <div className="flex items-center space-x-2">
+            <AlertCircle className="h-5 w-5 text-amber-500" />
+            <span>Are you sure you want to deactivate {studioToDeactivate?.name}?</span>
+          </div>
+        }
+        confirmText="OK"
+        cancelText="Cancel"
       />
     </AdminLayout>
   );
