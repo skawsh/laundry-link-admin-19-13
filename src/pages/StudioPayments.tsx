@@ -32,29 +32,29 @@ interface PaymentRecord {
   washType: 'express' | 'standard' | 'combined';
 }
 
-// Sample data with combined wash type added
+// Sample data with combined wash type added and amount below 1000
 const initialUnpaidOrders: UnpaidOrder[] = [
-  { id: 'ORD-1001', studioId: 1, studioName: 'Saiteja Laundry', date: '2023-06-10', amount: 45000, isPaid: false, washType: 'standard', customerName: 'John Doe' },
-  { id: 'ORD-1002', studioId: 1, studioName: 'Saiteja Laundry', date: '2023-06-12', amount: 32000, isPaid: false, washType: 'express', customerName: 'Jane Smith' },
-  { id: 'ORD-1003', studioId: 2, studioName: 'Sparkle Clean Laundry', date: '2023-06-15', amount: 55000, isPaid: false, washType: 'standard', customerName: 'Robert Johnson' },
-  { id: 'ORD-1004', studioId: 3, studioName: 'Fresh Fold Services', date: '2023-06-16', amount: 40000, isPaid: false, washType: 'express', customerName: 'Emily Wilson' },
-  { id: 'ORD-1005', studioId: 2, studioName: 'Sparkle Clean Laundry', date: '2023-06-18', amount: 28000, isPaid: false, washType: 'standard', customerName: 'Michael Brown' },
-  { id: 'ORD-1006', studioId: 1, studioName: 'Saiteja Laundry', date: '2023-06-20', amount: 38000, isPaid: false, washType: 'standard', customerName: 'Sarah Davis' },
-  { id: 'ORD-1007', studioId: 1, studioName: 'Saiteja Laundry', date: '2023-06-22', amount: 29000, isPaid: false, washType: 'express', customerName: 'Thomas Miller' },
-  { id: 'ORD-1008', studioId: 3, studioName: 'Fresh Fold Services', date: '2023-06-25', amount: 65000, isPaid: false, washType: 'combined', customerName: 'Laura Wilson' },
-  { id: 'ORD-1009', studioId: 2, studioName: 'Sparkle Clean Laundry', date: '2023-06-26', amount: 52000, isPaid: false, washType: 'combined', customerName: 'Alex Johnson' },
-  { id: 'ORD-1010', studioId: 1, studioName: 'Saiteja Laundry', date: '2023-06-28', amount: 47000, isPaid: false, washType: 'combined', customerName: 'Maya Patel' },
+  { id: 'ORD-1001', studioId: 1, studioName: 'Saiteja Laundry', date: '2023-06-10', amount: 450, isPaid: false, washType: 'standard', customerName: 'John Doe' },
+  { id: 'ORD-1002', studioId: 1, studioName: 'Saiteja Laundry', date: '2023-06-12', amount: 320, isPaid: false, washType: 'express', customerName: 'Jane Smith' },
+  { id: 'ORD-1003', studioId: 2, studioName: 'Sparkle Clean Laundry', date: '2023-06-15', amount: 550, isPaid: false, washType: 'standard', customerName: 'Robert Johnson' },
+  { id: 'ORD-1004', studioId: 3, studioName: 'Fresh Fold Services', date: '2023-06-16', amount: 400, isPaid: false, washType: 'express', customerName: 'Emily Wilson' },
+  { id: 'ORD-1005', studioId: 2, studioName: 'Sparkle Clean Laundry', date: '2023-06-18', amount: 280, isPaid: false, washType: 'standard', customerName: 'Michael Brown' },
+  { id: 'ORD-1006', studioId: 1, studioName: 'Saiteja Laundry', date: '2023-06-20', amount: 380, isPaid: false, washType: 'standard', customerName: 'Sarah Davis' },
+  { id: 'ORD-1007', studioId: 1, studioName: 'Saiteja Laundry', date: '2023-06-22', amount: 290, isPaid: false, washType: 'express', customerName: 'Thomas Miller' },
+  { id: 'ORD-1008', studioId: 3, studioName: 'Fresh Fold Services', date: '2023-06-25', amount: 650, isPaid: false, washType: 'combined', customerName: 'Laura Wilson' },
+  { id: 'ORD-1009', studioId: 2, studioName: 'Sparkle Clean Laundry', date: '2023-06-26', amount: 520, isPaid: false, washType: 'combined', customerName: 'Alex Johnson' },
+  { id: 'ORD-1010', studioId: 1, studioName: 'Saiteja Laundry', date: '2023-06-28', amount: 470, isPaid: false, washType: 'combined', customerName: 'Maya Patel' },
 ];
 
 const initialPaymentHistory: PaymentRecord[] = [
-  { id: 'PMT-2001', studioId: 1, studioName: 'Saiteja Laundry', orderId: 'ORD-1000', amount: 52000, paymentDate: '2023-06-05', referenceNumber: 'UTR12345678', washType: 'standard' },
-  { id: 'PMT-2002', studioId: 2, studioName: 'Sparkle Clean Laundry', orderId: 'ORD-995', amount: 42000, paymentDate: '2023-06-04', referenceNumber: 'UTR87654321', washType: 'express' },
-  { id: 'PMT-2003', studioId: 1, studioName: 'Saiteja Laundry', orderId: 'ORD-990', amount: 35000, paymentDate: '2023-06-02', referenceNumber: 'UTR23456789', washType: 'standard' },
-  { id: 'PMT-2004', studioId: 3, studioName: 'Fresh Fold Services', orderId: 'ORD-985', amount: 60000, paymentDate: '2023-05-30', referenceNumber: 'UTR98765432', washType: 'express' },
-  { id: 'PMT-2005', studioId: 4, studioName: 'Royal Wash', orderId: 'ORD-980', amount: 48000, paymentDate: '2023-05-28', referenceNumber: 'UTR34567890', washType: 'standard' },
-  { id: 'PMT-2006', studioId: 1, studioName: 'Saiteja Laundry', orderId: 'ORD-975', amount: 41000, paymentDate: '2023-05-25', referenceNumber: 'UTR45678901', washType: 'express' },
-  { id: 'PMT-2007', studioId: 3, studioName: 'Fresh Fold Services', orderId: 'ORD-970', amount: 58000, paymentDate: '2023-05-22', referenceNumber: 'UTR56789012', washType: 'combined' },
-  { id: 'PMT-2008', studioId: 2, studioName: 'Sparkle Clean Laundry', orderId: 'ORD-965', amount: 49000, paymentDate: '2023-05-20', referenceNumber: 'UTR67890123', washType: 'combined' },
+  { id: 'PMT-2001', studioId: 1, studioName: 'Saiteja Laundry', orderId: 'ORD-1000', amount: 520, paymentDate: '2023-06-05', referenceNumber: 'UTR12345678', washType: 'standard' },
+  { id: 'PMT-2002', studioId: 2, studioName: 'Sparkle Clean Laundry', orderId: 'ORD-995', amount: 420, paymentDate: '2023-06-04', referenceNumber: 'UTR87654321', washType: 'express' },
+  { id: 'PMT-2003', studioId: 1, studioName: 'Saiteja Laundry', orderId: 'ORD-990', amount: 350, paymentDate: '2023-06-02', referenceNumber: 'UTR23456789', washType: 'standard' },
+  { id: 'PMT-2004', studioId: 3, studioName: 'Fresh Fold Services', orderId: 'ORD-985', amount: 600, paymentDate: '2023-05-30', referenceNumber: 'UTR98765432', washType: 'express' },
+  { id: 'PMT-2005', studioId: 4, studioName: 'Royal Wash', orderId: 'ORD-980', amount: 480, paymentDate: '2023-05-28', referenceNumber: 'UTR34567890', washType: 'standard' },
+  { id: 'PMT-2006', studioId: 1, studioName: 'Saiteja Laundry', orderId: 'ORD-975', amount: 410, paymentDate: '2023-05-25', referenceNumber: 'UTR45678901', washType: 'express' },
+  { id: 'PMT-2007', studioId: 3, studioName: 'Fresh Fold Services', orderId: 'ORD-970', amount: 580, paymentDate: '2023-05-22', referenceNumber: 'UTR56789012', washType: 'combined' },
+  { id: 'PMT-2008', studioId: 2, studioName: 'Sparkle Clean Laundry', orderId: 'ORD-965', amount: 490, paymentDate: '2023-05-20', referenceNumber: 'UTR67890123', washType: 'combined' },
 ];
 
 const StudioPayments: React.FC = () => {
@@ -88,25 +88,25 @@ const StudioPayments: React.FC = () => {
     ? filteredUnpaidOrders[0].studioName 
     : 'All Studios';
     
-  const totalUnpaidAmount = washTypeFilteredUnpaidOrders.reduce((sum, order) => sum + order.amount, 0);
+  // Calculate total unpaid amount and order counts by wash type
+  const expressWashOrders = filteredUnpaidOrders.filter(order => order.washType === 'express');
+  const standardWashOrders = filteredUnpaidOrders.filter(order => order.washType === 'standard');
+  const combinedWashOrders = filteredUnpaidOrders.filter(order => order.washType === 'combined');
+  
+  const expressWashCount = expressWashOrders.length;
+  const standardWashCount = standardWashOrders.length;
+  const combinedWashCount = combinedWashOrders.length;
+  
+  // Total unpaid orders count across all wash types
+  const totalUnpaidCount = expressWashCount + standardWashCount + combinedWashCount;
 
-  // Get order counts by wash type
-  const expressWashCount = filteredUnpaidOrders.filter(order => order.washType === 'express').length;
-  const standardWashCount = filteredUnpaidOrders.filter(order => order.washType === 'standard').length;
-  const combinedWashCount = filteredUnpaidOrders.filter(order => order.washType === 'combined').length;
-
-  // Get total amounts by wash type
-  const expressWashAmount = filteredUnpaidOrders
-    .filter(order => order.washType === 'express')
-    .reduce((sum, order) => sum + order.amount, 0);
-    
-  const standardWashAmount = filteredUnpaidOrders
-    .filter(order => order.washType === 'standard')
-    .reduce((sum, order) => sum + order.amount, 0);
-    
-  const combinedWashAmount = filteredUnpaidOrders
-    .filter(order => order.washType === 'combined')
-    .reduce((sum, order) => sum + order.amount, 0);
+  // Calculate sum of amounts by wash type
+  const expressWashAmount = expressWashOrders.reduce((sum, order) => sum + order.amount, 0);
+  const standardWashAmount = standardWashOrders.reduce((sum, order) => sum + order.amount, 0);
+  const combinedWashAmount = combinedWashOrders.reduce((sum, order) => sum + order.amount, 0);
+  
+  // Total unpaid amount across all wash types
+  const totalUnpaidAmount = expressWashAmount + standardWashAmount + combinedWashAmount;
 
   // Mark order as paid
   const openPaymentModal = (order: UnpaidOrder) => {
@@ -263,7 +263,7 @@ const StudioPayments: React.FC = () => {
         <StatsCard
           title="Total Unpaid Amount"
           value={formatIndianRupees(totalUnpaidAmount)}
-          subtext={`${washTypeFilteredUnpaidOrders.length} orders pending`}
+          subtext={`${totalUnpaidCount} orders pending`}
         />
         <StatsCard
           title="Express Wash Unpaid"
