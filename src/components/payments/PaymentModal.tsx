@@ -1,5 +1,5 @@
 
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { 
   Dialog, 
   DialogContent, 
@@ -9,6 +9,7 @@ import {
   DialogFooter,
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
 import { UnpaidOrder } from '@/types/paymentTypes';
 import { formatIndianRupees } from '@/utils/dateUtils';
 import { toast } from "@/hooks/use-toast";
@@ -36,6 +37,15 @@ const PaymentModal: React.FC<PaymentModalProps> = ({
   confirmPayment,
   toggleOrderSelection
 }) => {
+  // Set current date when modal opens
+  useEffect(() => {
+    if (showPaymentModal && !paymentDate) {
+      const today = new Date();
+      const formattedDate = today.toISOString().split('T')[0];
+      setPaymentDate(formattedDate);
+    }
+  }, [showPaymentModal, paymentDate, setPaymentDate]);
+
   // Calculate total amount from selected orders
   const totalAmount = selectedOrders.reduce((sum, order) => sum + order.amount, 0);
 
@@ -63,22 +73,42 @@ const PaymentModal: React.FC<PaymentModalProps> = ({
     confirmPayment();
   };
 
+  // Determine modal title based on selection
+  const getModalTitle = () => {
+    if (selectedOrders.length === 0) {
+      return "Record Payment";
+    } else if (selectedOrders.length === 1) {
+      return "Record Payment";
+    } else {
+      return "Record Bulk Payment";
+    }
+  };
+
+  // Determine modal description based on selection
+  const getModalDescription = () => {
+    if (selectedOrders.length === 0) {
+      return "No orders selected for payment";
+    } else if (selectedOrders.length === 1) {
+      return `Enter payment details for order ${selectedOrders[0]?.id}`;
+    } else {
+      return `Enter payment details for ${selectedOrders.length} orders`;
+    }
+  };
+
   return (
     <Dialog open={showPaymentModal} onOpenChange={setShowPaymentModal}>
       <DialogContent className="sm:max-w-[500px] p-0">
         <DialogHeader className="p-6 pb-2">
-          <DialogTitle>Record Payment</DialogTitle>
+          <DialogTitle>{getModalTitle()}</DialogTitle>
           <DialogDescription>
-            {selectedOrders.length === 1 
-              ? `Enter payment details for order ${selectedOrders[0]?.id}`
-              : `Enter payment details for ${selectedOrders.length} orders`
-            }
+            {getModalDescription()}
           </DialogDescription>
         </DialogHeader>
         
         <div className="px-6 py-4">
           <div className="space-y-4">
             {selectedOrders.length === 1 ? (
+              // Single order view
               <div>
                 <label className="text-sm font-medium text-gray-700 block mb-1">
                   Order ID
@@ -87,7 +117,8 @@ const PaymentModal: React.FC<PaymentModalProps> = ({
                   {selectedOrders[0]?.id}
                 </div>
               </div>
-            ) : (
+            ) : selectedOrders.length > 1 ? (
+              // Multiple orders view
               <div>
                 <label className="text-sm font-medium text-gray-700 block mb-1">
                   Selected Orders
@@ -126,7 +157,7 @@ const PaymentModal: React.FC<PaymentModalProps> = ({
                   </table>
                 </div>
               </div>
-            )}
+            ) : null}
             
             <div>
               <label className="text-sm font-medium text-gray-700 block mb-1">
@@ -141,12 +172,12 @@ const PaymentModal: React.FC<PaymentModalProps> = ({
               <label htmlFor="payment-date" className="text-sm font-medium text-gray-700 block mb-1">
                 Payment Date
               </label>
-              <input
+              <Input
                 type="date"
                 id="payment-date"
                 value={paymentDate}
                 onChange={(e) => setPaymentDate(e.target.value)}
-                className="w-full px-3 py-2 border border-gray-300 rounded-md"
+                className="w-full"
                 required
               />
             </div>
@@ -155,12 +186,12 @@ const PaymentModal: React.FC<PaymentModalProps> = ({
               <label htmlFor="payment-reference" className="text-sm font-medium text-gray-700 block mb-1">
                 Payment Reference / UTR
               </label>
-              <input
+              <Input
                 type="text"
                 id="payment-reference"
                 value={paymentReference}
                 onChange={(e) => setPaymentReference(e.target.value)}
-                className="w-full px-3 py-2 border border-gray-300 rounded-md"
+                className="w-full"
                 placeholder="Enter payment reference or UTR number"
                 required
               />
