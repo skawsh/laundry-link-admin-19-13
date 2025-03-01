@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect, useMemo } from 'react';
 import { Search, X, Check } from 'lucide-react';
 import { Checkbox } from "@/components/ui/checkbox";
@@ -113,17 +114,21 @@ function DataTable<T>({
 
   const handleRowSelect = (id: string) => {
     const newSelectedRows = new Set(selectedRows);
+    
     if (newSelectedRows.has(id)) {
       newSelectedRows.delete(id);
     } else {
       newSelectedRows.add(id);
     }
+    
     setSelectedRows(newSelectedRows);
+    console.log("Row selected/deselected:", id, "New selection:", Array.from(newSelectedRows));
     
     if (onSelectionChange) {
       onSelectionChange(Array.from(newSelectedRows));
     }
     
+    // Update selectAll state based on whether all rows are selected
     setSelectAll(newSelectedRows.size === data.length);
   };
 
@@ -131,17 +136,20 @@ function DataTable<T>({
     const newSelectAll = !selectAll;
     setSelectAll(newSelectAll);
     
+    let newSelectedRows: Set<string>;
     if (newSelectAll) {
-      const allIds = data.map(row => String(row[keyField]));
-      setSelectedRows(new Set(allIds));
-      if (onSelectionChange) {
-        onSelectionChange(allIds);
-      }
+      // Select all rows
+      newSelectedRows = new Set(data.map(row => String(row[keyField])));
     } else {
-      setSelectedRows(new Set());
-      if (onSelectionChange) {
-        onSelectionChange([]);
-      }
+      // Deselect all rows
+      newSelectedRows = new Set();
+    }
+    
+    setSelectedRows(newSelectedRows);
+    console.log("Select all toggled to:", newSelectAll, "Selected rows:", Array.from(newSelectedRows));
+    
+    if (onSelectionChange) {
+      onSelectionChange(Array.from(newSelectedRows));
     }
     
     if (onSelectAll) {
@@ -203,7 +211,7 @@ function DataTable<T>({
                 <th className="w-12 px-4 py-3">
                   <div className="flex items-center justify-center">
                     <Checkbox
-                      checked={selectAll}
+                      checked={data.length > 0 && selectAll}
                       onCheckedChange={handleSelectAll}
                       aria-label="Select all"
                     />
@@ -224,28 +232,36 @@ function DataTable<T>({
           </thead>
           <tbody className="bg-white divide-y divide-gray-100">
             {data.length > 0 ? (
-              data.map((row, rowIndex) => (
-                <tr key={String(row[keyField])} className="hover:bg-gray-50 transition-colors">
-                  {selectable && (
-                    <td className="w-12 px-4 py-3">
-                      <div className="flex items-center justify-center">
-                        <Checkbox
-                          checked={selectedRows.has(String(row[keyField]))}
-                          onCheckedChange={() => handleRowSelect(String(row[keyField]))}
-                          aria-label={`Select row ${rowIndex + 1}`}
-                        />
-                      </div>
-                    </td>
-                  )}
-                  {columns.map((column, index) => (
-                    <td key={index} className="px-4 py-3 text-sm text-gray-700">
-                      {typeof column.accessor === 'function'
-                        ? column.accessor(row, rowIndex)
-                        : row[column.accessor] as React.ReactNode}
-                    </td>
-                  ))}
-                </tr>
-              ))
+              data.map((row, rowIndex) => {
+                const rowId = String(row[keyField]);
+                const isSelected = selectedRows.has(rowId);
+                
+                return (
+                  <tr key={rowId} className={cn(
+                    "hover:bg-gray-50 transition-colors",
+                    isSelected ? "bg-emerald-50" : ""
+                  )}>
+                    {selectable && (
+                      <td className="w-12 px-4 py-3">
+                        <div className="flex items-center justify-center">
+                          <Checkbox
+                            checked={isSelected}
+                            onCheckedChange={() => handleRowSelect(rowId)}
+                            aria-label={`Select row ${rowIndex + 1}`}
+                          />
+                        </div>
+                      </td>
+                    )}
+                    {columns.map((column, index) => (
+                      <td key={index} className="px-4 py-3 text-sm text-gray-700">
+                        {typeof column.accessor === 'function'
+                          ? column.accessor(row, rowIndex)
+                          : row[column.accessor] as React.ReactNode}
+                      </td>
+                    ))}
+                  </tr>
+                );
+              })
             ) : (
               <tr>
                 <td
