@@ -1,11 +1,10 @@
-
 import React from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import AdminLayout from '../components/layout/AdminLayout';
 import PageHeader from '../components/ui/PageHeader';
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
-import { ArrowLeft, Check, Info, Truck, User, DollarSign } from "lucide-react";
+import { ArrowLeft, Info, Truck, User, DollarSign } from "lucide-react";
 import { formatIndianRupees } from '@/utils/dateUtils';
 import { initialUnpaidOrders } from '@/data/mockPaymentData';
 import { UnpaidOrder } from '@/types/paymentTypes';
@@ -261,16 +260,7 @@ const OrderDetails: React.FC = () => {
             <ArrowLeft className="h-5 w-5" />
           </Button>
         }
-      >
-        <Button
-          variant="success"
-          onClick={() => navigate(`/studios/payments/${orderDetails.studioId}`)}
-          className="flex items-center"
-        >
-          <Check className="h-4 w-4 mr-2" />
-          <span>Back to Payments</span>
-        </Button>
-      </PageHeader>
+      />
 
       <div className="container mx-auto p-6 space-y-6">
         <div className="space-y-6">
@@ -354,7 +344,7 @@ const OrderDetails: React.FC = () => {
                   {/* Clothing items for Standard Wash */}
                   <div className="mb-4">
                     <div className="font-medium mb-2">Clothing Items</div>
-                    <div className="grid grid-cols-2 gap-2">
+                    <div className="flex flex-col gap-1">
                       {getClothingItems().standard.map((item, index) => (
                         <div key={index} className="ml-2">
                           {index + 1}. {item.name} ({item.quantity})
@@ -383,7 +373,7 @@ const OrderDetails: React.FC = () => {
                   {/* Clothing items for Express Wash */}
                   <div className="mb-4">
                     <div className="font-medium mb-2">Clothing Items</div>
-                    <div className="grid grid-cols-2 gap-2">
+                    <div className="flex flex-col gap-1">
                       {getClothingItems().express.map((item, index) => (
                         <div key={index} className="ml-2">
                           {index + 1}. {item.name} ({item.quantity})
