@@ -17,6 +17,7 @@ import Revenue from "./pages/Revenue";
 import Users from "./pages/Users";
 import NotFound from "./pages/NotFound";
 import OrderDetails from './pages/OrderDetails';
+import AddStudio from './pages/AddStudio';
 
 const queryClient = new QueryClient();
 
@@ -29,6 +30,7 @@ const App = () => (
         <Routes>
           <Route path="/" element={<Dashboard />} />
           <Route path="/studios" element={<Studios />} />
+          <Route path="/studios/add" element={<AddStudio />} />
           <Route path="/studios/payments" element={<StudioPayments />} />
           <Route path="/studios/payments/:studioId" element={<StudioPayments />} />
           <Route path="/studios/onboarding" element={<OnboardingRequests />} />
