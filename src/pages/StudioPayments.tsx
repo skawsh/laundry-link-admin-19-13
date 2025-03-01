@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { CheckCircle, Download, InfoIcon, ArrowLeft } from 'lucide-react';
@@ -81,7 +80,6 @@ const StudioPayments: React.FC = () => {
   const [selectedOrderDetails, setSelectedOrderDetails] = useState<UnpaidOrder | null>(null);
   const { toast } = useToast();
 
-  // Filter data based on studio ID if provided
   const filteredUnpaidOrders = studioId 
     ? unpaidOrders.filter(order => order.studioId === Number(studioId))
     : unpaidOrders;
@@ -90,17 +88,14 @@ const StudioPayments: React.FC = () => {
     ? paymentHistory.filter(payment => payment.studioId === Number(studioId))
     : paymentHistory;
 
-  // Further filter unpaid orders by wash type if selected
   const washTypeFilteredUnpaidOrders = washTypeFilter === 'all' 
     ? filteredUnpaidOrders 
     : filteredUnpaidOrders.filter(order => order.washType === washTypeFilter);
 
-  // Calculate studio specific total if studio ID is provided
   const studioName = studioId && filteredUnpaidOrders.length > 0 
     ? filteredUnpaidOrders[0].studioName 
     : 'All Studios';
-    
-  // Calculate total unpaid amount and order counts by wash type
+
   const expressWashOrders = filteredUnpaidOrders.filter(order => order.washType === 'express');
   const standardWashOrders = filteredUnpaidOrders.filter(order => order.washType === 'standard');
   const combinedWashOrders = filteredUnpaidOrders.filter(order => order.washType === 'combined');
@@ -109,29 +104,23 @@ const StudioPayments: React.FC = () => {
   const standardWashCount = standardWashOrders.length;
   const combinedWashCount = combinedWashOrders.length;
   
-  // Total unpaid orders count across all wash types
   const totalUnpaidCount = expressWashCount + standardWashCount + combinedWashCount;
 
-  // Calculate sum of amounts by wash type
   const expressWashAmount = expressWashOrders.reduce((sum, order) => sum + order.amount, 0);
   const standardWashAmount = standardWashOrders.reduce((sum, order) => sum + order.amount, 0);
   const combinedWashAmount = combinedWashOrders.reduce((sum, order) => sum + order.amount, 0);
   
-  // Total unpaid amount across all wash types
   const totalUnpaidAmount = expressWashAmount + standardWashAmount + combinedWashAmount;
 
-  // Handle back navigation
   const handleGoBack = () => {
     navigate(-1);
   };
 
-  // Mark order as paid
   const openPaymentModal = (order: UnpaidOrder) => {
     setSelectedOrder(order);
     setShowPaymentModal(true);
   };
 
-  // Show order details
   const openOrderDetailsModal = (order: UnpaidOrder) => {
     setSelectedOrderDetails(order);
     setShowOrderDetailsModal(true);
@@ -148,7 +137,6 @@ const StudioPayments: React.FC = () => {
       return;
     }
 
-    // Create new payment record
     const newPayment: PaymentRecord = {
       id: `PMT-${Math.floor(Math.random() * 10000)}`,
       studioId: selectedOrder.studioId,
@@ -160,19 +148,15 @@ const StudioPayments: React.FC = () => {
       washType: selectedOrder.washType
     };
 
-    // Update unpaid orders
     setUnpaidOrders(unpaidOrders.filter(order => order.id !== selectedOrder.id));
     
-    // Add to payment history
     setPaymentHistory([newPayment, ...paymentHistory]);
     
-    // Close modal and reset form
     setShowPaymentModal(false);
     setSelectedOrder(null);
     setPaymentReference('');
     setPaymentDate('');
 
-    // Show success toast
     toast({
       title: "Payment Recorded",
       description: `Payment of ₹${(selectedOrder.amount).toLocaleString('en-IN')} for order ${selectedOrder.id} has been marked as paid.`,
@@ -180,12 +164,10 @@ const StudioPayments: React.FC = () => {
     });
   };
 
-  // Format currency to Indian Rupees
   const formatIndianRupees = (amount: number) => {
     return `₹${amount.toLocaleString('en-IN')}`;
   };
 
-  // Unpaid orders columns
   const unpaidColumns = [
     {
       header: 'Order ID',
@@ -244,7 +226,6 @@ const StudioPayments: React.FC = () => {
     }
   ];
 
-  // Payment history columns
   const historyColumns = [
     {
       header: 'Payment ID',
@@ -289,14 +270,13 @@ const StudioPayments: React.FC = () => {
         subtitle={studioId ? `Manage payments for ${studioName}` : "Manage payments for all laundry studios"}
       >
         <div className="flex items-center gap-3">
-          {/* Back button */}
           <Button
-            variant="back"
+            variant="ghost"
             onClick={handleGoBack}
-            className="flex items-center"
+            size="icon"
+            className="mr-auto"
           >
-            <ArrowLeft className="h-4 w-4 mr-1" />
-            <span>Back</span>
+            <ArrowLeft className="h-5 w-5" />
           </Button>
           
           <button className="flex items-center px-4 py-2 bg-white border border-gray-200 rounded-md text-gray-700 hover:bg-gray-50 transition-colors">
@@ -306,7 +286,6 @@ const StudioPayments: React.FC = () => {
         </div>
       </PageHeader>
       
-      {/* Payment summary cards */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5 mb-6">
         <StatsCard
           title="Total Unpaid Amount"
@@ -330,7 +309,6 @@ const StudioPayments: React.FC = () => {
         />
       </div>
       
-      {/* Main Tabs - Unpaid vs History */}
       <Tabs defaultValue="unpaid" className="w-full" onValueChange={(value) => setViewType(value as 'unpaid' | 'history')}>
         <TabsList className="mb-6 bg-background border border-input">
           <TabsTrigger value="unpaid" className="flex-1">Unpaid Payments</TabsTrigger>
@@ -338,31 +316,18 @@ const StudioPayments: React.FC = () => {
         </TabsList>
         
         <TabsContent value="unpaid">
-          {/* Wash Type Tabs for Unpaid Payments */}
           <Tabs defaultValue="all" className="w-full" onValueChange={(value) => setWashTypeFilter(value as 'all' | 'express' | 'standard' | 'combined')}>
             <TabsList className="bg-background border border-input mb-5">
-              <TabsTrigger 
-                value="all" 
-                className={washTypeFilter === 'all' ? 'bg-green-600 text-white' : ''}
-              >
+              <TabsTrigger value="all">
                 All Wash Types
               </TabsTrigger>
-              <TabsTrigger 
-                value="express" 
-                className={washTypeFilter === 'express' ? 'bg-green-600 text-white' : 'text-purple-800'}
-              >
+              <TabsTrigger value="express">
                 Express Wash
               </TabsTrigger>
-              <TabsTrigger 
-                value="standard" 
-                className={washTypeFilter === 'standard' ? 'bg-green-600 text-white' : 'text-blue-800'}
-              >
+              <TabsTrigger value="standard">
                 Standard Wash
               </TabsTrigger>
-              <TabsTrigger 
-                value="combined" 
-                className={washTypeFilter === 'combined' ? 'bg-green-600 text-white' : 'text-green-800'}
-              >
+              <TabsTrigger value="combined">
                 Combined Wash
               </TabsTrigger>
             </TabsList>
@@ -406,31 +371,18 @@ const StudioPayments: React.FC = () => {
         </TabsContent>
         
         <TabsContent value="history">
-          {/* Wash Type Tabs for Payment History */}
           <Tabs defaultValue="all" className="w-full" onValueChange={(value) => setWashTypeFilter(value as 'all' | 'express' | 'standard' | 'combined')}>
             <TabsList className="bg-background border border-input mb-5">
-              <TabsTrigger 
-                value="all" 
-                className={washTypeFilter === 'all' ? 'bg-green-600 text-white' : ''}
-              >
+              <TabsTrigger value="all">
                 All Wash Types
               </TabsTrigger>
-              <TabsTrigger 
-                value="express" 
-                className={washTypeFilter === 'express' ? 'bg-green-600 text-white' : 'text-purple-800'}
-              >
+              <TabsTrigger value="express">
                 Express Wash
               </TabsTrigger>
-              <TabsTrigger 
-                value="standard" 
-                className={washTypeFilter === 'standard' ? 'bg-green-600 text-white' : 'text-blue-800'}
-              >
+              <TabsTrigger value="standard">
                 Standard Wash
               </TabsTrigger>
-              <TabsTrigger 
-                value="combined" 
-                className={washTypeFilter === 'combined' ? 'bg-green-600 text-white' : 'text-green-800'}
-              >
+              <TabsTrigger value="combined">
                 Combined Wash
               </TabsTrigger>
             </TabsList>
@@ -474,7 +426,6 @@ const StudioPayments: React.FC = () => {
         </TabsContent>
       </Tabs>
       
-      {/* Payment confirmation modal */}
       {showPaymentModal && selectedOrder && (
         <div className="fixed inset-0 flex items-center justify-center z-50 bg-black bg-opacity-50">
           <div className="bg-white rounded-lg shadow-elevated w-full max-w-md p-6 animate-fade-in">
@@ -547,7 +498,6 @@ const StudioPayments: React.FC = () => {
         </div>
       )}
 
-      {/* Order Details Modal */}
       {showOrderDetailsModal && selectedOrderDetails && (
         <Dialog open={showOrderDetailsModal} onOpenChange={setShowOrderDetailsModal}>
           <DialogContent className="sm:max-w-md">
