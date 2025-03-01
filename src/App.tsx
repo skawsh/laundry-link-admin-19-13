@@ -19,6 +19,7 @@ import Users from "./pages/Users";
 import NotFound from "./pages/NotFound";
 import OrderDetails from './pages/OrderDetails';
 import AddStudio from './pages/AddStudio';
+import DriverProfile from './pages/DriverProfile';
 
 const queryClient = new QueryClient();
 
@@ -39,6 +40,7 @@ const App = () => (
           <Route path="/studios/details/:studioId" element={<StudioDetails />} />
           <Route path="/studios/services/:studioId" element={<StudioServices />} />
           <Route path="/drivers" element={<Drivers />} />
+          <Route path="/driver-profile/:id" element={<DriverProfile />} />
           <Route path="/orders" element={<Orders />} />
           <Route path="/orders/assignment" element={<OrderAssignment />} />
           <Route path="/revenue" element={<Revenue />} />

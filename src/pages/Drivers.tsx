@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import AdminLayout from '@/components/layout/AdminLayout';
@@ -70,7 +69,6 @@ const Drivers = () => {
     licenseNumber?: string;
   }>(null);
 
-  // Add a state for drivers that can be modified
   const [mockDrivers, setMockDrivers] = useState([
     {
       id: 1,
@@ -463,7 +461,6 @@ const Drivers = () => {
       )
     );
     
-    // Show toast notification for status change with shorter duration
     const driver = mockDrivers.find(d => d.id === driverId);
     const newStatus = driver?.status === 'active' ? 'inactive' : 'active';
     toast({
@@ -489,7 +486,6 @@ const Drivers = () => {
         toggleDriverStatus(driverId);
         break;
       case 'removeDriver':
-        // Implementation for removing driver
         toast({
           title: "Driver removed",
           description: `${driver.name} has been removed from the system`,
@@ -505,7 +501,6 @@ const Drivers = () => {
 
   const filteredDrivers = useMemo(() => {
     return mockDrivers.filter(driver => {
-      // Filter by search query
       if (searchQuery && searchQuery.length > 0) {
         const nameMatch = driver.name.toLowerCase().includes(searchQuery.toLowerCase());
         const phoneMatch = driver.phone.toLowerCase().includes(searchQuery.toLowerCase());
@@ -513,10 +508,8 @@ const Drivers = () => {
         if (!nameMatch && !phoneMatch && !emailMatch) return false;
       }
       
-      // Filter by status
       if (!filters.status[driver.status as 'active' | 'inactive']) return false;
       
-      // Filter by orders
       if (driver.assignedOrders.length === 0 && !filters.orders.none) return false;
       if (driver.assignedOrders.length === 1 && !filters.orders.any) return false;
       if (driver.assignedOrders.length > 1 && !filters.orders.multiple) return false;
@@ -550,7 +543,6 @@ const Drivers = () => {
     setSearchQuery(query);
   };
 
-  // Calculate active and inactive driver counts
   const activeDriversCount = useMemo(() => {
     return mockDrivers.filter(driver => driver.status === 'active').length;
   }, [mockDrivers]);
@@ -559,7 +551,6 @@ const Drivers = () => {
     return mockDrivers.filter(driver => driver.status === 'inactive').length;
   }, [mockDrivers]);
   
-  // Calculate total drivers as sum of active and inactive
   const totalDriversCount = useMemo(() => {
     return activeDriversCount + inactiveDriversCount;
   }, [activeDriversCount, inactiveDriversCount]);
