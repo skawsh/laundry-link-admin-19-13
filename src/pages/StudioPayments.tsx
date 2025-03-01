@@ -6,38 +6,32 @@ import PageHeader from '../components/ui/PageHeader';
 import { useToast } from "@/hooks/use-toast";
 import { Button } from "@/components/ui/button";
 
-// Import custom components
 import PaymentStats from '@/components/payments/PaymentStats';
 import PaymentModal from '@/components/payments/PaymentModal';
 import OrderDetailsModal from '@/components/payments/OrderDetailsModal';
 import PaymentTabs from '@/components/payments/PaymentTabs';
 
-// Import types and data
 import { UnpaidOrder, PaymentRecord, DateFilterOption } from '@/types/paymentTypes';
 import { initialUnpaidOrders, initialPaymentHistory } from '@/data/mockPaymentData';
 import { formatIndianRupees } from '@/utils/dateUtils';
 import { applyDateFilter, applyOrderIdSearch, applyWashTypeFilter } from '@/utils/orderUtils';
 
-// Add this function to calculate delivery date based on wash type
 const calculateDeliveryDate = (orderDate: string, washType: 'express' | 'standard' | 'combined'): string => {
   const date = new Date(orderDate);
   
-  // Add days based on wash type
   if (washType === 'express') {
-    date.setDate(date.getDate() + 1); // 1 day for express
+    date.setDate(date.getDate() + 1);
   } else {
-    // Both 'standard' and 'combined' use 4 days
-    date.setDate(date.getDate() + 4); // 4 days for standard/combined
+    date.setDate(date.getDate() + 4);
   }
   
-  // Format as DD/MM/YYYY
   return `${date.getDate().toString().padStart(2, '0')}/${(date.getMonth() + 1).toString().padStart(2, '0')}/${date.getFullYear()}`;
 };
 
 const StudioPayments: React.FC = () => {
   const { studioId } = useParams<{ studioId?: string }>();
   const navigate = useNavigate();
-  // Filter to only include orders with deliveredDate before setting initial state
+
   const [unpaidOrders, setUnpaidOrders] = useState<UnpaidOrder[]>(
     initialUnpaidOrders.filter(order => order.deliveredDate !== undefined)
   );
@@ -52,8 +46,7 @@ const StudioPayments: React.FC = () => {
   const [showOrderDetailsModal, setShowOrderDetailsModal] = useState(false);
   const [selectedOrderDetails, setSelectedOrderDetails] = useState<UnpaidOrder | null>(null);
   const { toast } = useToast();
-  
-  // States for date filtering and search
+
   const [dateFilter, setDateFilter] = useState<DateFilterOption>('all');
   const [customDateRange, setCustomDateRange] = useState<{start: string, end: string}>({
     start: '',
@@ -70,7 +63,6 @@ const StudioPayments: React.FC = () => {
     ? paymentHistory.filter(payment => payment.studioId === Number(studioId))
     : paymentHistory;
 
-  // Combined filtering function for unpaid orders
   const getFilteredUnpaidOrders = (): UnpaidOrder[] => {
     let data = filteredUnpaidOrders;
     data = applyDateFilter(data, dateFilter, customDateRange);
@@ -79,7 +71,6 @@ const StudioPayments: React.FC = () => {
     return data;
   };
 
-  // Combined filtering function for payment history
   const getFilteredPaymentHistory = (): PaymentRecord[] => {
     let data = filteredPaymentHistory;
     data = applyDateFilter(data, dateFilter, customDateRange);
@@ -127,16 +118,13 @@ const StudioPayments: React.FC = () => {
       return;
     }
 
-    // Determine which orders to mark as paid (based on selection)
     let ordersToPay: UnpaidOrder[] = [];
     
     if (selectedOrderIds.length > 0) {
-      // Pay only selected orders
       ordersToPay = getFilteredUnpaidOrders().filter(order => 
         selectedOrderIds.includes(order.id)
       );
     } else if (selectedOrder) {
-      // Pay just the one selected order
       ordersToPay = [selectedOrder];
     } else {
       toast({
@@ -158,7 +146,6 @@ const StudioPayments: React.FC = () => {
       return;
     }
 
-    // Create payment records for all orders
     const newPayments: PaymentRecord[] = ordersToPay.map(order => ({
       id: `PMT-${Math.floor(Math.random() * 10000)}`,
       studioId: order.studioId,
@@ -171,11 +158,9 @@ const StudioPayments: React.FC = () => {
       deliveredDate: order.deliveredDate
     }));
 
-    // Remove all paid orders from unpaid orders
     const paidOrderIds = ordersToPay.map(order => order.id);
     setUnpaidOrders(unpaidOrders.filter(order => !paidOrderIds.includes(order.id)));
     
-    // Add all new payment records to payment history
     setPaymentHistory([...newPayments, ...paymentHistory]);
     
     setShowPaymentModal(false);
@@ -197,7 +182,16 @@ const StudioPayments: React.FC = () => {
     setCustomDateRange({ start: '', end: '' });
   };
 
-  // Define table columns with an S.No column
+  const toggleOrderSelection = (orderId: string) => {
+    setSelectedOrderIds(prev => {
+      if (prev.includes(orderId)) {
+        return prev.filter(id => id !== orderId);
+      } else {
+        return [...prev, orderId];
+      }
+    });
+  };
+
   const unpaidColumns = [
     {
       header: 'S.No',
@@ -314,9 +308,8 @@ const StudioPayments: React.FC = () => {
           const date = new Date(row.deliveredDate);
           return `${date.getDate().toString().padStart(2, '0')}/${(date.getMonth() + 1).toString().padStart(2, '0')}/${date.getFullYear()}`;
         } else {
-          // If we don't have an actual delivered date, calculate an estimated one
-          const orderDate = new Date(row.paymentDate); // Using payment date as a proxy for order date
-          orderDate.setDate(orderDate.getDate() - (row.washType === 'express' ? 1 : 4)); // Approximate order date
+          const orderDate = new Date(row.paymentDate);
+          orderDate.setDate(orderDate.getDate() - (row.washType === 'express' ? 1 : 4));
           return calculateDeliveryDate(orderDate.toISOString(), row.washType);
         }
       },
@@ -386,6 +379,7 @@ const StudioPayments: React.FC = () => {
         paymentDate={paymentDate}
         setPaymentDate={setPaymentDate}
         confirmPayment={confirmPayment}
+        toggleOrderSelection={toggleOrderSelection}
       />
       
       <OrderDetailsModal 

@@ -22,6 +22,7 @@ interface PaymentModalProps {
   paymentDate: string;
   setPaymentDate: (value: string) => void;
   confirmPayment: () => void;
+  toggleOrderSelection?: (orderId: string) => void;
 }
 
 const PaymentModal: React.FC<PaymentModalProps> = ({
@@ -32,7 +33,8 @@ const PaymentModal: React.FC<PaymentModalProps> = ({
   setPaymentReference,
   paymentDate,
   setPaymentDate,
-  confirmPayment
+  confirmPayment,
+  toggleOrderSelection
 }) => {
   // Calculate total amount from selected orders
   const totalAmount = selectedOrders.reduce((sum, order) => sum + order.amount, 0);
@@ -94,6 +96,9 @@ const PaymentModal: React.FC<PaymentModalProps> = ({
                   <table className="min-w-full divide-y divide-gray-200">
                     <thead className="bg-gray-50">
                       <tr>
+                        {toggleOrderSelection && (
+                          <th className="px-3 py-2 text-left text-xs font-medium text-gray-500">Select</th>
+                        )}
                         <th className="px-3 py-2 text-left text-xs font-medium text-gray-500">Order ID</th>
                         <th className="px-3 py-2 text-right text-xs font-medium text-gray-500">Amount</th>
                       </tr>
@@ -101,6 +106,16 @@ const PaymentModal: React.FC<PaymentModalProps> = ({
                     <tbody className="bg-white divide-y divide-gray-200">
                       {selectedOrders.map(order => (
                         <tr key={order.id}>
+                          {toggleOrderSelection && (
+                            <td className="px-3 py-2">
+                              <input
+                                type="checkbox"
+                                checked={true}
+                                onChange={() => toggleOrderSelection(order.id)}
+                                className="h-4 w-4 text-indigo-600 focus:ring-indigo-500 border-gray-300 rounded"
+                              />
+                            </td>
+                          )}
                           <td className="px-3 py-2 text-sm text-gray-700">{order.id}</td>
                           <td className="px-3 py-2 text-sm text-gray-700 text-right">
                             {formatIndianRupees(order.amount)}
