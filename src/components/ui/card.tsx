@@ -1,15 +1,20 @@
+
 import * as React from "react"
 
 import { cn } from "@/lib/utils"
 
 const Card = React.forwardRef<
   HTMLDivElement,
-  React.HTMLAttributes<HTMLDivElement>
->(({ className, ...props }, ref) => (
+  React.HTMLAttributes<HTMLDivElement> & {
+    variant?: "default" | "order" | "interactive"
+  }
+>(({ className, variant = "default", ...props }, ref) => (
   <div
     ref={ref}
     className={cn(
       "rounded-lg border bg-card text-card-foreground shadow-sm",
+      variant === "order" && "border-l-4 border-l-blue-500 hover:bg-gray-50",
+      variant === "interactive" && "cursor-pointer hover:shadow-md transition-all duration-200",
       className
     )}
     {...props}

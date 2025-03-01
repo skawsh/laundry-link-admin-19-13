@@ -1,4 +1,3 @@
-
 import { UnpaidOrder, PaymentRecord, DateFilterOption } from "../types/paymentTypes";
 
 // Get service details for different wash types
@@ -114,4 +113,36 @@ export const applyWashTypeFilter = <T extends UnpaidOrder | PaymentRecord>(
 // Filter orders to only include those with delivery dates (for stats)
 export const filterDeliveredOrders = (orders: UnpaidOrder[]): UnpaidOrder[] => {
   return orders;  // All orders now have delivery dates by type definition
+};
+
+// New function to filter orders by driver
+export const filterOrdersByDriver = (
+  orders: UnpaidOrder[], 
+  driverId: string
+): UnpaidOrder[] => {
+  return orders.filter(order => order.assignedTo === driverId);
+};
+
+// Group orders by wash type
+export const groupOrdersByWashType = (orders: UnpaidOrder[]) => {
+  return {
+    express: orders.filter(order => order.washType === 'express'),
+    standard: orders.filter(order => order.washType === 'standard'),
+    combined: orders.filter(order => order.washType === 'combined'),
+    all: orders
+  };
+};
+
+// Get wash type display name
+export const getWashTypeDisplayName = (washType: 'express' | 'standard' | 'combined' | undefined) => {
+  switch (washType) {
+    case 'express':
+      return 'Express Wash';
+    case 'standard':
+      return 'Standard Wash';
+    case 'combined':
+      return 'Express & Standard';
+    default:
+      return 'Standard Wash';
+  }
 };

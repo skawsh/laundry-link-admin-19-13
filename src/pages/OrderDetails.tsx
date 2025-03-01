@@ -1,15 +1,14 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import AdminLayout from '../components/layout/AdminLayout';
 import PageHeader from '../components/ui/PageHeader';
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
-import { ArrowLeft, Info, Truck, User, DollarSign } from "lucide-react";
+import { ArrowLeft, Info, Truck, User, DollarSign, ChevronDown, ChevronUp } from "lucide-react";
 import { formatIndianRupees } from '@/utils/dateUtils';
 import { initialUnpaidOrders } from '@/data/mockPaymentData';
 import { UnpaidOrder } from '@/types/paymentTypes';
 
-// Import sample data for OrderDetails
 const clothingItemsByOrderId: Record<string, {
   standard: {name: string, quantity: number}[],
   express: {name: string, quantity: number}[]
@@ -75,7 +74,6 @@ const clothingItemsByOrderId: Record<string, {
   },
 };
 
-// Sample delivery information for each order
 const deliveryInfoByOrderId: Record<string, {assignedTo: string, vehicleDetails: string, phoneNumber: string, deliveryTime: string}> = {
   'ORD-1001': {
     assignedTo: 'Deepak Bagade',
@@ -115,7 +113,6 @@ const deliveryInfoByOrderId: Record<string, {assignedTo: string, vehicleDetails:
   },
 };
 
-// Sample customer information for each order
 const customerInfoByOrderId: Record<string, {name: string, phone: string, address: string}> = {
   'ORD-1001': {
     name: 'Mahesh BM',
@@ -152,8 +149,8 @@ const customerInfoByOrderId: Record<string, {name: string, phone: string, addres
 const OrderDetails: React.FC = () => {
   const { orderId } = useParams<{ orderId: string }>();
   const navigate = useNavigate();
+  const [expandedSections, setExpandedSections] = useState<string[]>(['orderInfo', 'customerInfo', 'servicesInfo', 'deliveryInfo']);
 
-  // Find the order from the mock data
   const orderDetails = initialUnpaidOrders.find(order => order.id === orderId) || null;
 
   if (!orderDetails) {
@@ -181,28 +178,23 @@ const OrderDetails: React.FC = () => {
     );
   }
 
-  // Format date in DD/MM/YYYY format
   const formatDate = (dateString: string) => {
     const date = new Date(dateString);
     return `${date.getDate().toString().padStart(2, '0')}/${(date.getMonth() + 1).toString().padStart(2, '0')}/${date.getFullYear()}`;
   };
 
-  // Get clothing items for the current order
   const getClothingItems = () => {
     return clothingItemsByOrderId[orderDetails.id] || clothingItemsByOrderId['ORD-1001'];
   };
 
-  // Get delivery info for the current order
   const getDeliveryInfo = () => {
     return deliveryInfoByOrderId[orderDetails.id] || deliveryInfoByOrderId['ORD-1001'];
   };
 
-  // Get customer info for the current order
   const getCustomerInfo = () => {
     return customerInfoByOrderId[orderDetails.id] || customerInfoByOrderId['ORD-1001'];
   };
 
-  // Get wash type display text
   const getWashTypeText = (washType: string | undefined) => {
     if (washType === 'express') return 'Express Wash';
     if (washType === 'standard') return 'Standard Wash';
@@ -210,17 +202,14 @@ const OrderDetails: React.FC = () => {
     return 'Standard Wash';
   };
 
-  // Fixed per kg rate with different rates for standard and express
   const getPerKgRate = (type: 'standard' | 'express') => {
-    return type === 'standard' ? 49 : 69; // Express wash is more expensive
+    return type === 'standard' ? 49 : 69;
   };
 
-  // Fixed total weight at 2.5 kg as requested
   const getTotalWeight = () => {
     return 2.5;
   };
 
-  // Calculate delivery date based on order date and wash type
   const calculateDeliveryDate = (orderDate: string, washType: 'express' | 'standard' | 'combined' | undefined): string => {
     if (!orderDate) return '';
     
@@ -235,21 +224,31 @@ const OrderDetails: React.FC = () => {
     return `${date.getDate().toString().padStart(2, '0')}/${(date.getMonth() + 1).toString().padStart(2, '0')}/${date.getFullYear()}`;
   };
 
-  // Determine if we need to show both standard and express services
-  const isCombinedWash = orderDetails.washType === 'combined';
-  const showExpressWash = orderDetails.washType === 'express' || isCombinedWash;
-  const showStandardWash = orderDetails.washType === 'standard' || isCombinedWash;
+  const isCombinedWash = orderDetails?.washType === 'combined';
+  const showExpressWash = orderDetails?.washType === 'express' || isCombinedWash;
+  const showStandardWash = orderDetails?.washType === 'standard' || isCombinedWash;
 
-  // Calculate total amounts
   const standardAmount = showStandardWash ? getTotalWeight() * getPerKgRate('standard') : 0;
   const expressAmount = showExpressWash ? getTotalWeight() * getPerKgRate('express') : 0;
   const totalAmount = standardAmount + expressAmount;
 
+  const toggleSection = (section: string) => {
+    setExpandedSections(prev => 
+      prev.includes(section) 
+        ? prev.filter(s => s !== section) 
+        : [...prev, section]
+    );
+  };
+
+  const isSectionExpanded = (section: string) => {
+    return expandedSections.includes(section);
+  };
+
   return (
     <AdminLayout>
       <PageHeader 
-        title={`Order Details: ${orderDetails.id}`} 
-        subtitle={`View details for order ${orderDetails.id}`}
+        title={`Order Details: ${orderDetails?.id}`} 
+        subtitle={`View details for order ${orderDetails?.id}`}
         backButton={
           <Button
             variant="back"
@@ -264,155 +263,197 @@ const OrderDetails: React.FC = () => {
 
       <div className="container mx-auto p-6 space-y-6">
         <div className="space-y-6">
-          {/* Order Information Card */}
           <Card className="border-green-100 rounded-xl overflow-hidden shadow-sm">
-            <div className="bg-green-100 py-2 px-4 flex items-center">
-              <Info className="h-5 w-5 mr-2 text-green-800" />
-              <h3 className="text-md font-medium text-green-800">Order Information</h3>
+            <div 
+              className="bg-green-100 py-2 px-4 flex items-center justify-between cursor-pointer"
+              onClick={() => toggleSection('orderInfo')}
+            >
+              <div className="flex items-center">
+                <Info className="h-5 w-5 mr-2 text-green-800" />
+                <h3 className="text-md font-medium text-green-800">Order Information</h3>
+              </div>
+              {isSectionExpanded('orderInfo') ? (
+                <ChevronUp className="h-5 w-5 text-green-800" />
+              ) : (
+                <ChevronDown className="h-5 w-5 text-green-800" />
+              )}
             </div>
-            <CardContent className="p-4 text-sm space-y-2">
-              <div className="grid grid-cols-2 gap-4">
+            {isSectionExpanded('orderInfo') && (
+              <CardContent className="p-4 text-sm space-y-2">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div>
+                    <span className="text-gray-600">Order ID - </span>
+                    <span className="font-medium">{orderDetails?.id}</span>
+                  </div>
+                  <div>
+                    <span className="text-gray-600">Ordered Date - </span>
+                    <span className="font-medium">{orderDetails?.date && formatDate(orderDetails.date)}</span>
+                  </div>
+                  <div>
+                    <span className="text-gray-600">Order Delivered date - </span>
+                    <span className="font-medium">{orderDetails?.date && calculateDeliveryDate(orderDetails.date, orderDetails.washType)}</span>
+                  </div>
+                  <div>
+                    <span className="text-gray-600">Wash Type - </span>
+                    <span className="font-medium text-red-600">{getWashTypeText(orderDetails?.washType)}</span>
+                  </div>
+                </div>
+              </CardContent>
+            )}
+          </Card>
+          
+          <Card className="border-green-100 rounded-xl overflow-hidden shadow-sm">
+            <div 
+              className="bg-green-100 py-2 px-4 flex items-center justify-between cursor-pointer"
+              onClick={() => toggleSection('customerInfo')}
+            >
+              <div className="flex items-center">
+                <User className="h-5 w-5 mr-2 text-green-800" />
+                <h3 className="text-md font-medium text-green-800">Customer Information</h3>
+              </div>
+              {isSectionExpanded('customerInfo') ? (
+                <ChevronUp className="h-5 w-5 text-green-800" />
+              ) : (
+                <ChevronDown className="h-5 w-5 text-green-800" />
+              )}
+            </div>
+            {isSectionExpanded('customerInfo') && (
+              <CardContent className="p-4 text-sm space-y-2">
                 <div>
-                  <span className="text-gray-600">Order ID - </span>
-                  <span className="font-medium">{orderDetails.id}</span>
+                  <span className="text-gray-600">Customer Name - </span>
+                  <span className="font-medium">{getCustomerInfo().name}</span>
                 </div>
                 <div>
-                  <span className="text-gray-600">Ordered Date - </span>
-                  <span className="font-medium">{formatDate(orderDetails.date)}</span>
+                  <span className="text-gray-600">Number - </span>
+                  <span className="font-medium">{getCustomerInfo().phone}</span>
                 </div>
                 <div>
-                  <span className="text-gray-600">Order Delivered date - </span>
-                  <span className="font-medium">{calculateDeliveryDate(orderDetails.date, orderDetails.washType)}</span>
+                  <span className="text-gray-600">Address - </span>
+                  <span className="font-medium">{getCustomerInfo().address}</span>
                 </div>
-                <div>
+              </CardContent>
+            )}
+          </Card>
+          
+          <Card className="border-green-100 rounded-xl overflow-hidden shadow-sm">
+            <div 
+              className="bg-green-100 py-2 px-4 flex items-center justify-between cursor-pointer"
+              onClick={() => toggleSection('servicesInfo')}
+            >
+              <div className="flex items-center">
+                <DollarSign className="h-5 w-5 mr-2 text-green-800" />
+                <h3 className="text-md font-medium text-green-800">Services Information</h3>
+              </div>
+              {isSectionExpanded('servicesInfo') ? (
+                <ChevronUp className="h-5 w-5 text-green-800" />
+              ) : (
+                <ChevronDown className="h-5 w-5 text-green-800" />
+              )}
+            </div>
+            {isSectionExpanded('servicesInfo') && (
+              <CardContent className="p-4 text-sm">
+                <div className="mb-3">
                   <span className="text-gray-600">Wash Type - </span>
-                  <span className="font-medium text-red-600">{getWashTypeText(orderDetails.washType)}</span>
+                  <span className="font-medium text-red-600">{getWashTypeText(orderDetails?.washType)}</span>
                 </div>
-              </div>
-            </CardContent>
-          </Card>
-          
-          {/* Customer Information Card */}
-          <Card className="border-green-100 rounded-xl overflow-hidden shadow-sm">
-            <div className="bg-green-100 py-2 px-4 flex items-center">
-              <User className="h-5 w-5 mr-2 text-green-800" />
-              <h3 className="text-md font-medium text-green-800">Customer Information</h3>
-            </div>
-            <CardContent className="p-4 text-sm space-y-2">
-              <div>
-                <span className="text-gray-600">Customer Name - </span>
-                <span className="font-medium">{getCustomerInfo().name}</span>
-              </div>
-              <div>
-                <span className="text-gray-600">Number - </span>
-                <span className="font-medium">{getCustomerInfo().phone}</span>
-              </div>
-              <div>
-                <span className="text-gray-600">Address - </span>
-                <span className="font-medium">{getCustomerInfo().address}</span>
-              </div>
-            </CardContent>
-          </Card>
-          
-          {/* Services Information Card */}
-          <Card className="border-green-100 rounded-xl overflow-hidden shadow-sm">
-            <div className="bg-green-100 py-2 px-4 flex items-center">
-              <DollarSign className="h-5 w-5 mr-2 text-green-800" />
-              <h3 className="text-md font-medium text-green-800">Services Information</h3>
-            </div>
-            <CardContent className="p-4 text-sm">
-              <div className="mb-3">
-                <span className="text-gray-600">Wash Type - </span>
-                <span className="font-medium text-red-600">{getWashTypeText(orderDetails.washType)}</span>
-              </div>
-              
-              {showStandardWash && (
-                <div className="border-b border-gray-200 mb-3">
-                  <div className="font-medium mb-2 text-blue-700">Standard Wash</div>
-                  <div className="grid grid-cols-3 gap-1 font-medium mb-2">
-                    <div>Services</div>
-                    <div>Quantity</div>
-                    <div className="text-right">Price</div>
-                  </div>
-                  
-                  <div className="grid grid-cols-3 gap-1 mb-2">
-                    <div>1. Wash & Fold</div>
-                    <div>{getTotalWeight()} X {getPerKgRate('standard')}/kg</div>
-                    <div className="text-right">{formatIndianRupees(getTotalWeight() * getPerKgRate('standard'))}</div>
-                  </div>
-                  
-                  {/* Clothing items for Standard Wash */}
-                  <div className="mb-4">
-                    <div className="font-medium mb-2">Clothing Items</div>
-                    <div className="flex flex-col gap-1">
-                      {getClothingItems().standard.map((item, index) => (
-                        <div key={index} className="ml-2">
-                          {index + 1}. {item.name} ({item.quantity})
-                        </div>
-                      ))}
+                
+                {showStandardWash && (
+                  <div className="border-b border-gray-200 mb-3">
+                    <div className="font-medium mb-2 text-blue-700">Standard Wash</div>
+                    <div className="grid grid-cols-3 gap-1 font-medium mb-2">
+                      <div>Services</div>
+                      <div>Quantity</div>
+                      <div className="text-right">Price</div>
+                    </div>
+                    
+                    <div className="grid grid-cols-3 gap-1 mb-2">
+                      <div>1. Wash & Fold</div>
+                      <div>{getTotalWeight()} X {getPerKgRate('standard')}/kg</div>
+                      <div className="text-right">{formatIndianRupees(getTotalWeight() * getPerKgRate('standard'))}</div>
+                    </div>
+                    
+                    <div className="mb-4">
+                      <div className="font-medium mb-2">Clothing Items</div>
+                      <div className="flex flex-col gap-1">
+                        {getClothingItems().standard.map((item, index) => (
+                          <div key={index} className="ml-2">
+                            {index + 1}. {item.name} ({item.quantity})
+                          </div>
+                        ))}
+                      </div>
                     </div>
                   </div>
-                </div>
-              )}
-              
-              {showExpressWash && (
-                <div className="border-b border-gray-200 mb-3">
-                  <div className="font-medium mb-2 text-purple-700">Express Wash</div>
-                  <div className="grid grid-cols-3 gap-1 font-medium mb-2">
-                    <div>Services</div>
-                    <div>Quantity</div>
-                    <div className="text-right">Price</div>
-                  </div>
-                  
-                  <div className="grid grid-cols-3 gap-1 mb-2">
-                    <div>1. Express Wash & Fold</div>
-                    <div>{getTotalWeight()} X {getPerKgRate('express')}/kg</div>
-                    <div className="text-right">{formatIndianRupees(getTotalWeight() * getPerKgRate('express'))}</div>
-                  </div>
-                  
-                  {/* Clothing items for Express Wash */}
-                  <div className="mb-4">
-                    <div className="font-medium mb-2">Clothing Items</div>
-                    <div className="flex flex-col gap-1">
-                      {getClothingItems().express.map((item, index) => (
-                        <div key={index} className="ml-2">
-                          {index + 1}. {item.name} ({item.quantity})
-                        </div>
-                      ))}
+                )}
+                
+                {showExpressWash && (
+                  <div className="border-b border-gray-200 mb-3">
+                    <div className="font-medium mb-2 text-purple-700">Express Wash</div>
+                    <div className="grid grid-cols-3 gap-1 font-medium mb-2">
+                      <div>Services</div>
+                      <div>Quantity</div>
+                      <div className="text-right">Price</div>
+                    </div>
+                    
+                    <div className="grid grid-cols-3 gap-1 mb-2">
+                      <div>1. Express Wash & Fold</div>
+                      <div>{getTotalWeight()} X {getPerKgRate('express')}/kg</div>
+                      <div className="text-right">{formatIndianRupees(getTotalWeight() * getPerKgRate('express'))}</div>
+                    </div>
+                    
+                    <div className="mb-4">
+                      <div className="font-medium mb-2">Clothing Items</div>
+                      <div className="flex flex-col gap-1">
+                        {getClothingItems().express.map((item, index) => (
+                          <div key={index} className="ml-2">
+                            {index + 1}. {item.name} ({item.quantity})
+                          </div>
+                        ))}
+                      </div>
                     </div>
                   </div>
+                )}
+                
+                <div className="flex justify-between font-medium border-t border-gray-200 pt-3 text-base">
+                  <div>Total</div>
+                  <div>{formatIndianRupees(totalAmount)}</div>
                 </div>
-              )}
-              
-              <div className="flex justify-between font-medium border-t border-gray-200 pt-3 text-base">
-                <div>Total</div>
-                <div>{formatIndianRupees(totalAmount)}</div>
-              </div>
-            </CardContent>
+              </CardContent>
+            )}
           </Card>
           
-          {/* Delivery Information Card */}
           <Card className="border-green-100 rounded-xl overflow-hidden shadow-sm">
-            <div className="bg-green-100 py-2 px-4 flex items-center">
-              <Truck className="h-5 w-5 mr-2 text-green-800" />
-              <h3 className="text-md font-medium text-green-800">Delivery Information</h3>
+            <div 
+              className="bg-green-100 py-2 px-4 flex items-center justify-between cursor-pointer"
+              onClick={() => toggleSection('deliveryInfo')}
+            >
+              <div className="flex items-center">
+                <Truck className="h-5 w-5 mr-2 text-green-800" />
+                <h3 className="text-md font-medium text-green-800">Delivery Information</h3>
+              </div>
+              {isSectionExpanded('deliveryInfo') ? (
+                <ChevronUp className="h-5 w-5 text-green-800" />
+              ) : (
+                <ChevronDown className="h-5 w-5 text-green-800" />
+              )}
             </div>
-            <CardContent className="p-4 text-sm space-y-2">
-              <div>
-                <span className="text-gray-600">Assigned to - </span>
-                <span className="font-medium">{getDeliveryInfo().assignedTo} / {getDeliveryInfo().phoneNumber}</span>
-              </div>
-              <div>
-                <span className="text-gray-600">Delivered date & time - </span>
-                <span className="font-medium">
-                  {calculateDeliveryDate(orderDetails.date, orderDetails.washType)} at {getDeliveryInfo().deliveryTime}
-                </span>
-              </div>
-              <div>
-                <span className="text-gray-600">Vehicle details - </span>
-                <span className="font-medium">{getDeliveryInfo().vehicleDetails}</span>
-              </div>
-            </CardContent>
+            {isSectionExpanded('deliveryInfo') && (
+              <CardContent className="p-4 text-sm space-y-2">
+                <div>
+                  <span className="text-gray-600">Assigned to - </span>
+                  <span className="font-medium">{getDeliveryInfo().assignedTo} / {getDeliveryInfo().phoneNumber}</span>
+                </div>
+                <div>
+                  <span className="text-gray-600">Delivered date & time - </span>
+                  <span className="font-medium">
+                    {orderDetails?.date && calculateDeliveryDate(orderDetails.date, orderDetails.washType)} at {getDeliveryInfo().deliveryTime}
+                  </span>
+                </div>
+                <div>
+                  <span className="text-gray-600">Vehicle details - </span>
+                  <span className="font-medium">{getDeliveryInfo().vehicleDetails}</span>
+                </div>
+              </CardContent>
+            )}
           </Card>
         </div>
       </div>
