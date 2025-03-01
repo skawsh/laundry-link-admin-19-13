@@ -38,6 +38,7 @@ import { toast } from '@/hooks/use-toast';
 const Drivers = () => {
   const navigate = useNavigate();
   const [orderDetailsOpen, setOrderDetailsOpen] = useState(false);
+  const [driverProfileOpen, setDriverProfileOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
   const [filtersOpen, setFiltersOpen] = useState(false);
   const [filters, setFilters] = useState({
