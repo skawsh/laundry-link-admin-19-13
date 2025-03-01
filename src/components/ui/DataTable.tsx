@@ -1,6 +1,6 @@
-
 import React, { useState, useEffect, useMemo } from 'react';
 import { Search, X, Check } from 'lucide-react';
+import { Checkbox } from "@/components/ui/checkbox";
 
 interface TableColumn<T> {
   header: string;
@@ -207,14 +207,11 @@ function DataTable<T>({
               {selectable && (
                 <th className="w-12 px-4 py-3">
                   <div className="flex items-center justify-center">
-                    <div
-                      onClick={handleSelectAll}
-                      className={`w-5 h-5 rounded border ${
-                        selectAll ? 'bg-primary border-primary' : 'border-gray-300'
-                      } flex items-center justify-center cursor-pointer transition-colors`}
-                    >
-                      {selectAll && <Check className="h-3 w-3 text-white" />}
-                    </div>
+                    <Checkbox
+                      checked={selectAll}
+                      onCheckedChange={handleSelectAll}
+                      aria-label="Select all"
+                    />
                   </div>
                 </th>
               )}
@@ -237,14 +234,11 @@ function DataTable<T>({
                   {selectable && (
                     <td className="w-12 px-4 py-3">
                       <div className="flex items-center justify-center">
-                        <div
-                          onClick={() => handleRowSelect(String(row[keyField]))}
-                          className={`w-5 h-5 rounded border ${
-                            selectedRows.has(String(row[keyField])) ? 'bg-primary border-primary' : 'border-gray-300'
-                          } flex items-center justify-center cursor-pointer transition-colors`}
-                        >
-                          {selectedRows.has(String(row[keyField])) && <Check className="h-3 w-3 text-white" />}
-                        </div>
+                        <Checkbox
+                          checked={selectedRows.has(String(row[keyField]))}
+                          onCheckedChange={() => handleRowSelect(String(row[keyField]))}
+                          aria-label={`Select row ${rowIndex + 1}`}
+                        />
                       </div>
                     </td>
                   )}

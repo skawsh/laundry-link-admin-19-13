@@ -6,6 +6,7 @@ import WashTypeTabs from './WashTypeTabs';
 import SearchBar from './SearchBar';
 import DateFilterPopover from './DateFilterPopover';
 import DataTable from '../ui/DataTable';
+import { Button } from "@/components/ui/button";
 
 interface PaymentTabsProps {
   viewType: 'unpaid' | 'history';
@@ -170,6 +171,4 @@ const PaymentTabs: React.FC<PaymentTabsProps> = ({
   );
 };
 
-// Add missing Button import
-import { Button } from "@/components/ui/button";
 export default PaymentTabs;
