@@ -7,6 +7,7 @@ import PageHeader from '../components/ui/PageHeader';
 import { useToast } from "@/hooks/use-toast";
 import { Table, TableHeader, TableRow, TableHead, TableBody, TableCell } from "@/components/ui/table";
 import { Button } from "@/components/ui/button";
+import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
 
 // Define interfaces for services data
 interface WashCategory {
@@ -242,54 +243,55 @@ const StudioServices: React.FC = () => {
         </Button>
       </PageHeader>
 
-      <div className="space-y-8">
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
         {studioServices.services.map((section, sectionIndex) => (
-          <div key={`${section.title}-${sectionIndex}`} className="bg-white rounded-lg shadow-subtle p-6">
-            <div className="mb-4">
-              <h2 className="text-lg font-semibold text-gray-800">{section.title}</h2>
-              {section.subtitle && <p className="text-sm text-gray-500">{section.subtitle}</p>}
-            </div>
-
-            {section.type === 'washCategory' && (
-              <Table>
-                <TableHeader>
-                  <TableRow className="bg-gray-100">
-                    <TableHead className="w-2/3">Wash Category</TableHead>
-                    <TableHead className="text-right">Price ({section.priceUnit || ''})</TableHead>
-                  </TableRow>
-                </TableHeader>
-                <TableBody>
-                  {(section.items as WashCategory[]).map((item, index) => (
-                    <TableRow key={`wash-${index}`} className="border-b border-gray-100">
-                      <TableCell className="font-medium">{item.category}</TableCell>
-                      <TableCell className="text-right">{item.price}</TableCell>
+          <Card key={`${section.title}-${sectionIndex}`} className="shadow-subtle">
+            <CardHeader className="pb-2">
+              <CardTitle className="text-lg font-semibold text-gray-800">{section.title}</CardTitle>
+              {section.subtitle && <p className="text-sm text-gray-500 mt-1">{section.subtitle}</p>}
+            </CardHeader>
+            <CardContent>
+              {section.type === 'washCategory' && (
+                <Table>
+                  <TableHeader>
+                    <TableRow className="bg-gray-100">
+                      <TableHead className="w-2/3">Wash Category</TableHead>
+                      <TableHead className="text-right">Price ({section.priceUnit || ''})</TableHead>
                     </TableRow>
-                  ))}
-                </TableBody>
-              </Table>
-            )}
+                  </TableHeader>
+                  <TableBody>
+                    {(section.items as WashCategory[]).map((item, index) => (
+                      <TableRow key={`wash-${index}`} className="border-b border-gray-100">
+                        <TableCell className="font-medium">{item.category}</TableCell>
+                        <TableCell className="text-right">{item.price}</TableCell>
+                      </TableRow>
+                    ))}
+                  </TableBody>
+                </Table>
+              )}
 
-            {section.type === 'clothingCategory' && (
-              <Table>
-                <TableHeader>
-                  <TableRow className="bg-gray-100">
-                    <TableHead className="w-1/3">Category</TableHead>
-                    <TableHead className="text-right">Standard Price</TableHead>
-                    <TableHead className="text-right">Express Price</TableHead>
-                  </TableRow>
-                </TableHeader>
-                <TableBody>
-                  {(section.items as ClothingCategory[]).map((item, index) => (
-                    <TableRow key={`clothing-${index}`} className="border-b border-gray-100">
-                      <TableCell className="font-medium">{item.category}</TableCell>
-                      <TableCell className="text-right">{item.standardPrice}</TableCell>
-                      <TableCell className="text-right">{item.expressPrice}</TableCell>
+              {section.type === 'clothingCategory' && (
+                <Table>
+                  <TableHeader>
+                    <TableRow className="bg-gray-100">
+                      <TableHead className="w-1/3">Category</TableHead>
+                      <TableHead className="text-right">Standard Price</TableHead>
+                      <TableHead className="text-right">Express Price</TableHead>
                     </TableRow>
-                  ))}
-                </TableBody>
-              </Table>
-            )}
-          </div>
+                  </TableHeader>
+                  <TableBody>
+                    {(section.items as ClothingCategory[]).map((item, index) => (
+                      <TableRow key={`clothing-${index}`} className="border-b border-gray-100">
+                        <TableCell className="font-medium">{item.category}</TableCell>
+                        <TableCell className="text-right">{item.standardPrice}</TableCell>
+                        <TableCell className="text-right">{item.expressPrice}</TableCell>
+                      </TableRow>
+                    ))}
+                  </TableBody>
+                </Table>
+              )}
+            </CardContent>
+          </Card>
         ))}
       </div>
     </AdminLayout>
