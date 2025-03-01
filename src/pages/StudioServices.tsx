@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { ChevronLeft, Plus, Edit, Trash2, ArrowLeft } from 'lucide-react';
@@ -7,6 +6,7 @@ import PageHeader from '../components/ui/PageHeader';
 import { useToast } from "@/hooks/use-toast";
 import { Table, TableHeader, TableRow, TableHead, TableBody, TableCell } from "@/components/ui/table";
 import { Button } from "@/components/ui/button";
+import { Card, CardHeader, CardTitle, CardDescription, CardContent } from "@/components/ui/card";
 
 // Define interfaces for services data
 interface WashCategory {
@@ -224,6 +224,44 @@ const StudioServices: React.FC = () => {
     );
   }
 
+  // Group related services (Core laundry and Clothing Categories)
+  const groupedServices = [];
+  let coreServiceIndex = -1;
+  
+  // Find the "Core laundry services" index
+  studioServices.services.forEach((section, index) => {
+    if (section.title === "Core laundry services") {
+      coreServiceIndex = index;
+    }
+  });
+  
+  // Group services based on the pattern we want
+  studioServices.services.forEach((section, index) => {
+    // If this is a Core laundry services and the next item is Clothing Categories, skip adding it individually
+    if (section.title === "Core laundry services" && 
+        index + 1 < studioServices.services.length && 
+        studioServices.services[index + 1].title === "Clothing Categories") {
+      // We'll add it as a grouped service
+      groupedServices.push({
+        type: 'grouped',
+        services: [section, studioServices.services[index + 1]]
+      });
+    } 
+    // If this is the Clothing Categories that comes right after Core laundry services, skip it
+    else if (section.title === "Clothing Categories" && 
+             index > 0 && 
+             studioServices.services[index - 1].title === "Core laundry services") {
+      // Skip, as it was already added in the group
+    } 
+    // Otherwise add the service individually
+    else {
+      groupedServices.push({
+        type: 'single',
+        service: section
+      });
+    }
+  });
+
   return (
     <AdminLayout>
       <PageHeader 
@@ -242,55 +280,120 @@ const StudioServices: React.FC = () => {
         </Button>
       </PageHeader>
 
-      <div className="space-y-8">
-        {studioServices.services.map((section, sectionIndex) => (
-          <div key={`${section.title}-${sectionIndex}`} className="bg-white rounded-lg shadow-subtle p-6">
-            <div className="mb-4">
-              <h2 className="text-lg font-semibold text-gray-800">{section.title}</h2>
-              {section.subtitle && <p className="text-sm text-gray-500">{section.subtitle}</p>}
-            </div>
+      <div className="space-y-6">
+        {groupedServices.map((group, groupIndex) => {
+          if (group.type === 'grouped') {
+            // Render the grouped service (Core laundry + Clothing Categories)
+            const washService = group.services[0];
+            const clothingService = group.services[1];
+            
+            return (
+              <Card key={`group-${groupIndex}`} className="overflow-hidden">
+                <CardHeader className="bg-white pb-2">
+                  <CardTitle className="text-lg font-semibold text-gray-800">{washService.title}</CardTitle>
+                  {washService.subtitle && <CardDescription className="text-sm text-gray-500">{washService.subtitle}</CardDescription>}
+                </CardHeader>
+                <CardContent className="p-0">
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4 p-4">
+                    {/* Wash Category Table */}
+                    <div className="overflow-hidden rounded-md border">
+                      <Table>
+                        <TableHeader>
+                          <TableRow className="bg-gray-100">
+                            <TableHead className="w-2/3">Wash Category</TableHead>
+                            <TableHead className="text-right">Price ({washService.priceUnit || ''})</TableHead>
+                          </TableRow>
+                        </TableHeader>
+                        <TableBody>
+                          {(washService.items as WashCategory[]).map((item, index) => (
+                            <TableRow key={`wash-${index}`} className="border-b border-gray-100">
+                              <TableCell className="font-medium">{item.category}</TableCell>
+                              <TableCell className="text-right">{item.price}</TableCell>
+                            </TableRow>
+                          ))}
+                        </TableBody>
+                      </Table>
+                    </div>
 
-            {section.type === 'washCategory' && (
-              <Table>
-                <TableHeader>
-                  <TableRow className="bg-gray-100">
-                    <TableHead className="w-2/3">Wash Category</TableHead>
-                    <TableHead className="text-right">Price ({section.priceUnit || ''})</TableHead>
-                  </TableRow>
-                </TableHeader>
-                <TableBody>
-                  {(section.items as WashCategory[]).map((item, index) => (
-                    <TableRow key={`wash-${index}`} className="border-b border-gray-100">
-                      <TableCell className="font-medium">{item.category}</TableCell>
-                      <TableCell className="text-right">{item.price}</TableCell>
-                    </TableRow>
-                  ))}
-                </TableBody>
-              </Table>
-            )}
+                    {/* Clothing Categories Table */}
+                    <div className="overflow-hidden rounded-md border">
+                      <Table>
+                        <TableHeader>
+                          <TableRow className="bg-gray-100">
+                            <TableHead className="text-left">Category</TableHead>
+                            <TableHead className="text-right">Standard Price</TableHead>
+                            <TableHead className="text-right">Express Price</TableHead>
+                          </TableRow>
+                        </TableHeader>
+                        <TableBody>
+                          {(clothingService.items as ClothingCategory[]).map((item, index) => (
+                            <TableRow key={`clothing-${index}`} className="border-b border-gray-100">
+                              <TableCell className="font-medium">{item.category}</TableCell>
+                              <TableCell className="text-right">{item.standardPrice}</TableCell>
+                              <TableCell className="text-right">{item.expressPrice}</TableCell>
+                            </TableRow>
+                          ))}
+                        </TableBody>
+                      </Table>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+            );
+          } else {
+            // Render single service
+            const section = group.service;
+            return (
+              <Card key={`single-${groupIndex}`} className="overflow-hidden">
+                <CardHeader className="bg-white pb-2">
+                  <CardTitle className="text-lg font-semibold text-gray-800">{section.title}</CardTitle>
+                  {section.subtitle && <CardDescription className="text-sm text-gray-500">{section.subtitle}</CardDescription>}
+                </CardHeader>
+                <CardContent className="p-0">
+                  {section.type === 'washCategory' && (
+                    <Table>
+                      <TableHeader>
+                        <TableRow className="bg-gray-100">
+                          <TableHead className="w-2/3">Wash Category</TableHead>
+                          <TableHead className="text-right">Price ({section.priceUnit || ''})</TableHead>
+                        </TableRow>
+                      </TableHeader>
+                      <TableBody>
+                        {(section.items as WashCategory[]).map((item, index) => (
+                          <TableRow key={`wash-${index}`} className="border-b border-gray-100">
+                            <TableCell className="font-medium">{item.category}</TableCell>
+                            <TableCell className="text-right">{item.price}</TableCell>
+                          </TableRow>
+                        ))}
+                      </TableBody>
+                    </Table>
+                  )}
 
-            {section.type === 'clothingCategory' && (
-              <Table>
-                <TableHeader>
-                  <TableRow className="bg-gray-100">
-                    <TableHead className="w-1/3">Category</TableHead>
-                    <TableHead className="text-right">Standard Price</TableHead>
-                    <TableHead className="text-right">Express Price</TableHead>
-                  </TableRow>
-                </TableHeader>
-                <TableBody>
-                  {(section.items as ClothingCategory[]).map((item, index) => (
-                    <TableRow key={`clothing-${index}`} className="border-b border-gray-100">
-                      <TableCell className="font-medium">{item.category}</TableCell>
-                      <TableCell className="text-right">{item.standardPrice}</TableCell>
-                      <TableCell className="text-right">{item.expressPrice}</TableCell>
-                    </TableRow>
-                  ))}
-                </TableBody>
-              </Table>
-            )}
-          </div>
-        ))}
+                  {section.type === 'clothingCategory' && (
+                    <Table>
+                      <TableHeader>
+                        <TableRow className="bg-gray-100">
+                          <TableHead>Category</TableHead>
+                          <TableHead className="text-right">Standard Price</TableHead>
+                          <TableHead className="text-right">Express Price</TableHead>
+                        </TableRow>
+                      </TableHeader>
+                      <TableBody>
+                        {(section.items as ClothingCategory[]).map((item, index) => (
+                          <TableRow key={`clothing-${index}`} className="border-b border-gray-100">
+                            <TableCell className="font-medium">{item.category}</TableCell>
+                            <TableCell className="text-right">{item.standardPrice}</TableCell>
+                            <TableCell className="text-right">{item.expressPrice}</TableCell>
+                          </TableRow>
+                        ))}
+                      </TableBody>
+                    </Table>
+                  )}
+                </CardContent>
+              </Card>
+            );
+          }
+        })}
       </div>
     </AdminLayout>
   );
