@@ -74,6 +74,7 @@ interface Order {
   driver: string | null;
   paymentMethod: string;
   estimatedCompletion: string;
+  deliveredDate: string | null;
   notes: string;
 }
 
@@ -135,6 +136,9 @@ const generateMockOrders = (): Order[] => {
     const driver = ['in_progress', 'in_delivery', 'picked_up'].includes(status) ? 
       drivers[Math.floor(Math.random() * drivers.length)] : null;
     
+    const deliveredDate = ['completed', 'picked_up'].includes(status) ? 
+      new Date(orderDate.getTime() + Math.random() * 86400000 * 5).toISOString() : null;
+    
     orders.push({
       id: `ORD-${10000 + i}`,
       date: orderDate.toISOString(),
@@ -147,6 +151,7 @@ const generateMockOrders = (): Order[] => {
       driver: driver,
       paymentMethod: Math.random() > 0.7 ? 'Credit Card' : 'PayPal',
       estimatedCompletion: new Date(orderDate.getTime() + Math.random() * 86400000 * 3).toISOString(),
+      deliveredDate: deliveredDate,
       notes: Math.random() > 0.7 ? "Customer requested extra care with silk items." : ""
     });
   }
@@ -309,8 +314,15 @@ const Orders: React.FC = () => {
       width: "130px",
     },
     {
-      header: "Date",
+      header: "Ordered Date",
       accessor: (row: Order) => new Date(row.date).toLocaleDateString(),
+      width: "120px",
+    },
+    {
+      header: "Delivered Date",
+      accessor: (row: Order) => row.deliveredDate 
+        ? new Date(row.deliveredDate).toLocaleDateString() 
+        : "—",
       width: "120px",
     },
     {
@@ -406,15 +418,14 @@ const Orders: React.FC = () => {
             <h2 className="text-lg font-medium mb-2 md:mb-0">Orders Overview</h2>
             
             <div className="flex flex-col sm:flex-row gap-3">
-              <div className="relative">
-                <Input
-                  type="text"
-                  placeholder="Search orders..."
-                  value={searchQuery}
-                  onChange={(e) => setSearchQuery(e.target.value)}
-                  className="w-full sm:w-64"
-                />
-              </div>
+              <DataTable
+                columns={[]}
+                data={[]}
+                keyField="id"
+                searchPlaceholder="Search by order ID..."
+                onSearch={setSearchQuery}
+                initialSearchQuery={searchQuery}
+              />
               
               <Popover open={filtersOpen} onOpenChange={setFiltersOpen}>
                 <PopoverTrigger asChild>
@@ -572,12 +583,12 @@ const Orders: React.FC = () => {
                 columns={columns}
                 data={filteredOrders}
                 keyField="id"
-                searchPlaceholder="Search orders..."
+                searchPlaceholder="Search by order ID..."
                 onSearch={setSearchQuery}
                 emptyMessage="No orders found matching your criteria"
                 initialSearchQuery={searchQuery}
                 searchSuggestions={true}
-                searchFields={["id", "customer", "studio"]}
+                searchFields={["id"]}
               />
             </TabsContent>
             
@@ -587,12 +598,12 @@ const Orders: React.FC = () => {
                   columns={columns}
                   data={filteredOrders}
                   keyField="id"
-                  searchPlaceholder="Search orders..."
+                  searchPlaceholder="Search by order ID..."
                   onSearch={setSearchQuery}
                   emptyMessage="No orders found matching your criteria"
                   initialSearchQuery={searchQuery}
                   searchSuggestions={true}
-                  searchFields={["id", "customer", "studio"]}
+                  searchFields={["id"]}
                 />
               </TabsContent>
             ))}
@@ -740,15 +751,23 @@ const Orders: React.FC = () => {
           
           {selectedOrder && (
             <div className="space-y-6 mt-4">
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+              <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
                 <div className="space-y-1">
                   <p className="text-sm text-gray-500">Order ID</p>
                   <p className="text-base font-medium">{selectedOrder.id}</p>
                 </div>
                 <div className="space-y-1">
-                  <p className="text-sm text-gray-500">Date</p>
+                  <p className="text-sm text-gray-500">Ordered Date</p>
                   <p className="text-base font-medium">
                     {new Date(selectedOrder.date).toLocaleString()}
+                  </p>
+                </div>
+                <div className="space-y-1">
+                  <p className="text-sm text-gray-500">Delivered Date</p>
+                  <p className="text-base font-medium">
+                    {selectedOrder.deliveredDate 
+                      ? new Date(selectedOrder.deliveredDate).toLocaleDateString() 
+                      : "Not delivered yet"}
                   </p>
                 </div>
                 <div className="space-y-1">
