@@ -1,10 +1,10 @@
 
 import React, { useState, useEffect, useMemo } from 'react';
-import { Search, X } from 'lucide-react';
+import { Search, X, Check } from 'lucide-react';
 
 interface TableColumn<T> {
   header: string;
-  accessor: keyof T | ((row: T) => React.ReactNode);
+  accessor: keyof T | ((row: T, index: number) => React.ReactNode);
   width?: string;
 }
 
@@ -19,6 +19,9 @@ interface DataTableProps<T> {
   searchSuggestions?: boolean;
   onSuggestionClick?: (value: string) => void;
   searchFields?: Array<keyof T>;
+  selectable?: boolean;
+  onSelectionChange?: (selectedIds: string[]) => void;
+  onSelectAll?: (isSelected: boolean) => void;
 }
 
 function DataTable<T>({
@@ -31,11 +34,16 @@ function DataTable<T>({
   initialSearchQuery = '',
   searchSuggestions = false,
   onSuggestionClick,
-  searchFields = []
+  searchFields = [],
+  selectable = false,
+  onSelectionChange,
+  onSelectAll
 }: DataTableProps<T>) {
   const [searchQuery, setSearchQuery] = useState(initialSearchQuery);
   const [showSuggestions, setShowSuggestions] = useState(false);
   const [suggestions, setSuggestions] = useState<string[]>([]);
+  const [selectedRows, setSelectedRows] = useState<Set<string>>(new Set());
+  const [selectAll, setSelectAll] = useState(false);
 
   // Filter data based on search fields and query
   const getSuggestions = (query: string): string[] => {
@@ -64,6 +72,12 @@ function DataTable<T>({
       setShowSuggestions(false);
     }
   }, [searchQuery, data, searchSuggestions]);
+
+  // Reset selection when data changes
+  useEffect(() => {
+    setSelectedRows(new Set());
+    setSelectAll(false);
+  }, [data]);
 
   const handleSearch = (e: React.ChangeEvent<HTMLInputElement>) => {
     const query = e.target.value;
@@ -97,6 +111,47 @@ function DataTable<T>({
     setTimeout(() => {
       setShowSuggestions(false);
     }, 200);
+  };
+
+  const handleRowSelect = (id: string) => {
+    const newSelectedRows = new Set(selectedRows);
+    if (newSelectedRows.has(id)) {
+      newSelectedRows.delete(id);
+    } else {
+      newSelectedRows.add(id);
+    }
+    setSelectedRows(newSelectedRows);
+    
+    if (onSelectionChange) {
+      onSelectionChange(Array.from(newSelectedRows));
+    }
+    
+    // Update selectAll state based on whether all rows are selected
+    setSelectAll(newSelectedRows.size === data.length);
+  };
+
+  const handleSelectAll = () => {
+    const newSelectAll = !selectAll;
+    setSelectAll(newSelectAll);
+    
+    if (newSelectAll) {
+      // Select all rows
+      const allIds = data.map(row => String(row[keyField]));
+      setSelectedRows(new Set(allIds));
+      if (onSelectionChange) {
+        onSelectionChange(allIds);
+      }
+    } else {
+      // Deselect all rows
+      setSelectedRows(new Set());
+      if (onSelectionChange) {
+        onSelectionChange([]);
+      }
+    }
+    
+    if (onSelectAll) {
+      onSelectAll(newSelectAll);
+    }
   };
 
   return (
@@ -149,6 +204,20 @@ function DataTable<T>({
         <table className="min-w-full divide-y divide-gray-100">
           <thead>
             <tr className="bg-gray-50">
+              {selectable && (
+                <th className="w-12 px-4 py-3">
+                  <div className="flex items-center justify-center">
+                    <div
+                      onClick={handleSelectAll}
+                      className={`w-5 h-5 rounded border ${
+                        selectAll ? 'bg-primary border-primary' : 'border-gray-300'
+                      } flex items-center justify-center cursor-pointer transition-colors`}
+                    >
+                      {selectAll && <Check className="h-3 w-3 text-white" />}
+                    </div>
+                  </div>
+                </th>
+              )}
               {columns.map((column, index) => (
                 <th
                   key={index}
@@ -163,12 +232,26 @@ function DataTable<T>({
           </thead>
           <tbody className="bg-white divide-y divide-gray-100">
             {data.length > 0 ? (
-              data.map((row) => (
+              data.map((row, rowIndex) => (
                 <tr key={String(row[keyField])} className="hover:bg-gray-50 transition-colors">
+                  {selectable && (
+                    <td className="w-12 px-4 py-3">
+                      <div className="flex items-center justify-center">
+                        <div
+                          onClick={() => handleRowSelect(String(row[keyField]))}
+                          className={`w-5 h-5 rounded border ${
+                            selectedRows.has(String(row[keyField])) ? 'bg-primary border-primary' : 'border-gray-300'
+                          } flex items-center justify-center cursor-pointer transition-colors`}
+                        >
+                          {selectedRows.has(String(row[keyField])) && <Check className="h-3 w-3 text-white" />}
+                        </div>
+                      </div>
+                    </td>
+                  )}
                   {columns.map((column, index) => (
                     <td key={index} className="px-4 py-3 text-sm text-gray-700">
                       {typeof column.accessor === 'function'
-                        ? column.accessor(row)
+                        ? column.accessor(row, rowIndex)
                         : row[column.accessor] as React.ReactNode}
                     </td>
                   ))}
@@ -177,7 +260,7 @@ function DataTable<T>({
             ) : (
               <tr>
                 <td
-                  colSpan={columns.length}
+                  colSpan={selectable ? columns.length + 1 : columns.length}
                   className="px-4 py-8 text-sm text-center text-gray-400"
                 >
                   {emptyMessage}

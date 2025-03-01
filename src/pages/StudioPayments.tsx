@@ -1,234 +1,23 @@
 
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { CheckCircle, Download, InfoIcon, ArrowLeft, Phone, MapPin, Calendar, Package, Search, Filter, X } from 'lucide-react';
+import { CheckCircle, Download, InfoIcon, ArrowLeft } from 'lucide-react';
 import AdminLayout from '../components/layout/AdminLayout';
 import PageHeader from '../components/ui/PageHeader';
-import DataTable from '../components/ui/DataTable';
-import StatsCard from '../components/ui/StatsCard';
 import { useToast } from "@/hooks/use-toast";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { 
-  Dialog, 
-  DialogContent, 
-  DialogDescription, 
-  DialogHeader, 
-  DialogTitle,
-  DialogFooter,
-} from "@/components/ui/dialog";
-import {
-  Popover,
-  PopoverContent,
-  PopoverTrigger,
-} from "@/components/ui/popover";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
 
-// Payment data types
-interface UnpaidOrder {
-  id: string;
-  studioId: number;
-  studioName: string;
-  date: string;
-  amount: number;
-  isPaid: boolean;
-  washType: 'express' | 'standard' | 'combined';
-  customerName: string;
-  deliveredDate?: string;
-}
+// Import custom components
+import PaymentStats from '@/components/payments/PaymentStats';
+import PaymentModal from '@/components/payments/PaymentModal';
+import OrderDetailsModal from '@/components/payments/OrderDetailsModal';
+import PaymentTabs from '@/components/payments/PaymentTabs';
 
-interface PaymentRecord {
-  id: string;
-  studioId: number;
-  studioName: string;
-  orderId: string;
-  amount: number;
-  paymentDate: string;
-  referenceNumber: string;
-  washType: 'express' | 'standard' | 'combined';
-  deliveredDate?: string;
-}
-
-// Helper function to generate dates in 2025 with proper date constraints
-const createOrderDate = (month: number, day: number): string => {
-  // Create a date in 2025
-  const orderDate = new Date(2025, month - 1, day);
-  
-  // Get today's date but in 2025
-  const today = new Date();
-  const todayIn2025 = new Date(2025, today.getMonth(), today.getDate());
-  
-  // If the order date would be after today (in 2025), adjust it to today
-  if (orderDate > todayIn2025) {
-    return todayIn2025.toISOString().split('T')[0];
-  }
-  
-  return orderDate.toISOString().split('T')[0];
-};
-
-const createDeliveredDate = (orderDate: string): string | undefined => {
-  const date = new Date(orderDate);
-  
-  // Get today's date but in 2025
-  const today = new Date();
-  const todayIn2025 = new Date(2025, today.getMonth(), today.getDate());
-  
-  // Add random days (1-7) to the order date
-  const daysToAdd = Math.floor(Math.random() * 7) + 1;
-  date.setDate(date.getDate() + daysToAdd);
-  
-  // If the delivery date would be after today (in 2025), either make it today or undefined
-  if (date > todayIn2025) {
-    // If the order was placed very recently (less than 2 days ago), don't set a delivery date
-    const orderDateObj = new Date(orderDate);
-    const daysDifference = Math.floor((todayIn2025.getTime() - orderDateObj.getTime()) / (1000 * 60 * 60 * 24));
-    
-    if (daysDifference < 2) {
-      return undefined;
-    }
-    return todayIn2025.toISOString().split('T')[0];
-  }
-  
-  // Only include delivered date if it's more than 1 day after order date
-  return daysToAdd > 1 ? date.toISOString().split('T')[0] : undefined;
-};
-
-// Sample data with 2025 dates and realistic names/dates
-const initialUnpaidOrders: UnpaidOrder[] = [
-  (() => {
-    const date = createOrderDate(1, 10);
-    return { id: 'ORD-1001', studioId: 1, studioName: 'Saiteja Laundry', date, amount: 450, isPaid: false, washType: 'standard', customerName: 'John Doe', deliveredDate: createDeliveredDate(date) };
-  })(),
-  (() => {
-    const date = createOrderDate(1, 12);
-    return { id: 'ORD-1002', studioId: 1, studioName: 'Saiteja Laundry', date, amount: 320, isPaid: false, washType: 'express', customerName: 'Jane Smith', deliveredDate: createDeliveredDate(date) };
-  })(),
-  (() => {
-    const date = createOrderDate(1, 15);
-    return { id: 'ORD-1003', studioId: 2, studioName: 'Sparkle Clean Laundry', date, amount: 550, isPaid: false, washType: 'standard', customerName: 'Robert Johnson', deliveredDate: createDeliveredDate(date) };
-  })(),
-  (() => {
-    const date = createOrderDate(1, 16);
-    return { id: 'ORD-1004', studioId: 3, studioName: 'Fresh Fold Services', date, amount: 400, isPaid: false, washType: 'express', customerName: 'Emily Wilson', deliveredDate: createDeliveredDate(date) };
-  })(),
-  (() => {
-    const date = createOrderDate(1, 18);
-    return { id: 'ORD-1005', studioId: 2, studioName: 'Sparkle Clean Laundry', date, amount: 280, isPaid: false, washType: 'standard', customerName: 'Michael Brown', deliveredDate: createDeliveredDate(date) };
-  })(),
-  (() => {
-    const date = createOrderDate(1, 20);
-    return { id: 'ORD-1006', studioId: 1, studioName: 'Saiteja Laundry', date, amount: 380, isPaid: false, washType: 'standard', customerName: 'Sarah Davis', deliveredDate: createDeliveredDate(date) };
-  })(),
-  (() => {
-    const date = createOrderDate(1, 22);
-    return { id: 'ORD-1007', studioId: 1, studioName: 'Saiteja Laundry', date, amount: 290, isPaid: false, washType: 'express', customerName: 'Thomas Miller', deliveredDate: createDeliveredDate(date) };
-  })(),
-  (() => {
-    const date = createOrderDate(1, 25);
-    return { id: 'ORD-1008', studioId: 3, studioName: 'Fresh Fold Services', date, amount: 650, isPaid: false, washType: 'combined', customerName: 'Laura Wilson', deliveredDate: createDeliveredDate(date) };
-  })(),
-  (() => {
-    const date = createOrderDate(1, 26);
-    return { id: 'ORD-1009', studioId: 2, studioName: 'Sparkle Clean Laundry', date, amount: 520, isPaid: false, washType: 'combined', customerName: 'Alex Johnson', deliveredDate: createDeliveredDate(date) };
-  })(),
-  (() => {
-    const date = createOrderDate(1, 28);
-    return { id: 'ORD-1010', studioId: 1, studioName: 'Saiteja Laundry', date, amount: 470, isPaid: false, washType: 'combined', customerName: 'Maya Patel', deliveredDate: createDeliveredDate(date) };
-  })(),
-  (() => {
-    const date = createOrderDate(2, 5);
-    return { id: 'ORD-2001', studioId: 1, studioName: 'Saiteja Laundry', date, amount: 540, isPaid: false, washType: 'express', customerName: 'Rachel Green', deliveredDate: createDeliveredDate(date) };
-  })(),
-  (() => {
-    const date = createOrderDate(2, 8);
-    return { id: 'ORD-2002', studioId: 1, studioName: 'Saiteja Laundry', date, amount: 320, isPaid: false, washType: 'standard', customerName: 'Joey Tribbiani', deliveredDate: createDeliveredDate(date) };
-  })(),
-  (() => {
-    const date = createOrderDate(2, 10);
-    return { id: 'ORD-2003', studioId: 1, studioName: 'Saiteja Laundry', date, amount: 410, isPaid: false, washType: 'combined', customerName: 'Chandler Bing', deliveredDate: createDeliveredDate(date) };
-  })(),
-  (() => {
-    const date = createOrderDate(2, 15);
-    return { id: 'ORD-2004', studioId: 1, studioName: 'Saiteja Laundry', date, amount: 380, isPaid: false, washType: 'express', customerName: 'Monica Geller', deliveredDate: createDeliveredDate(date) };
-  })(),
-  (() => {
-    const date = createOrderDate(2, 18);
-    return { id: 'ORD-2005', studioId: 1, studioName: 'Saiteja Laundry', date, amount: 430, isPaid: false, washType: 'standard', customerName: 'Ross Geller', deliveredDate: createDeliveredDate(date) };
-  })(),
-  (() => {
-    const date = createOrderDate(2, 22);
-    return { id: 'ORD-2006', studioId: 1, studioName: 'Saiteja Laundry', date, amount: 390, isPaid: false, washType: 'combined', customerName: 'Phoebe Buffay', deliveredDate: createDeliveredDate(date) };
-  })(),
-  (() => {
-    const date = createOrderDate(3, 5);
-    return { id: 'ORD-2007', studioId: 1, studioName: 'Saiteja Laundry', date, amount: 520, isPaid: false, washType: 'express', customerName: 'Richard Burke', deliveredDate: createDeliveredDate(date) };
-  })(),
-  (() => {
-    const date = createOrderDate(3, 10);
-    return { id: 'ORD-2008', studioId: 1, studioName: 'Saiteja Laundry', date, amount: 480, isPaid: false, washType: 'standard', customerName: 'Janice Hosenstein', deliveredDate: createDeliveredDate(date) };
-  })(),
-];
-
-const initialPaymentHistory: PaymentRecord[] = [
-  (() => {
-    const date = createOrderDate(1, 5);
-    return { id: 'PMT-2001', studioId: 1, studioName: 'Saiteja Laundry', orderId: 'ORD-1000', amount: 520, paymentDate: date, referenceNumber: 'UTR12345678', washType: 'standard', deliveredDate: createDeliveredDate(date) };
-  })(),
-  (() => {
-    const date = createOrderDate(1, 4);
-    return { id: 'PMT-2002', studioId: 2, studioName: 'Sparkle Clean Laundry', orderId: 'ORD-995', amount: 420, paymentDate: date, referenceNumber: 'UTR87654321', washType: 'express', deliveredDate: createDeliveredDate(date) };
-  })(),
-  (() => {
-    const date = createOrderDate(1, 2);
-    return { id: 'PMT-2003', studioId: 1, studioName: 'Saiteja Laundry', orderId: 'ORD-990', amount: 350, paymentDate: date, referenceNumber: 'UTR23456789', washType: 'standard', deliveredDate: createDeliveredDate(date) };
-  })(),
-  (() => {
-    const date = createOrderDate(1, 3);
-    return { id: 'PMT-2004', studioId: 3, studioName: 'Fresh Fold Services', orderId: 'ORD-985', amount: 600, paymentDate: date, referenceNumber: 'UTR98765432', washType: 'express', deliveredDate: createDeliveredDate(date) };
-  })(),
-  (() => {
-    const date = createOrderDate(1, 28);
-    return { id: 'PMT-2005', studioId: 4, studioName: 'Royal Wash', orderId: 'ORD-980', amount: 480, paymentDate: date, referenceNumber: 'UTR34567890', washType: 'standard', deliveredDate: createDeliveredDate(date) };
-  })(),
-  (() => {
-    const date = createOrderDate(1, 25);
-    return { id: 'PMT-2006', studioId: 1, studioName: 'Saiteja Laundry', orderId: 'ORD-975', amount: 410, paymentDate: date, referenceNumber: 'UTR45678901', washType: 'express', deliveredDate: createDeliveredDate(date) };
-  })(),
-  (() => {
-    const date = createOrderDate(1, 22);
-    return { id: 'PMT-2007', studioId: 3, studioName: 'Fresh Fold Services', orderId: 'ORD-970', amount: 580, paymentDate: date, referenceNumber: 'UTR56789012', washType: 'combined', deliveredDate: createDeliveredDate(date) };
-  })(),
-  (() => {
-    const date = createOrderDate(1, 20);
-    return { id: 'PMT-2008', studioId: 2, studioName: 'Sparkle Clean Laundry', orderId: 'ORD-965', amount: 490, paymentDate: date, referenceNumber: 'UTR67890123', washType: 'combined', deliveredDate: createDeliveredDate(date) };
-  })(),
-  (() => {
-    const date = createOrderDate(2, 5);
-    return { id: 'PMT-3001', studioId: 1, studioName: 'Saiteja Laundry', orderId: 'ORD-3001', amount: 550, paymentDate: date, referenceNumber: 'UTR11223344', washType: 'express', deliveredDate: createDeliveredDate(date) };
-  })(),
-  (() => {
-    const date = createOrderDate(2, 10);
-    return { id: 'PMT-3002', studioId: 1, studioName: 'Saiteja Laundry', orderId: 'ORD-3002', amount: 470, paymentDate: date, referenceNumber: 'UTR22334455', washType: 'standard', deliveredDate: createDeliveredDate(date) };
-  })(),
-  (() => {
-    const date = createOrderDate(2, 15);
-    return { id: 'PMT-3003', studioId: 1, studioName: 'Saiteja Laundry', orderId: 'ORD-3003', amount: 510, paymentDate: date, referenceNumber: 'UTR33445566', washType: 'combined', deliveredDate: createDeliveredDate(date) };
-  })(),
-  (() => {
-    const date = createOrderDate(2, 20);
-    return { id: 'PMT-3004', studioId: 1, studioName: 'Saiteja Laundry', orderId: 'ORD-3004', amount: 490, paymentDate: date, referenceNumber: 'UTR44556677', washType: 'express', deliveredDate: createDeliveredDate(date) };
-  })(),
-];
-
-// Date filtering options type
-type DateFilterOption = 'all' | 'today' | 'yesterday' | 'this_week' | 'this_month' | 'custom';
+// Import types and data
+import { UnpaidOrder, PaymentRecord, DateFilterOption } from '@/types/paymentTypes';
+import { initialUnpaidOrders, initialPaymentHistory } from '@/data/mockPaymentData';
+import { formatIndianRupees } from '@/utils/dateUtils';
+import { applyDateFilter, applyOrderIdSearch, applyWashTypeFilter } from '@/utils/orderUtils';
 
 const StudioPayments: React.FC = () => {
   const { studioId } = useParams<{ studioId?: string }>();
@@ -238,6 +27,7 @@ const StudioPayments: React.FC = () => {
   const [viewType, setViewType] = useState<'unpaid' | 'history'>('unpaid');
   const [showPaymentModal, setShowPaymentModal] = useState(false);
   const [selectedOrder, setSelectedOrder] = useState<UnpaidOrder | null>(null);
+  const [selectedOrders, setSelectedOrders] = useState<UnpaidOrder[]>([]);
   const [paymentReference, setPaymentReference] = useState('');
   const [paymentDate, setPaymentDate] = useState('');
   const [mainWashTypeTab, setMainWashTypeTab] = useState<'all' | 'express' | 'standard' | 'combined'>('all');
@@ -245,7 +35,7 @@ const StudioPayments: React.FC = () => {
   const [selectedOrderDetails, setSelectedOrderDetails] = useState<UnpaidOrder | null>(null);
   const { toast } = useToast();
   
-  // New state for date filtering and search
+  // States for date filtering and search
   const [dateFilter, setDateFilter] = useState<DateFilterOption>('all');
   const [customDateRange, setCustomDateRange] = useState<{start: string, end: string}>({
     start: '',
@@ -262,93 +52,21 @@ const StudioPayments: React.FC = () => {
     ? paymentHistory.filter(payment => payment.studioId === Number(studioId))
     : paymentHistory;
 
-  // Apply date filter to data - modified to use only ordered date
-  const applyDateFilter = <T extends UnpaidOrder | PaymentRecord>(orders: T[]): T[] => {
-    if (dateFilter === 'all') return orders;
-    
-    const now = new Date();
-    const today = new Date(now.getFullYear(), now.getMonth(), now.getDate()).getTime();
-    const yesterday = today - 86400000; // 24 hours in milliseconds
-    
-    // Get start of week (Sunday)
-    const startOfWeek = new Date(now);
-    startOfWeek.setDate(now.getDate() - now.getDay());
-    startOfWeek.setHours(0, 0, 0, 0);
-    const startOfWeekTime = startOfWeek.getTime();
-    
-    // Get start of month
-    const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1).getTime();
-    
-    return orders.filter(order => {
-      // Always use order date for filtering, regardless if it's unpaid or payment history
-      const dateField = 'paymentDate' in order ? order.paymentDate : order.date;
-      const orderDate = new Date(dateField);
-      const orderDateTime = orderDate.getTime();
-      
-      switch (dateFilter) {
-        case 'today':
-          return orderDateTime >= today;
-        case 'yesterday':
-          return orderDateTime >= yesterday && orderDateTime < today;
-        case 'this_week':
-          return orderDateTime >= startOfWeekTime;
-        case 'this_month':
-          return orderDateTime >= startOfMonth;
-        case 'custom':
-          if (!customDateRange.start && !customDateRange.end) return true;
-          
-          let passesFilter = true;
-          if (customDateRange.start) {
-            passesFilter = passesFilter && orderDateTime >= new Date(customDateRange.start).getTime();
-          }
-          if (customDateRange.end) {
-            // Include the entire end date (until midnight)
-            const endDate = new Date(customDateRange.end);
-            endDate.setHours(23, 59, 59, 999);
-            passesFilter = passesFilter && orderDateTime <= endDate.getTime();
-          }
-          return passesFilter;
-        default:
-          return true;
-      }
-    });
-  };
-
-  // Apply order ID search to data
-  const applyOrderIdSearch = <T extends UnpaidOrder | PaymentRecord>(orders: T[]): T[] => {
-    if (!orderIdSearch) return orders;
-    
-    return orders.filter(order => {
-      const orderId = 'orderId' in order ? order.orderId : order.id;
-      return orderId.toLowerCase().includes(orderIdSearch.toLowerCase());
-    });
-  };
-
-  // Apply wash type filter to data
-  const applyWashTypeFilter = <T extends UnpaidOrder | PaymentRecord>(orders: T[]): T[] => {
-    // If on tab other than 'all', the tab itself acts as filter
-    if (mainWashTypeTab !== 'all') {
-      return orders.filter(order => order.washType === mainWashTypeTab);
-    }
-    
-    return orders;
-  };
-
   // Combined filtering function for unpaid orders
   const getFilteredUnpaidOrders = (): UnpaidOrder[] => {
     let data = filteredUnpaidOrders;
-    data = applyDateFilter(data);
-    data = applyOrderIdSearch(data);
-    data = applyWashTypeFilter(data);
+    data = applyDateFilter(data, dateFilter, customDateRange);
+    data = applyOrderIdSearch(data, orderIdSearch);
+    data = applyWashTypeFilter(data, mainWashTypeTab);
     return data;
   };
 
   // Combined filtering function for payment history
   const getFilteredPaymentHistory = (): PaymentRecord[] => {
     let data = filteredPaymentHistory;
-    data = applyDateFilter(data);
-    data = applyOrderIdSearch(data);
-    data = applyWashTypeFilter(data);
+    data = applyDateFilter(data, dateFilter, customDateRange);
+    data = applyOrderIdSearch(data, orderIdSearch);
+    data = applyWashTypeFilter(data, mainWashTypeTab);
     return data;
   };
 
@@ -360,29 +78,17 @@ const StudioPayments: React.FC = () => {
     ? filteredUnpaidOrders[0].studioName 
     : 'All Studios';
 
-  // Statistics calculations based on filtered data
-  const expressWashOrders = filteredUnpaidOrders.filter(order => order.washType === 'express');
-  const standardWashOrders = filteredUnpaidOrders.filter(order => order.washType === 'standard');
-  const combinedWashOrders = filteredUnpaidOrders.filter(order => order.washType === 'combined');
-  
-  const expressWashCount = expressWashOrders.length;
-  const standardWashCount = standardWashOrders.length;
-  const combinedWashCount = combinedWashOrders.length;
-  
-  const totalUnpaidCount = expressWashCount + standardWashCount + combinedWashCount;
-
-  const expressWashAmount = expressWashOrders.reduce((sum, order) => sum + order.amount, 0);
-  const standardWashAmount = standardWashOrders.reduce((sum, order) => sum + order.amount, 0);
-  const combinedWashAmount = combinedWashOrders.reduce((sum, order) => sum + order.amount, 0);
-  
-  const totalUnpaidAmount = expressWashAmount + standardWashAmount + combinedWashAmount;
-
   const handleGoBack = () => {
     navigate(-1);
   };
 
   const openPaymentModal = (order: UnpaidOrder) => {
     setSelectedOrder(order);
+    setSelectedOrders([order]);
+    setShowPaymentModal(true);
+  };
+
+  const openBulkPaymentModal = () => {
     setShowPaymentModal(true);
   };
 
@@ -392,7 +98,7 @@ const StudioPayments: React.FC = () => {
   };
 
   const confirmPayment = () => {
-    if (!selectedOrder || !paymentReference || !paymentDate) {
+    if (selectedOrders.length === 0 || !paymentReference || !paymentDate) {
       toast({
         title: "Error",
         description: "Please fill in all payment details",
@@ -402,36 +108,38 @@ const StudioPayments: React.FC = () => {
       return;
     }
 
-    const newPayment: PaymentRecord = {
+    // Create payment records for all selected orders
+    const newPayments: PaymentRecord[] = selectedOrders.map(order => ({
       id: `PMT-${Math.floor(Math.random() * 10000)}`,
-      studioId: selectedOrder.studioId,
-      studioName: selectedOrder.studioName,
-      orderId: selectedOrder.id,
-      amount: selectedOrder.amount,
+      studioId: order.studioId,
+      studioName: order.studioName,
+      orderId: order.id,
+      amount: order.amount,
       paymentDate: paymentDate,
       referenceNumber: paymentReference,
-      washType: selectedOrder.washType,
-      deliveredDate: selectedOrder.deliveredDate
-    };
+      washType: order.washType,
+      deliveredDate: order.deliveredDate
+    }));
 
-    setUnpaidOrders(unpaidOrders.filter(order => order.id !== selectedOrder.id));
+    // Remove all selected orders from unpaid orders
+    const selectedOrderIds = selectedOrders.map(order => order.id);
+    setUnpaidOrders(unpaidOrders.filter(order => !selectedOrderIds.includes(order.id)));
     
-    setPaymentHistory([newPayment, ...paymentHistory]);
+    // Add all new payment records to payment history
+    setPaymentHistory([...newPayments, ...paymentHistory]);
     
     setShowPaymentModal(false);
     setSelectedOrder(null);
+    setSelectedOrders([]);
     setPaymentReference('');
     setPaymentDate('');
 
+    const totalAmount = selectedOrders.reduce((sum, order) => sum + order.amount, 0);
     toast({
       title: "Payment Recorded",
-      description: `Payment of ₹${(selectedOrder.amount).toLocaleString('en-IN')} for order ${selectedOrder.id} has been marked as paid.`,
+      description: `Payment of ${formatIndianRupees(totalAmount)} for ${selectedOrders.length} order(s) has been marked as paid.`,
       duration: 3000,
     });
-  };
-
-  const formatIndianRupees = (amount: number) => {
-    return `₹${amount.toLocaleString('en-IN')}`;
   };
 
   const resetDateFilter = () => {
@@ -439,36 +147,21 @@ const StudioPayments: React.FC = () => {
     setCustomDateRange({ start: '', end: '' });
   };
 
-  const getServiceDetails = (washType: 'express' | 'standard' | 'combined') => {
-    const baseServices = [
-      { name: "Washing", price: 100 },
-      { name: "Drying", price: 80 },
-      { name: "Folding", price: 50 }
-    ];
-    
-    if (washType === 'express') {
-      return [
-        ...baseServices,
-        { name: "Express Processing", price: 120 },
-        { name: "Priority Handling", price: 70 }
-      ];
-    } else if (washType === 'standard') {
-      return [
-        ...baseServices,
-        { name: "Stain Treatment", price: 90 },
-        { name: "Fabric Care", price: 60 }
-      ];
+  const toggleSelectAllOrders = (isSelected: boolean) => {
+    if (isSelected) {
+      setSelectedOrders(getFilteredUnpaidOrders());
     } else {
-      return [
-        ...baseServices,
-        { name: "Express Processing", price: 120 },
-        { name: "Stain Treatment", price: 90 },
-        { name: "Premium Packaging", price: 60 }
-      ];
+      setSelectedOrders([]);
     }
   };
 
+  // Define table columns with an S.No column
   const unpaidColumns = [
+    {
+      header: 'S.No',
+      accessor: (_: any, index: number) => index + 1,
+      width: '60px'
+    },
     {
       header: 'Order ID',
       accessor: 'id' as keyof UnpaidOrder,
@@ -531,6 +224,11 @@ const StudioPayments: React.FC = () => {
   ];
 
   const historyColumns = [
+    {
+      header: 'S.No',
+      accessor: (_: any, index: number) => index + 1,
+      width: '60px'
+    },
     {
       header: 'Payment ID',
       accessor: 'id' as keyof PaymentRecord,
@@ -595,599 +293,48 @@ const StudioPayments: React.FC = () => {
         </div>
       </PageHeader>
       
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5 mb-6">
-        <StatsCard
-          title="Total Unpaid Amount"
-          value={formatIndianRupees(totalUnpaidAmount)}
-          subtext={`${totalUnpaidCount} orders pending`}
-        />
-        <StatsCard
-          title="Express Wash Unpaid Amount"
-          value={formatIndianRupees(expressWashAmount)}
-          subtext={`${expressWashCount} orders pending`}
-        />
-        <StatsCard
-          title="Standard Wash Unpaid Amount"
-          value={formatIndianRupees(standardWashAmount)}
-          subtext={`${standardWashCount} orders pending`}
-        />
-        <StatsCard
-          title="Both Unpaid Amount"
-          value={formatIndianRupees(combinedWashAmount)}
-          subtext={`${combinedWashCount} orders pending`}
-        />
-      </div>
+      <PaymentStats filteredUnpaidOrders={filteredUnpaidOrders} />
       
-      <Tabs defaultValue="unpaid" className="w-full" onValueChange={(value) => setViewType(value as 'unpaid' | 'history')}>
-        <TabsList className="mb-6 bg-background border border-input">
-          <TabsTrigger value="unpaid" className="flex-1">Unpaid Payments</TabsTrigger>
-          <TabsTrigger value="history" className="flex-1">Payment History</TabsTrigger>
-        </TabsList>
-        
-        <TabsContent value="unpaid">
-          <div className="flex flex-col space-y-4">
-            <div className="flex justify-between items-center">
-              <Tabs 
-                defaultValue="all" 
-                className="w-full" 
-                onValueChange={(value) => setMainWashTypeTab(value as 'all' | 'express' | 'standard' | 'combined')}
-              >
-                <div className="flex justify-between items-center mb-4">
-                  <TabsList className="bg-background border border-input">
-                    <TabsTrigger value="all">All Wash Types</TabsTrigger>
-                    <TabsTrigger value="express">Express Wash</TabsTrigger>
-                    <TabsTrigger value="standard">Standard Wash</TabsTrigger>
-                    <TabsTrigger value="combined">Both</TabsTrigger>
-                  </TabsList>
-                  
-                  {/* Search Bar - Right aligned */}
-                  <div className="relative">
-                    <div className="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none">
-                      <Search className="h-4 w-4 text-gray-400" />
-                    </div>
-                    <Input
-                      type="text"
-                      placeholder="Search by Order ID..."
-                      value={orderIdSearch}
-                      onChange={(e) => setOrderIdSearch(e.target.value)}
-                      className="pl-10 pr-10 py-2 w-full sm:w-60"
-                    />
-                    {orderIdSearch && (
-                      <button
-                        onClick={() => setOrderIdSearch('')}
-                        className="absolute inset-y-0 right-0 flex items-center pr-3 text-gray-400 hover:text-gray-500"
-                      >
-                        <X className="h-4 w-4" />
-                      </button>
-                    )}
-                  </div>
-                </div>
-
-                {/* Filters Row - Below the tabs */}
-                <div className="flex flex-wrap items-center gap-3 mb-5">
-                  {/* Date Filter */}
-                  <Popover open={showDateFilterPopover} onOpenChange={setShowDateFilterPopover}>
-                    <PopoverTrigger asChild>
-                      <Button variant="outline" className="flex items-center gap-2">
-                        <Calendar className="h-4 w-4" />
-                        <span>
-                          {dateFilter === 'all' ? 'All Dates' :
-                          dateFilter === 'today' ? 'Today' :
-                          dateFilter === 'yesterday' ? 'Yesterday' :
-                          dateFilter === 'this_week' ? 'This Week' :
-                          dateFilter === 'this_month' ? 'This Month' :
-                          'Custom Date Range'}
-                        </span>
-                      </Button>
-                    </PopoverTrigger>
-                    <PopoverContent className="w-72 p-4">
-                      <div className="space-y-4">
-                        <h3 className="font-medium">Filter by Date</h3>
-                        
-                        <div className="space-y-2">
-                          <div className="flex items-center gap-2">
-                            <input
-                              type="radio"
-                              id="all-dates"
-                              name="date-filter"
-                              checked={dateFilter === 'all'}
-                              onChange={() => setDateFilter('all')}
-                              className="h-4 w-4 text-primary"
-                            />
-                            <label htmlFor="all-dates" className="text-sm">All Dates</label>
-                          </div>
-                          
-                          <div className="flex items-center gap-2">
-                            <input
-                              type="radio"
-                              id="today"
-                              name="date-filter"
-                              checked={dateFilter === 'today'}
-                              onChange={() => setDateFilter('today')}
-                              className="h-4 w-4 text-primary"
-                            />
-                            <label htmlFor="today" className="text-sm">Today</label>
-                          </div>
-                          
-                          <div className="flex items-center gap-2">
-                            <input
-                              type="radio"
-                              id="yesterday"
-                              name="date-filter"
-                              checked={dateFilter === 'yesterday'}
-                              onChange={() => setDateFilter('yesterday')}
-                              className="h-4 w-4 text-primary"
-                            />
-                            <label htmlFor="yesterday" className="text-sm">Yesterday</label>
-                          </div>
-                          
-                          <div className="flex items-center gap-2">
-                            <input
-                              type="radio"
-                              id="this-week"
-                              name="date-filter"
-                              checked={dateFilter === 'this_week'}
-                              onChange={() => setDateFilter('this_week')}
-                              className="h-4 w-4 text-primary"
-                            />
-                            <label htmlFor="this-week" className="text-sm">This Week</label>
-                          </div>
-                          
-                          <div className="flex items-center gap-2">
-                            <input
-                              type="radio"
-                              id="this-month"
-                              name="date-filter"
-                              checked={dateFilter === 'this_month'}
-                              onChange={() => setDateFilter('this_month')}
-                              className="h-4 w-4 text-primary"
-                            />
-                            <label htmlFor="this-month" className="text-sm">This Month</label>
-                          </div>
-                          
-                          <div className="flex items-center gap-2">
-                            <input
-                              type="radio"
-                              id="custom-range"
-                              name="date-filter"
-                              checked={dateFilter === 'custom'}
-                              onChange={() => setDateFilter('custom')}
-                              className="h-4 w-4 text-primary"
-                            />
-                            <label htmlFor="custom-range" className="text-sm">Custom Range</label>
-                          </div>
-                          
-                          {dateFilter === 'custom' && (
-                            <div className="pt-2 space-y-2">
-                              <div className="grid grid-cols-2 gap-2">
-                                <div>
-                                  <label htmlFor="start-date" className="text-xs text-gray-500">Start Date</label>
-                                  <input
-                                    type="date"
-                                    id="start-date"
-                                    value={customDateRange.start}
-                                    onChange={(e) => setCustomDateRange({ ...customDateRange, start: e.target.value })}
-                                    className="w-full text-sm p-1.5 border border-gray-300 rounded-md"
-                                  />
-                                </div>
-                                <div>
-                                  <label htmlFor="end-date" className="text-xs text-gray-500">End Date</label>
-                                  <input
-                                    type="date"
-                                    id="end-date"
-                                    value={customDateRange.end}
-                                    onChange={(e) => setCustomDateRange({ ...customDateRange, end: e.target.value })}
-                                    className="w-full text-sm p-1.5 border border-gray-300 rounded-md"
-                                  />
-                                </div>
-                              </div>
-                            </div>
-                          )}
-                        </div>
-                        
-                        <div className="flex justify-between">
-                          <Button
-                            variant="outline"
-                            size="sm"
-                            onClick={resetDateFilter}
-                          >
-                            Reset
-                          </Button>
-                          <Button
-                            size="sm"
-                            onClick={() => setShowDateFilterPopover(false)}
-                          >
-                            Apply
-                          </Button>
-                        </div>
-                      </div>
-                    </PopoverContent>
-                  </Popover>
-                </div>
-              </Tabs>
-            </div>
-            
-            <DataTable
-              columns={unpaidColumns}
-              data={filteredData as UnpaidOrder[]}
-              keyField="id"
-              emptyMessage="No unpaid orders found"
-            />
-          </div>
-        </TabsContent>
-        
-        <TabsContent value="history">
-          <div className="flex flex-col space-y-4">
-            <div className="flex justify-between items-center mb-4">
-              <Tabs 
-                defaultValue="all" 
-                className="w-full" 
-                onValueChange={(value) => setMainWashTypeTab(value as 'all' | 'express' | 'standard' | 'combined')}
-              >
-                <div className="flex justify-between items-center mb-4">
-                  <TabsList className="bg-background border border-input">
-                    <TabsTrigger value="all">All Wash Types</TabsTrigger>
-                    <TabsTrigger value="express">Express Wash</TabsTrigger>
-                    <TabsTrigger value="standard">Standard Wash</TabsTrigger>
-                    <TabsTrigger value="combined">Both</TabsTrigger>
-                  </TabsList>
-
-                  {/* Search Bar */}
-                  <div className="relative">
-                    <div className="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none">
-                      <Search className="h-4 w-4 text-gray-400" />
-                    </div>
-                    <Input
-                      type="text"
-                      placeholder="Search by Order ID..."
-                      value={orderIdSearch}
-                      onChange={(e) => setOrderIdSearch(e.target.value)}
-                      className="pl-10 pr-10 py-2 w-full sm:w-60"
-                    />
-                    {orderIdSearch && (
-                      <button
-                        onClick={() => setOrderIdSearch('')}
-                        className="absolute inset-y-0 right-0 flex items-center pr-3 text-gray-400 hover:text-gray-500"
-                      >
-                        <X className="h-4 w-4" />
-                      </button>
-                    )}
-                  </div>
-                </div>
-
-                {/* Date Filter */}
-                <div className="flex flex-wrap items-center gap-3 mb-5">
-                  <Popover open={showDateFilterPopover} onOpenChange={setShowDateFilterPopover}>
-                    <PopoverTrigger asChild>
-                      <Button variant="outline" className="flex items-center gap-2">
-                        <Calendar className="h-4 w-4" />
-                        <span>
-                          {dateFilter === 'all' ? 'All Dates' :
-                          dateFilter === 'today' ? 'Today' :
-                          dateFilter === 'yesterday' ? 'Yesterday' :
-                          dateFilter === 'this_week' ? 'This Week' :
-                          dateFilter === 'this_month' ? 'This Month' :
-                          'Custom Date Range'}
-                        </span>
-                      </Button>
-                    </PopoverTrigger>
-                    <PopoverContent className="w-72 p-4">
-                      <div className="space-y-4">
-                        <h3 className="font-medium">Filter by Date</h3>
-                        
-                        <div className="space-y-2">
-                          <div className="flex items-center gap-2">
-                            <input
-                              type="radio"
-                              id="all-dates-history"
-                              name="date-filter-history"
-                              checked={dateFilter === 'all'}
-                              onChange={() => setDateFilter('all')}
-                              className="h-4 w-4 text-primary"
-                            />
-                            <label htmlFor="all-dates-history" className="text-sm">All Dates</label>
-                          </div>
-                          
-                          <div className="flex items-center gap-2">
-                            <input
-                              type="radio"
-                              id="today-history"
-                              name="date-filter-history"
-                              checked={dateFilter === 'today'}
-                              onChange={() => setDateFilter('today')}
-                              className="h-4 w-4 text-primary"
-                            />
-                            <label htmlFor="today-history" className="text-sm">Today</label>
-                          </div>
-                          
-                          <div className="flex items-center gap-2">
-                            <input
-                              type="radio"
-                              id="yesterday-history"
-                              name="date-filter-history"
-                              checked={dateFilter === 'yesterday'}
-                              onChange={() => setDateFilter('yesterday')}
-                              className="h-4 w-4 text-primary"
-                            />
-                            <label htmlFor="yesterday-history" className="text-sm">Yesterday</label>
-                          </div>
-                          
-                          <div className="flex items-center gap-2">
-                            <input
-                              type="radio"
-                              id="this-week-history"
-                              name="date-filter-history"
-                              checked={dateFilter === 'this_week'}
-                              onChange={() => setDateFilter('this_week')}
-                              className="h-4 w-4 text-primary"
-                            />
-                            <label htmlFor="this-week-history" className="text-sm">This Week</label>
-                          </div>
-                          
-                          <div className="flex items-center gap-2">
-                            <input
-                              type="radio"
-                              id="this-month-history"
-                              name="date-filter-history"
-                              checked={dateFilter === 'this_month'}
-                              onChange={() => setDateFilter('this_month')}
-                              className="h-4 w-4 text-primary"
-                            />
-                            <label htmlFor="this-month-history" className="text-sm">This Month</label>
-                          </div>
-                          
-                          <div className="flex items-center gap-2">
-                            <input
-                              type="radio"
-                              id="custom-range-history"
-                              name="date-filter-history"
-                              checked={dateFilter === 'custom'}
-                              onChange={() => setDateFilter('custom')}
-                              className="h-4 w-4 text-primary"
-                            />
-                            <label htmlFor="custom-range-history" className="text-sm">Custom Range</label>
-                          </div>
-                          
-                          {dateFilter === 'custom' && (
-                            <div className="pt-2 space-y-2">
-                              <div className="grid grid-cols-2 gap-2">
-                                <div>
-                                  <label htmlFor="start-date-history" className="text-xs text-gray-500">Start Date</label>
-                                  <input
-                                    type="date"
-                                    id="start-date-history"
-                                    value={customDateRange.start}
-                                    onChange={(e) => setCustomDateRange({ ...customDateRange, start: e.target.value })}
-                                    className="w-full text-sm p-1.5 border border-gray-300 rounded-md"
-                                  />
-                                </div>
-                                <div>
-                                  <label htmlFor="end-date-history" className="text-xs text-gray-500">End Date</label>
-                                  <input
-                                    type="date"
-                                    id="end-date-history"
-                                    value={customDateRange.end}
-                                    onChange={(e) => setCustomDateRange({ ...customDateRange, end: e.target.value })}
-                                    className="w-full text-sm p-1.5 border border-gray-300 rounded-md"
-                                  />
-                                </div>
-                              </div>
-                            </div>
-                          )}
-                        </div>
-                        
-                        <div className="flex justify-between">
-                          <Button
-                            variant="outline"
-                            size="sm"
-                            onClick={resetDateFilter}
-                          >
-                            Reset
-                          </Button>
-                          <Button
-                            size="sm"
-                            onClick={() => setShowDateFilterPopover(false)}
-                          >
-                            Apply
-                          </Button>
-                        </div>
-                      </div>
-                    </PopoverContent>
-                  </Popover>
-                </div>
-              </Tabs>
-            </div>
-            
-            <DataTable
-              columns={historyColumns}
-              data={filteredData as PaymentRecord[]}
-              keyField="id"
-              emptyMessage="No payment history found"
-            />
-          </div>
-        </TabsContent>
-      </Tabs>
+      <PaymentTabs 
+        viewType={viewType}
+        setViewType={setViewType}
+        unpaidColumns={unpaidColumns}
+        historyColumns={historyColumns}
+        filteredData={filteredData}
+        mainWashTypeTab={mainWashTypeTab}
+        setMainWashTypeTab={setMainWashTypeTab}
+        orderIdSearch={orderIdSearch}
+        setOrderIdSearch={setOrderIdSearch}
+        dateFilter={dateFilter}
+        setDateFilter={setDateFilter}
+        customDateRange={customDateRange}
+        setCustomDateRange={setCustomDateRange}
+        showDateFilterPopover={showDateFilterPopover}
+        setShowDateFilterPopover={setShowDateFilterPopover}
+        resetDateFilter={resetDateFilter}
+        selectedOrders={selectedOrders}
+        setSelectedOrders={setSelectedOrders}
+        toggleSelectAllOrders={toggleSelectAllOrders}
+        openBulkPaymentModal={openBulkPaymentModal}
+      />
       
-      {/* Payment Modal */}
-      <Dialog open={showPaymentModal} onOpenChange={setShowPaymentModal}>
-        <DialogContent className="sm:max-w-[450px] p-0">
-          <DialogHeader className="p-6 pb-2">
-            <DialogTitle>Record Payment</DialogTitle>
-            <DialogDescription>
-              Enter payment details for order {selectedOrder?.id}
-            </DialogDescription>
-          </DialogHeader>
-          
-          <div className="px-6 py-4">
-            <div className="space-y-4">
-              <div>
-                <label className="text-sm font-medium text-gray-700 block mb-1">
-                  Order ID
-                </label>
-                <div className="text-sm text-gray-800 bg-gray-50 p-2 rounded-md">
-                  {selectedOrder?.id}
-                </div>
-              </div>
-              
-              <div>
-                <label className="text-sm font-medium text-gray-700 block mb-1">
-                  Amount
-                </label>
-                <div className="text-sm text-gray-800 bg-gray-50 p-2 rounded-md">
-                  {selectedOrder ? formatIndianRupees(selectedOrder.amount) : ''}
-                </div>
-              </div>
-              
-              <div>
-                <label htmlFor="payment-date" className="text-sm font-medium text-gray-700 block mb-1">
-                  Payment Date
-                </label>
-                <input
-                  type="date"
-                  id="payment-date"
-                  value={paymentDate}
-                  onChange={(e) => setPaymentDate(e.target.value)}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md"
-                  required
-                />
-              </div>
-              
-              <div>
-                <label htmlFor="payment-reference" className="text-sm font-medium text-gray-700 block mb-1">
-                  Payment Reference / UTR
-                </label>
-                <input
-                  type="text"
-                  id="payment-reference"
-                  value={paymentReference}
-                  onChange={(e) => setPaymentReference(e.target.value)}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md"
-                  required
-                />
-              </div>
-            </div>
-          </div>
-          
-          <DialogFooter className="p-6 pt-0">
-            <Button
-              variant="outline"
-              onClick={() => setShowPaymentModal(false)}
-            >
-              Cancel
-            </Button>
-            <Button
-              onClick={confirmPayment}
-              variant="success"
-              className="ml-2"
-            >
-              Record Payment
-            </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
+      <PaymentModal 
+        selectedOrders={selectedOrders}
+        showPaymentModal={showPaymentModal}
+        setShowPaymentModal={setShowPaymentModal}
+        paymentReference={paymentReference}
+        setPaymentReference={setPaymentReference}
+        paymentDate={paymentDate}
+        setPaymentDate={setPaymentDate}
+        confirmPayment={confirmPayment}
+      />
       
-      {/* Order Details Modal */}
-      <Dialog open={showOrderDetailsModal} onOpenChange={setShowOrderDetailsModal}>
-        <DialogContent className="sm:max-w-[550px]">
-          <DialogHeader>
-            <DialogTitle>Order Details</DialogTitle>
-            <DialogDescription>
-              Details for order {selectedOrderDetails?.id}
-            </DialogDescription>
-          </DialogHeader>
-          
-          <div className="space-y-4">
-            <div className="grid grid-cols-2 gap-4">
-              <div>
-                <h3 className="text-sm font-medium text-gray-500">Order ID</h3>
-                <p className="text-sm font-semibold">{selectedOrderDetails?.id}</p>
-              </div>
-              <div>
-                <h3 className="text-sm font-medium text-gray-500">Date</h3>
-                <p className="text-sm font-semibold">
-                  {selectedOrderDetails?.date ? new Date(selectedOrderDetails.date).toLocaleDateString() : ''}
-                </p>
-              </div>
-              <div>
-                <h3 className="text-sm font-medium text-gray-500">Customer</h3>
-                <p className="text-sm font-semibold">{selectedOrderDetails?.customerName}</p>
-              </div>
-              <div>
-                <h3 className="text-sm font-medium text-gray-500">Service Type</h3>
-                <p className="text-sm font-semibold">
-                  {selectedOrderDetails?.washType === 'express' ? 'Express Wash' : 
-                   selectedOrderDetails?.washType === 'standard' ? 'Standard Wash' : 'Both'}
-                </p>
-              </div>
-              <div>
-                <h3 className="text-sm font-medium text-gray-500">Status</h3>
-                <p className="text-sm font-semibold text-amber-600">Pending Payment</p>
-              </div>
-              <div>
-                <h3 className="text-sm font-medium text-gray-500">Total Amount</h3>
-                <p className="text-sm font-semibold">
-                  {selectedOrderDetails ? formatIndianRupees(selectedOrderDetails.amount) : ''}
-                </p>
-              </div>
-            </div>
-            
-            <div>
-              <h3 className="text-sm font-medium text-gray-700 mb-2">Service Details</h3>
-              <div className="border rounded-md overflow-hidden">
-                <table className="min-w-full divide-y divide-gray-200">
-                  <thead className="bg-gray-50">
-                    <tr>
-                      <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                        Service
-                      </th>
-                      <th className="px-4 py-2 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
-                        Price
-                      </th>
-                    </tr>
-                  </thead>
-                  <tbody className="divide-y divide-gray-200 bg-white">
-                    {selectedOrderDetails && getServiceDetails(selectedOrderDetails.washType).map((service, index) => (
-                      <tr key={index}>
-                        <td className="px-4 py-2 text-sm text-gray-700">
-                          {service.name}
-                        </td>
-                        <td className="px-4 py-2 text-sm text-gray-700 text-right">
-                          {formatIndianRupees(service.price)}
-                        </td>
-                      </tr>
-                    ))}
-                    <tr className="bg-gray-50">
-                      <td className="px-4 py-2 text-sm font-medium text-gray-700">
-                        Total
-                      </td>
-                      <td className="px-4 py-2 text-sm font-medium text-gray-700 text-right">
-                        {selectedOrderDetails ? formatIndianRupees(selectedOrderDetails.amount) : ''}
-                      </td>
-                    </tr>
-                  </tbody>
-                </table>
-              </div>
-            </div>
-          </div>
-          
-          <DialogFooter>
-            <Button variant="outline" onClick={() => setShowOrderDetailsModal(false)}>
-              Close
-            </Button>
-            {selectedOrderDetails && (
-              <Button
-                onClick={() => {
-                  setShowOrderDetailsModal(false);
-                  openPaymentModal(selectedOrderDetails);
-                }}
-                variant="success"
-              >
-                Mark as Paid
-              </Button>
-            )}
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
+      <OrderDetailsModal 
+        selectedOrderDetails={selectedOrderDetails}
+        showOrderDetailsModal={showOrderDetailsModal}
+        setShowOrderDetailsModal={setShowOrderDetailsModal}
+        openPaymentModal={openPaymentModal}
+      />
     </AdminLayout>
   );
 };
