@@ -74,6 +74,7 @@ function DataTable<T>({
     }
   }, [searchQuery, data, searchSuggestions]);
 
+  // Reset selection when data changes
   useEffect(() => {
     setSelectedRows(new Set());
     setSelectAll(false);
