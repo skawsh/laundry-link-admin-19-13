@@ -1,13 +1,22 @@
 
 import React, { useState, useEffect } from 'react';
 import { useParams } from 'react-router-dom';
-import { CheckCircle, Download } from 'lucide-react';
+import { CheckCircle, Download, InfoIcon } from 'lucide-react';
 import AdminLayout from '../components/layout/AdminLayout';
 import PageHeader from '../components/ui/PageHeader';
 import DataTable from '../components/ui/DataTable';
 import StatsCard from '../components/ui/StatsCard';
 import { useToast } from "@/hooks/use-toast";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Button } from "@/components/ui/button";
+import { 
+  Dialog, 
+  DialogContent, 
+  DialogDescription, 
+  DialogHeader, 
+  DialogTitle,
+  DialogFooter,
+} from "@/components/ui/dialog";
 
 // Payment data types
 interface UnpaidOrder {
@@ -67,6 +76,8 @@ const StudioPayments: React.FC = () => {
   const [paymentReference, setPaymentReference] = useState('');
   const [paymentDate, setPaymentDate] = useState('');
   const [washTypeFilter, setWashTypeFilter] = useState<'all' | 'express' | 'standard' | 'combined'>('all');
+  const [showOrderDetailsModal, setShowOrderDetailsModal] = useState(false);
+  const [selectedOrderDetails, setSelectedOrderDetails] = useState<UnpaidOrder | null>(null);
   const { toast } = useToast();
 
   // Filter data based on studio ID if provided
@@ -112,6 +123,12 @@ const StudioPayments: React.FC = () => {
   const openPaymentModal = (order: UnpaidOrder) => {
     setSelectedOrder(order);
     setShowPaymentModal(true);
+  };
+
+  // Show order details
+  const openOrderDetailsModal = (order: UnpaidOrder) => {
+    setSelectedOrderDetails(order);
+    setShowOrderDetailsModal(true);
   };
 
   const confirmPayment = () => {
@@ -197,13 +214,26 @@ const StudioPayments: React.FC = () => {
     {
       header: 'Actions',
       accessor: (row: UnpaidOrder) => (
-        <button
-          onClick={() => openPaymentModal(row)}
-          className="flex items-center px-3 py-1 text-sm bg-green-50 text-green-700 rounded-md hover:bg-green-100 transition-colors"
-        >
-          <CheckCircle className="h-4 w-4 mr-1" />
-          <span>Mark as Paid</span>
-        </button>
+        <div className="flex gap-2">
+          <Button
+            onClick={() => openPaymentModal(row)}
+            variant="success"
+            size="sm"
+            className="flex items-center"
+          >
+            <CheckCircle className="h-4 w-4 mr-1" />
+            <span>Mark as Paid</span>
+          </Button>
+          <Button
+            onClick={() => openOrderDetailsModal(row)}
+            variant="outline"
+            size="sm"
+            className="flex items-center"
+          >
+            <InfoIcon className="h-4 w-4 mr-1" />
+            <span>Order Details</span>
+          </Button>
+        </div>
       ),
     }
   ];
@@ -293,10 +323,30 @@ const StudioPayments: React.FC = () => {
           {/* Wash Type Tabs for Unpaid Payments */}
           <Tabs defaultValue="all" className="w-full" onValueChange={(value) => setWashTypeFilter(value as 'all' | 'express' | 'standard' | 'combined')}>
             <TabsList className="bg-background border border-input mb-5">
-              <TabsTrigger value="all">All Wash Types</TabsTrigger>
-              <TabsTrigger value="express" className="text-purple-800">Express Wash</TabsTrigger>
-              <TabsTrigger value="standard" className="text-blue-800">Standard Wash</TabsTrigger>
-              <TabsTrigger value="combined" className="text-green-800">Combined Wash</TabsTrigger>
+              <TabsTrigger 
+                value="all" 
+                className={washTypeFilter === 'all' ? 'bg-green-100 text-green-800' : ''}
+              >
+                All Wash Types
+              </TabsTrigger>
+              <TabsTrigger 
+                value="express" 
+                className={washTypeFilter === 'express' ? 'bg-green-100 text-green-800' : 'text-purple-800'}
+              >
+                Express Wash
+              </TabsTrigger>
+              <TabsTrigger 
+                value="standard" 
+                className={washTypeFilter === 'standard' ? 'bg-green-100 text-green-800' : 'text-blue-800'}
+              >
+                Standard Wash
+              </TabsTrigger>
+              <TabsTrigger 
+                value="combined" 
+                className={washTypeFilter === 'combined' ? 'bg-green-100 text-green-800' : 'text-green-800'}
+              >
+                Combined Wash
+              </TabsTrigger>
             </TabsList>
             
             <TabsContent value="all">
@@ -341,10 +391,30 @@ const StudioPayments: React.FC = () => {
           {/* Wash Type Tabs for Payment History */}
           <Tabs defaultValue="all" className="w-full" onValueChange={(value) => setWashTypeFilter(value as 'all' | 'express' | 'standard' | 'combined')}>
             <TabsList className="bg-background border border-input mb-5">
-              <TabsTrigger value="all">All Wash Types</TabsTrigger>
-              <TabsTrigger value="express" className="text-purple-800">Express Wash</TabsTrigger>
-              <TabsTrigger value="standard" className="text-blue-800">Standard Wash</TabsTrigger>
-              <TabsTrigger value="combined" className="text-green-800">Combined Wash</TabsTrigger>
+              <TabsTrigger 
+                value="all" 
+                className={washTypeFilter === 'all' ? 'bg-green-100 text-green-800' : ''}
+              >
+                All Wash Types
+              </TabsTrigger>
+              <TabsTrigger 
+                value="express" 
+                className={washTypeFilter === 'express' ? 'bg-green-100 text-green-800' : 'text-purple-800'}
+              >
+                Express Wash
+              </TabsTrigger>
+              <TabsTrigger 
+                value="standard" 
+                className={washTypeFilter === 'standard' ? 'bg-green-100 text-green-800' : 'text-blue-800'}
+              >
+                Standard Wash
+              </TabsTrigger>
+              <TabsTrigger 
+                value="combined" 
+                className={washTypeFilter === 'combined' ? 'bg-green-100 text-green-800' : 'text-green-800'}
+              >
+                Combined Wash
+              </TabsTrigger>
             </TabsList>
             
             <TabsContent value="all">
@@ -457,6 +527,88 @@ const StudioPayments: React.FC = () => {
             </div>
           </div>
         </div>
+      )}
+
+      {/* Order Details Modal */}
+      {showOrderDetailsModal && selectedOrderDetails && (
+        <Dialog open={showOrderDetailsModal} onOpenChange={setShowOrderDetailsModal}>
+          <DialogContent className="sm:max-w-md">
+            <DialogHeader>
+              <DialogTitle>Order Details</DialogTitle>
+              <DialogDescription>
+                Complete information about order {selectedOrderDetails.id}
+              </DialogDescription>
+            </DialogHeader>
+            
+            <div className="grid gap-4 py-4">
+              <div className="grid grid-cols-4 items-center gap-4">
+                <span className="text-sm font-medium">Order ID:</span>
+                <span className="col-span-3">{selectedOrderDetails.id}</span>
+              </div>
+              <div className="grid grid-cols-4 items-center gap-4">
+                <span className="text-sm font-medium">Customer:</span>
+                <span className="col-span-3">{selectedOrderDetails.customerName}</span>
+              </div>
+              <div className="grid grid-cols-4 items-center gap-4">
+                <span className="text-sm font-medium">Order Date:</span>
+                <span className="col-span-3">{new Date(selectedOrderDetails.date).toLocaleDateString()}</span>
+              </div>
+              <div className="grid grid-cols-4 items-center gap-4">
+                <span className="text-sm font-medium">Wash Type:</span>
+                <span className="col-span-3">
+                  <span className={`px-2 py-1 text-xs rounded-full ${
+                    selectedOrderDetails.washType === 'express' ? 'bg-purple-100 text-purple-800' : 
+                    selectedOrderDetails.washType === 'standard' ? 'bg-blue-100 text-blue-800' : 
+                    'bg-green-100 text-green-800'
+                  }`}>
+                    {selectedOrderDetails.washType === 'express' ? 'Express Wash' : 
+                     selectedOrderDetails.washType === 'standard' ? 'Standard Wash' : 
+                     'Combined Wash'}
+                  </span>
+                </span>
+              </div>
+              <div className="grid grid-cols-4 items-center gap-4">
+                <span className="text-sm font-medium">Amount:</span>
+                <span className="col-span-3 font-semibold">{formatIndianRupees(selectedOrderDetails.amount)}</span>
+              </div>
+              <div className="grid grid-cols-4 items-center gap-4">
+                <span className="text-sm font-medium">Studio:</span>
+                <span className="col-span-3">{selectedOrderDetails.studioName}</span>
+              </div>
+              <div className="grid grid-cols-4 items-center gap-4">
+                <span className="text-sm font-medium">Status:</span>
+                <span className="col-span-3">
+                  <span className="px-2 py-1 text-xs rounded-full bg-yellow-100 text-yellow-800">
+                    Unpaid
+                  </span>
+                </span>
+              </div>
+              <div className="grid grid-cols-4 items-center gap-4">
+                <span className="text-sm font-medium">Delivery:</span>
+                <span className="col-span-3">Scheduled for {new Date(new Date(selectedOrderDetails.date).getTime() + 86400000 * 2).toLocaleDateString()}</span>
+              </div>
+            </div>
+            
+            <DialogFooter className="sm:justify-between">
+              <Button
+                variant="outline"
+                onClick={() => setShowOrderDetailsModal(false)}
+              >
+                Close
+              </Button>
+              <Button
+                variant="success"
+                onClick={() => {
+                  setShowOrderDetailsModal(false);
+                  openPaymentModal(selectedOrderDetails);
+                }}
+              >
+                <CheckCircle className="mr-2 h-4 w-4" />
+                Mark as Paid
+              </Button>
+            </DialogFooter>
+          </DialogContent>
+        </Dialog>
       )}
     </AdminLayout>
   );
