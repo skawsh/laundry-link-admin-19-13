@@ -74,6 +74,7 @@ interface Order {
   driver: string | null;
   paymentMethod: string;
   estimatedCompletion: string;
+  deliveredDate?: string;
   notes: string;
 }
 
@@ -132,8 +133,14 @@ const generateMockOrders = (): Order[] => {
     const statusIndex = Math.floor(Math.random() * statuses.length);
     const status = statuses[statusIndex];
     
-    const driver = ['in_progress', 'in_delivery', 'picked_up'].includes(status) ? 
+    const driver = ['in_progress', 'in_delivery', 'picked_up', 'completed'].includes(status) ? 
       drivers[Math.floor(Math.random() * drivers.length)] : null;
+    
+    const estCompletionDate = new Date(orderDate.getTime() + Math.random() * 86400000 * 3);
+    
+    const deliveredDate = status === 'completed' ? 
+      new Date(estCompletionDate.getTime() + Math.random() * 86400000 * 2) : 
+      undefined;
     
     orders.push({
       id: `ORD-${10000 + i}`,
@@ -146,7 +153,8 @@ const generateMockOrders = (): Order[] => {
       total: calculateTotal(items),
       driver: driver,
       paymentMethod: Math.random() > 0.7 ? 'Credit Card' : 'PayPal',
-      estimatedCompletion: new Date(orderDate.getTime() + Math.random() * 86400000 * 3).toISOString(),
+      estimatedCompletion: estCompletionDate.toISOString(),
+      deliveredDate: deliveredDate?.toISOString(),
       notes: Math.random() > 0.7 ? "Customer requested extra care with silk items." : ""
     });
   }
@@ -309,7 +317,7 @@ const Orders: React.FC = () => {
       width: "130px",
     },
     {
-      header: "Date",
+      header: "Ordered Date",
       accessor: (row: Order) => new Date(row.date).toLocaleDateString(),
       width: "120px",
     },
@@ -338,6 +346,11 @@ const Orders: React.FC = () => {
       header: "Total",
       accessor: (row: Order) => `$${row.total}`,
       width: "100px",
+    },
+    {
+      header: "Delivered Date",
+      accessor: (row: Order) => row.deliveredDate ? new Date(row.deliveredDate).toLocaleDateString() : "—",
+      width: "120px",
     },
     {
       header: "Actions",
@@ -746,7 +759,7 @@ const Orders: React.FC = () => {
                   <p className="text-base font-medium">{selectedOrder.id}</p>
                 </div>
                 <div className="space-y-1">
-                  <p className="text-sm text-gray-500">Date</p>
+                  <p className="text-sm text-gray-500">Ordered Date</p>
                   <p className="text-base font-medium">
                     {new Date(selectedOrder.date).toLocaleString()}
                   </p>
@@ -792,6 +805,12 @@ const Orders: React.FC = () => {
                       <Calendar className="h-3.5 w-3.5 mr-1" />
                       Est. Completion: {new Date(selectedOrder.estimatedCompletion).toLocaleString()}
                     </p>
+                    {selectedOrder.deliveredDate && (
+                      <p className="text-sm text-gray-500 mt-1 flex items-center">
+                        <Calendar className="h-3.5 w-3.5 mr-1" />
+                        Delivered: {new Date(selectedOrder.deliveredDate).toLocaleString()}
+                      </p>
+                    )}
                   </div>
                 </div>
               </div>
