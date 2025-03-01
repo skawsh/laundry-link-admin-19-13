@@ -1,20 +1,12 @@
 
 import React, { useState, useEffect } from 'react';
 import { useParams } from 'react-router-dom';
-import { CheckCircle, Calendar, Search, ChevronDown, ArrowDown, Download, Filter } from 'lucide-react';
+import { CheckCircle, Download } from 'lucide-react';
 import AdminLayout from '../components/layout/AdminLayout';
 import PageHeader from '../components/ui/PageHeader';
 import DataTable from '../components/ui/DataTable';
 import { useToast } from "@/hooks/use-toast";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import {
-  Select,
-  SelectContent,
-  SelectGroup,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
 
 // Payment data types
 interface UnpaidOrder {
@@ -64,7 +56,6 @@ const StudioPayments: React.FC = () => {
   const [unpaidOrders, setUnpaidOrders] = useState<UnpaidOrder[]>(initialUnpaidOrders);
   const [paymentHistory, setPaymentHistory] = useState<PaymentRecord[]>(initialPaymentHistory);
   const [viewType, setViewType] = useState<'unpaid' | 'history'>('unpaid');
-  const [searchQuery, setSearchQuery] = useState('');
   const [showPaymentModal, setShowPaymentModal] = useState(false);
   const [selectedOrder, setSelectedOrder] = useState<UnpaidOrder | null>(null);
   const [paymentReference, setPaymentReference] = useState('');
@@ -85,20 +76,6 @@ const StudioPayments: React.FC = () => {
   const washTypeFilteredUnpaidOrders = washTypeFilter === 'all' 
     ? filteredUnpaidOrders 
     : filteredUnpaidOrders.filter(order => order.washType === washTypeFilter);
-
-  // Calculate total unpaid amount per studio and wash type
-  const studioWashTypeTotals = washTypeFilteredUnpaidOrders.reduce((acc, order) => {
-    if (!acc[order.washType]) {
-      acc[order.washType] = {
-        washType: order.washType,
-        totalAmount: 0,
-        orders: []
-      };
-    }
-    acc[order.washType].totalAmount += order.amount;
-    acc[order.washType].orders.push(order);
-    return acc;
-  }, {} as Record<string, { washType: 'express' | 'standard'; totalAmount: number; orders: UnpaidOrder[] }>);
 
   // Calculate studio specific total if studio ID is provided
   const studioName = studioId && filteredUnpaidOrders.length > 0 
@@ -154,12 +131,6 @@ const StudioPayments: React.FC = () => {
       description: `Payment of $${selectedOrder.amount.toFixed(2)} for order ${selectedOrder.id} has been marked as paid.`,
       duration: 3000,
     });
-  };
-
-  // Handle search for both tabs
-  const handleSearch = (query: string) => {
-    setSearchQuery(query);
-    // In a real app, you'd implement filtering logic here
   };
 
   // Unpaid orders columns
@@ -292,85 +263,14 @@ const StudioPayments: React.FC = () => {
         <TabsContent value="unpaid">
           {/* Wash Type Tabs for Unpaid Payments */}
           <Tabs defaultValue="all" className="w-full" onValueChange={(value) => setWashTypeFilter(value as 'all' | 'express' | 'standard')}>
-            <div className="flex justify-between items-center mb-5">
-              <TabsList className="bg-background border border-input">
-                <TabsTrigger value="all">All Wash Types</TabsTrigger>
-                <TabsTrigger value="express" className="text-purple-800">Express Wash</TabsTrigger>
-                <TabsTrigger value="standard" className="text-blue-800">Standard Wash</TabsTrigger>
-              </TabsList>
-              
-              <div className="flex items-center space-x-3">
-                <div className="relative inline-block text-left">
-                  <button className="px-3 py-1.5 text-sm border border-gray-200 rounded-md flex items-center bg-white">
-                    <span>Date Range</span>
-                    <Calendar className="ml-1 h-4 w-4" />
-                  </button>
-                </div>
-                
-                <div className="relative">
-                  <div className="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none">
-                    <Search className="h-4 w-4 text-gray-400" />
-                  </div>
-                  <input
-                    type="text"
-                    placeholder="Search unpaid orders..."
-                    className="block w-64 bg-white border border-gray-200 rounded-md py-2 pl-10 pr-4 text-sm placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-transparent"
-                    value={searchQuery}
-                    onChange={(e) => handleSearch(e.target.value)}
-                  />
-                </div>
-              </div>
-            </div>
+            <TabsList className="bg-background border border-input mb-5">
+              <TabsTrigger value="all">All Wash Types</TabsTrigger>
+              <TabsTrigger value="express" className="text-purple-800">Express Wash</TabsTrigger>
+              <TabsTrigger value="standard" className="text-blue-800">Standard Wash</TabsTrigger>
+            </TabsList>
             
-            {/* Tabs content for each wash type */}
             <TabsContent value="all">
-              {/* Wash Type Categories */}
-              {Object.keys(studioWashTypeTotals).length > 0 && (
-                <div className="mb-6">
-                  <h3 className="text-lg font-semibold mb-4">Unpaid Totals by Wash Type</h3>
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                    {Object.values(studioWashTypeTotals).map((category) => (
-                      <div 
-                        key={category.washType} 
-                        className={`bg-white p-4 rounded-lg border ${
-                          category.washType === 'express' ? 'border-purple-200' : 'border-blue-200'
-                        } shadow-subtle`}
-                      >
-                        <div className="flex justify-between items-start mb-3">
-                          <div>
-                            <h4 className="font-medium text-gray-800">
-                              {category.washType === 'express' ? 'Express Wash' : 'Standard Wash'} 
-                            </h4>
-                            <p className="text-sm text-gray-500 mt-1">{category.orders.length} unpaid orders</p>
-                          </div>
-                          <p className={`text-lg font-semibold ${
-                            category.washType === 'express' ? 'text-purple-600' : 'text-blue-600'
-                          }`}>
-                            ${category.totalAmount.toFixed(2)}
-                          </p>
-                        </div>
-                        
-                        {/* Top 3 orders preview */}
-                        <div className="space-y-2 mt-4">
-                          {category.orders.slice(0, 3).map((order) => (
-                            <div key={order.id} className="flex justify-between text-sm py-1 border-b border-gray-100">
-                              <span className="text-gray-600">{order.id} - {order.customerName}</span>
-                              <span className="font-medium">${order.amount.toFixed(2)}</span>
-                            </div>
-                          ))}
-                          {category.orders.length > 3 && (
-                            <div className="text-center pt-1">
-                              <span className="text-xs text-gray-500">{category.orders.length - 3} more orders</span>
-                            </div>
-                          )}
-                        </div>
-                      </div>
-                    ))}
-                  </div>
-                </div>
-              )}
-              
-              {/* Data table for all unpaid orders */}
+              <h3 className="text-lg font-semibold mb-4">All Unpaid Orders</h3>
               <DataTable
                 columns={unpaidColumns}
                 data={washTypeFilteredUnpaidOrders}
@@ -380,29 +280,23 @@ const StudioPayments: React.FC = () => {
             </TabsContent>
             
             <TabsContent value="express">
-              {/* Express wash orders */}
-              <div className="mb-6">
-                <h3 className="text-lg font-semibold mb-4">Express Wash Unpaid Orders</h3>
-                <DataTable
-                  columns={unpaidColumns}
-                  data={filteredUnpaidOrders.filter(order => order.washType === 'express')}
-                  keyField="id"
-                  emptyMessage="No unpaid express wash orders found"
-                />
-              </div>
+              <h3 className="text-lg font-semibold mb-4">Express Wash Unpaid Orders</h3>
+              <DataTable
+                columns={unpaidColumns}
+                data={filteredUnpaidOrders.filter(order => order.washType === 'express')}
+                keyField="id"
+                emptyMessage="No unpaid express wash orders found"
+              />
             </TabsContent>
             
             <TabsContent value="standard">
-              {/* Standard wash orders */}
-              <div className="mb-6">
-                <h3 className="text-lg font-semibold mb-4">Standard Wash Unpaid Orders</h3>
-                <DataTable
-                  columns={unpaidColumns}
-                  data={filteredUnpaidOrders.filter(order => order.washType === 'standard')}
-                  keyField="id"
-                  emptyMessage="No unpaid standard wash orders found"
-                />
-              </div>
+              <h3 className="text-lg font-semibold mb-4">Standard Wash Unpaid Orders</h3>
+              <DataTable
+                columns={unpaidColumns}
+                data={filteredUnpaidOrders.filter(order => order.washType === 'standard')}
+                keyField="id"
+                emptyMessage="No unpaid standard wash orders found"
+              />
             </TabsContent>
           </Tabs>
         </TabsContent>
@@ -410,35 +304,11 @@ const StudioPayments: React.FC = () => {
         <TabsContent value="history">
           {/* Wash Type Tabs for Payment History */}
           <Tabs defaultValue="all" className="w-full" onValueChange={(value) => setWashTypeFilter(value as 'all' | 'express' | 'standard')}>
-            <div className="flex justify-between items-center mb-5">
-              <TabsList className="bg-background border border-input">
-                <TabsTrigger value="all">All Wash Types</TabsTrigger>
-                <TabsTrigger value="express" className="text-purple-800">Express Wash</TabsTrigger>
-                <TabsTrigger value="standard" className="text-blue-800">Standard Wash</TabsTrigger>
-              </TabsList>
-              
-              <div className="flex items-center space-x-3">
-                <div className="relative inline-block text-left">
-                  <button className="px-3 py-1.5 text-sm border border-gray-200 rounded-md flex items-center bg-white">
-                    <span>Date Range</span>
-                    <Calendar className="ml-1 h-4 w-4" />
-                  </button>
-                </div>
-                
-                <div className="relative">
-                  <div className="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none">
-                    <Search className="h-4 w-4 text-gray-400" />
-                  </div>
-                  <input
-                    type="text"
-                    placeholder="Search payment history..."
-                    className="block w-64 bg-white border border-gray-200 rounded-md py-2 pl-10 pr-4 text-sm placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-transparent"
-                    value={searchQuery}
-                    onChange={(e) => handleSearch(e.target.value)}
-                  />
-                </div>
-              </div>
-            </div>
+            <TabsList className="bg-background border border-input mb-5">
+              <TabsTrigger value="all">All Wash Types</TabsTrigger>
+              <TabsTrigger value="express" className="text-purple-800">Express Wash</TabsTrigger>
+              <TabsTrigger value="standard" className="text-blue-800">Standard Wash</TabsTrigger>
+            </TabsList>
             
             <TabsContent value="all">
               <h3 className="text-lg font-semibold mb-4">All Payment History</h3>
