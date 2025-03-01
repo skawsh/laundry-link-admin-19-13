@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { CheckCircle, Download, InfoIcon, ArrowLeft } from 'lucide-react';
@@ -5,6 +6,7 @@ import AdminLayout from '../components/layout/AdminLayout';
 import PageHeader from '../components/ui/PageHeader';
 import { useToast } from "@/hooks/use-toast";
 import { Button } from "@/components/ui/button";
+import { Checkbox } from "@/components/ui/checkbox";
 
 import PaymentStats from '@/components/payments/PaymentStats';
 import PaymentModal from '@/components/payments/PaymentModal';
