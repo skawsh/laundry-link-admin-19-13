@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect, useMemo } from 'react';
 import AdminLayout from '@/components/layout/AdminLayout';
 import { 
@@ -787,72 +786,44 @@ const Drivers = () => {
                       {driver.assignedOrders.length}
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
-                      <div className="flex space-x-2">
-                        <TooltipProvider>
-                          <Tooltip>
-                            <TooltipTrigger asChild>
-                            <Button
-                              size="sm"
-                              variant="outline"
-                              onClick={() => handleOpenOrderDetails(driver)}
-                            >
-                              <Info className="h-4 w-4" />
-                            </Button>
-                            </TooltipTrigger>
-                            <TooltipContent>
-                              <p>Order Details</p>
-                            </TooltipContent>
-                          </Tooltip>
-                        </TooltipProvider>
-                        <TooltipProvider>
-                          <Tooltip>
-                            <TooltipTrigger asChild>
-                              <Button 
-                                size="sm" 
-                                variant="outline"
-                                onClick={() => handleOpenDriverProfile(driver)}
-                              >
-                                <User className="h-4 w-4" />
-                              </Button>
-                            </TooltipTrigger>
-                            <TooltipContent>
-                              <p>Driver Profile</p>
-                            </TooltipContent>
-                          </Tooltip>
-                        </TooltipProvider>
-                        <TooltipProvider>
-                          <Tooltip>
-                            <TooltipTrigger asChild>
-                              <DropdownMenu>
-                                <DropdownMenuTrigger asChild>
-                                  <Button size="sm" variant="outline">
-                                    <MoreVertical className="h-4 w-4" />
-                                  </Button>
-                                </DropdownMenuTrigger>
-                                <DropdownMenuContent align="end" className="bg-white">
-                                  <DropdownMenuItem 
-                                    className="flex items-center cursor-pointer"
-                                    onClick={() => handleActionMenuItem('changeStatus', driver.id)}
-                                  >
-                                    <UserCog className="mr-2 h-4 w-4" />
-                                    <span>Change Status</span>
-                                  </DropdownMenuItem>
-                                  <DropdownMenuItem 
-                                    className="flex items-center text-red-600 cursor-pointer"
-                                    onClick={() => handleActionMenuItem('removeDriver', driver.id)}
-                                  >
-                                    <XCircle className="mr-2 h-4 w-4" />
-                                    <span>Remove Driver</span>
-                                  </DropdownMenuItem>
-                                </DropdownMenuContent>
-                              </DropdownMenu>
-                            </TooltipTrigger>
-                            <TooltipContent>
-                              <p>More Actions</p>
-                            </TooltipContent>
-                          </Tooltip>
-                        </TooltipProvider>
-                      </div>
+                      <DropdownMenu>
+                        <DropdownMenuTrigger asChild>
+                          <Button size="sm" variant="ghost" className="h-8 w-8 p-0">
+                            <span className="sr-only">Open menu</span>
+                            <MoreVertical className="h-4 w-4" />
+                          </Button>
+                        </DropdownMenuTrigger>
+                        <DropdownMenuContent align="end">
+                          <DropdownMenuItem 
+                            className="flex items-center cursor-pointer"
+                            onClick={() => handleOpenOrderDetails(driver)}
+                          >
+                            <Info className="mr-2 h-4 w-4" />
+                            <span>Order Details</span>
+                          </DropdownMenuItem>
+                          <DropdownMenuItem 
+                            className="flex items-center cursor-pointer"
+                            onClick={() => handleOpenDriverProfile(driver)}
+                          >
+                            <User className="mr-2 h-4 w-4" />
+                            <span>Driver Profile</span>
+                          </DropdownMenuItem>
+                          <DropdownMenuItem 
+                            className="flex items-center cursor-pointer"
+                            onClick={() => handleActionMenuItem('changeStatus', driver.id)}
+                          >
+                            <UserCog className="mr-2 h-4 w-4" />
+                            <span>Change Status</span>
+                          </DropdownMenuItem>
+                          <DropdownMenuItem 
+                            className="flex items-center text-red-600 cursor-pointer"
+                            onClick={() => handleActionMenuItem('removeDriver', driver.id)}
+                          >
+                            <XCircle className="mr-2 h-4 w-4" />
+                            <span>Remove Driver</span>
+                          </DropdownMenuItem>
+                        </DropdownMenuContent>
+                      </DropdownMenu>
                     </td>
                   </tr>
                 ))}
