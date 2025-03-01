@@ -17,12 +17,11 @@ interface ConfirmationDialogProps {
   onOpenChange: (open: boolean) => void
   onConfirm: () => void
   title: string
-  description: React.ReactNode
+  description: string
   confirmLabel?: string
   cancelLabel?: string
   withDelay?: boolean
   delaySeconds?: number
-  variant?: 'destructive' | 'default'
 }
 
 export function ConfirmationDialog({
@@ -34,8 +33,7 @@ export function ConfirmationDialog({
   confirmLabel = "OK",
   cancelLabel = "Cancel",
   withDelay = false,
-  delaySeconds = 5,
-  variant = 'destructive'
+  delaySeconds = 5
 }: ConfirmationDialogProps) {
   const [secondsLeft, setSecondsLeft] = React.useState(withDelay ? delaySeconds : 0)
   const [timerRunning, setTimerRunning] = React.useState(false)
@@ -92,7 +90,7 @@ export function ConfirmationDialog({
           ) : (
             <AlertDialogAction 
               onClick={handleConfirm}
-              className={variant === 'destructive' ? "bg-destructive text-destructive-foreground hover:bg-destructive/90" : ""}
+              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
             >
               {confirmLabel}
             </AlertDialogAction>
