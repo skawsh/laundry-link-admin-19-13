@@ -1,5 +1,5 @@
 
-import React, { useEffect } from 'react';
+import React from 'react';
 import { 
   Dialog, 
   DialogContent, 
@@ -12,7 +12,6 @@ import { Button } from "@/components/ui/button";
 import { UnpaidOrder } from '@/types/paymentTypes';
 import { formatIndianRupees } from '@/utils/dateUtils';
 import { toast } from "@/hooks/use-toast";
-import { Checkbox } from "@/components/ui/checkbox";
 
 interface PaymentModalProps {
   selectedOrders: UnpaidOrder[];
@@ -40,15 +39,6 @@ const PaymentModal: React.FC<PaymentModalProps> = ({
   // Calculate total amount from selected orders
   const totalAmount = selectedOrders.reduce((sum, order) => sum + order.amount, 0);
 
-  // Set current date as default payment date when modal opens
-  useEffect(() => {
-    if (showPaymentModal && !paymentDate) {
-      const today = new Date();
-      const formattedDate = today.toISOString().split('T')[0]; // Format: YYYY-MM-DD
-      setPaymentDate(formattedDate);
-    }
-  }, [showPaymentModal, paymentDate, setPaymentDate]);
-
   const handleConfirmPayment = () => {
     if (selectedOrders.length === 0) {
       toast({
@@ -73,28 +63,22 @@ const PaymentModal: React.FC<PaymentModalProps> = ({
     confirmPayment();
   };
 
-  const isSingleOrder = selectedOrders.length === 1;
-  const modalTitle = isSingleOrder 
-    ? "Record Payment" 
-    : `Record Payment for ${selectedOrders.length} Orders`;
-  
-  const modalDescription = isSingleOrder 
-    ? `Enter payment details for order ${selectedOrders[0]?.id}`
-    : `Enter payment details for ${selectedOrders.length} orders`;
-
   return (
     <Dialog open={showPaymentModal} onOpenChange={setShowPaymentModal}>
       <DialogContent className="sm:max-w-[500px] p-0">
         <DialogHeader className="p-6 pb-2">
-          <DialogTitle>{modalTitle}</DialogTitle>
+          <DialogTitle>Record Payment</DialogTitle>
           <DialogDescription>
-            {modalDescription}
+            {selectedOrders.length === 1 
+              ? `Enter payment details for order ${selectedOrders[0]?.id}`
+              : `Enter payment details for ${selectedOrders.length} orders`
+            }
           </DialogDescription>
         </DialogHeader>
         
         <div className="px-6 py-4">
           <div className="space-y-4">
-            {isSingleOrder ? (
+            {selectedOrders.length === 1 ? (
               <div>
                 <label className="text-sm font-medium text-gray-700 block mb-1">
                   Order ID
@@ -121,13 +105,14 @@ const PaymentModal: React.FC<PaymentModalProps> = ({
                     </thead>
                     <tbody className="bg-white divide-y divide-gray-200">
                       {selectedOrders.map(order => (
-                        <tr key={order.id} className="hover:bg-gray-50">
+                        <tr key={order.id}>
                           {toggleOrderSelection && (
                             <td className="px-3 py-2">
-                              <Checkbox
+                              <input
+                                type="checkbox"
                                 checked={true}
-                                onCheckedChange={() => toggleOrderSelection(order.id)}
-                                id={`order-${order.id}`}
+                                onChange={() => toggleOrderSelection(order.id)}
+                                className="h-4 w-4 text-indigo-600 focus:ring-indigo-500 border-gray-300 rounded"
                               />
                             </td>
                           )}
