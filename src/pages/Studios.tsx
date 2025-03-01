@@ -214,9 +214,8 @@ interface NewStudioFormData {
 const Studios: React.FC = () => {
   const [studios, setStudios] = useState<Studio[]>(initialStudios);
   const [filteredStudios, setFilteredStudios] = useState<Studio[]>(initialStudios);
-  const [isAddStudioModalOpen, setIsAddStudioModalOpen] = useState(false);
-  const [isEditStudioModalOpen, setIsEditStudioModalOpen] = useState(false);
   const [isViewStudioModalOpen, setIsViewStudioModalOpen] = useState(false);
+  const [isEditStudioModalOpen, setIsEditStudioModalOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
   const [searchResults, setSearchResults] = useState<Studio[]>([]);
   const [showSearchDropdown, setShowSearchDropdown] = useState(false);
@@ -228,14 +227,6 @@ const Studios: React.FC = () => {
   const [showStatusFilter, setShowStatusFilter] = useState(false);
   const [showRatingFilter, setShowRatingFilter] = useState(false);
   const [activeDropdownId, setActiveDropdownId] = useState<number | null>(null);
-  const [newStudioForm, setNewStudioForm] = useState<NewStudioFormData>({
-    name: '',
-    ownerName: '',
-    contactNumber: '',
-    email: '',
-    address: '',
-    services: 0
-  });
   
   const searchRef = useRef<HTMLDivElement>(null);
   const statusFilterRef = useRef<HTMLDivElement>(null);
@@ -410,68 +401,9 @@ const Studios: React.FC = () => {
     });
   };
 
-  // Open add studio modal
-  const openAddStudioModal = () => {
-    setIsAddStudioModalOpen(true);
-  };
-
-  // Add new studio
-  const addNewStudio = () => {
-    // Validate form
-    if (!newStudioForm.name || !newStudioForm.ownerName || !newStudioForm.contactNumber) {
-      toast({
-        title: "Error",
-        description: "Please fill all required fields",
-        variant: "destructive",
-        duration: 3000,
-      });
-      return;
-    }
-    
-    // Generate a new studio ID
-    const studioId = `STU${(10000 + studios.length + 1).toString()}`;
-    
-    // Create new studio object
-    const newStudio: Studio = {
-      id: Math.max(...studios.map(s => s.id)) + 1,
-      studioId,
-      name: newStudioForm.name,
-      ownerName: newStudioForm.ownerName,
-      contactNumber: newStudioForm.contactNumber,
-      email: newStudioForm.email,
-      address: newStudioForm.address,
-      services: newStudioForm.services || 0,
-      rating: 0,
-      status: 'active',
-      joinedDate: new Date().toISOString().split('T')[0],
-      totalOrders: 0,
-      revenue: 0,
-      avgSackValue: 0,
-      serviceTimes: [
-        { type: 'Standard Wash', time: '3h' },
-        { type: 'Express Wash', time: '1h 30min' }
-      ]
-    };
-    
-    // Add to studios list
-    setStudios([...studios, newStudio]);
-    
-    // Reset form and close modal
-    setNewStudioForm({
-      name: '',
-      ownerName: '',
-      contactNumber: '',
-      email: '',
-      address: '',
-      services: 0
-    });
-    setIsAddStudioModalOpen(false);
-    
-    toast({
-      title: "Studio added",
-      description: `${newStudio.name} has been added successfully`,
-      duration: 3000,
-    });
+  // Open add studio page
+  const openAddStudioPage = () => {
+    navigate('/studios/add');
   };
 
   // Delete studio
@@ -694,7 +626,7 @@ const Studios: React.FC = () => {
             <span>Reset Filters</span>
           </button>
           <button
-            onClick={openAddStudioModal}
+            onClick={openAddStudioPage}
             className="flex items-center bg-admin-primary text-white px-4 py-2 rounded-md hover:bg-opacity-90 transition-colors"
           >
             <Plus className="h-4 w-4 mr-2" />
@@ -886,116 +818,6 @@ const Studios: React.FC = () => {
         searchPlaceholder="Search studios..."
         emptyMessage="No studios found"
       />
-      
-      {/* Add New Studio Modal */}
-      {isAddStudioModalOpen && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-          <div className="bg-white rounded-lg shadow-lg w-full max-w-lg p-6 max-h-[90vh] overflow-y-auto">
-            <div className="flex justify-between items-center mb-4">
-              <h3 className="text-lg font-semibold">Add New Laundry Studio</h3>
-              <button onClick={() => setIsAddStudioModalOpen(false)} className="text-gray-500 hover:text-gray-700">
-                <X className="h-5 w-5" />
-              </button>
-            </div>
-            
-            <div className="space-y-4">
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Studio Name <span className="text-red-500">*</span>
-                </label>
-                <input
-                  type="text"
-                  value={newStudioForm.name}
-                  onChange={(e) => setNewStudioForm({...newStudioForm, name: e.target.value})}
-                  className="block w-full border border-gray-200 rounded-md py-2 px-3 text-sm placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-primary/20"
-                  placeholder="Enter studio name"
-                />
-              </div>
-              
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Owner Name <span className="text-red-500">*</span>
-                </label>
-                <input
-                  type="text"
-                  value={newStudioForm.ownerName}
-                  onChange={(e) => setNewStudioForm({...newStudioForm, ownerName: e.target.value})}
-                  className="block w-full border border-gray-200 rounded-md py-2 px-3 text-sm placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-primary/20"
-                  placeholder="Enter owner name"
-                />
-              </div>
-              
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Contact Number <span className="text-red-500">*</span>
-                </label>
-                <input
-                  type="text"
-                  value={newStudioForm.contactNumber}
-                  onChange={(e) => setNewStudioForm({...newStudioForm, contactNumber: e.target.value})}
-                  className="block w-full border border-gray-200 rounded-md py-2 px-3 text-sm placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-primary/20"
-                  placeholder="Enter contact number"
-                />
-              </div>
-              
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Email Address
-                </label>
-                <input
-                  type="email"
-                  value={newStudioForm.email}
-                  onChange={(e) => setNewStudioForm({...newStudioForm, email: e.target.value})}
-                  className="block w-full border border-gray-200 rounded-md py-2 px-3 text-sm placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-primary/20"
-                  placeholder="Enter email address"
-                />
-              </div>
-              
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Address
-                </label>
-                <textarea
-                  value={newStudioForm.address}
-                  onChange={(e) => setNewStudioForm({...newStudioForm, address: e.target.value})}
-                  rows={3}
-                  className="block w-full border border-gray-200 rounded-md py-2 px-3 text-sm placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-primary/20"
-                  placeholder="Enter studio address"
-                />
-              </div>
-              
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Number of Services
-                </label>
-                <input
-                  type="number"
-                  value={newStudioForm.services}
-                  onChange={(e) => setNewStudioForm({...newStudioForm, services: parseInt(e.target.value) || 0})}
-                  className="block w-full border border-gray-200 rounded-md py-2 px-3 text-sm placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-primary/20"
-                  placeholder="Enter number of services"
-                  min="0"
-                />
-              </div>
-            </div>
-            
-            <div className="flex justify-end space-x-3 mt-6">
-              <button
-                onClick={() => setIsAddStudioModalOpen(false)}
-                className="px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 rounded-md transition-colors"
-              >
-                Cancel
-              </button>
-              <button
-                onClick={addNewStudio}
-                className="px-4 py-2 text-sm bg-admin-primary text-white rounded-md hover:bg-opacity-90 transition-colors"
-              >
-                Add Studio
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
       
       {/* View Studio Modal */}
       {isViewStudioModalOpen && selectedStudio && (
