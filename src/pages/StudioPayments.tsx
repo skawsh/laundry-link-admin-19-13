@@ -56,41 +56,147 @@ interface PaymentRecord {
   deliveredDate?: string;
 }
 
-// Sample data with combined wash type renamed to "both" and realistic names/dates
+// Helper function to generate dates in 2025 with delivered date at most 1 week after order date
+const createOrderDate = (month: number, day: number): string => {
+  return `2025-${month.toString().padStart(2, '0')}-${day.toString().padStart(2, '0')}`;
+};
+
+const createDeliveredDate = (orderDate: string): string | undefined => {
+  const date = new Date(orderDate);
+  // Add random days (1-7) to the order date
+  const daysToAdd = Math.floor(Math.random() * 7) + 1;
+  date.setDate(date.getDate() + daysToAdd);
+  
+  // Only include delivered date if it's more than 1 day after order date
+  // This ensures some orders don't have delivered dates yet
+  return daysToAdd > 1 ? date.toISOString().split('T')[0] : undefined;
+};
+
+// Sample data with 2025 dates and realistic names/dates
 const initialUnpaidOrders: UnpaidOrder[] = [
-  { id: 'ORD-1001', studioId: 1, studioName: 'Saiteja Laundry', date: '2023-06-10', amount: 450, isPaid: false, washType: 'standard', customerName: 'John Doe' },
-  { id: 'ORD-1002', studioId: 1, studioName: 'Saiteja Laundry', date: '2023-06-12', amount: 320, isPaid: false, washType: 'express', customerName: 'Jane Smith' },
-  { id: 'ORD-1003', studioId: 2, studioName: 'Sparkle Clean Laundry', date: '2023-06-15', amount: 550, isPaid: false, washType: 'standard', customerName: 'Robert Johnson' },
-  { id: 'ORD-1004', studioId: 3, studioName: 'Fresh Fold Services', date: '2023-06-16', amount: 400, isPaid: false, washType: 'express', customerName: 'Emily Wilson' },
-  { id: 'ORD-1005', studioId: 2, studioName: 'Sparkle Clean Laundry', date: '2023-06-18', amount: 280, isPaid: false, washType: 'standard', customerName: 'Michael Brown' },
-  { id: 'ORD-1006', studioId: 1, studioName: 'Saiteja Laundry', date: '2023-06-20', amount: 380, isPaid: false, washType: 'standard', customerName: 'Sarah Davis' },
-  { id: 'ORD-1007', studioId: 1, studioName: 'Saiteja Laundry', date: '2023-06-22', amount: 290, isPaid: false, washType: 'express', customerName: 'Thomas Miller' },
-  { id: 'ORD-1008', studioId: 3, studioName: 'Fresh Fold Services', date: '2023-06-25', amount: 650, isPaid: false, washType: 'combined', customerName: 'Laura Wilson', deliveredDate: '2023-06-28' },
-  { id: 'ORD-1009', studioId: 2, studioName: 'Sparkle Clean Laundry', date: '2023-06-26', amount: 520, isPaid: false, washType: 'combined', customerName: 'Alex Johnson', deliveredDate: '2023-06-29' },
-  { id: 'ORD-1010', studioId: 1, studioName: 'Saiteja Laundry', date: '2023-06-28', amount: 470, isPaid: false, washType: 'combined', customerName: 'Maya Patel', deliveredDate: '2023-07-01' },
-  { id: 'ORD-2001', studioId: 1, studioName: 'Saiteja Laundry', date: '2023-07-05', amount: 540, isPaid: false, washType: 'express', customerName: 'Rachel Green' },
-  { id: 'ORD-2002', studioId: 1, studioName: 'Saiteja Laundry', date: '2023-07-08', amount: 320, isPaid: false, washType: 'standard', customerName: 'Joey Tribbiani' },
-  { id: 'ORD-2003', studioId: 1, studioName: 'Saiteja Laundry', date: '2023-07-10', amount: 410, isPaid: false, washType: 'combined', customerName: 'Chandler Bing', deliveredDate: '2023-07-13' },
-  { id: 'ORD-2004', studioId: 1, studioName: 'Saiteja Laundry', date: '2023-07-15', amount: 380, isPaid: false, washType: 'express', customerName: 'Monica Geller', deliveredDate: '2023-07-17' },
-  { id: 'ORD-2005', studioId: 1, studioName: 'Saiteja Laundry', date: '2023-07-18', amount: 430, isPaid: false, washType: 'standard', customerName: 'Ross Geller' },
-  { id: 'ORD-2006', studioId: 1, studioName: 'Saiteja Laundry', date: '2023-07-22', amount: 390, isPaid: false, washType: 'combined', customerName: 'Phoebe Buffay' },
-  { id: 'ORD-2007', studioId: 1, studioName: 'Saiteja Laundry', date: '2023-08-05', amount: 520, isPaid: false, washType: 'express', customerName: 'Richard Burke', deliveredDate: '2023-08-08' },
-  { id: 'ORD-2008', studioId: 1, studioName: 'Saiteja Laundry', date: '2023-08-10', amount: 480, isPaid: false, washType: 'standard', customerName: 'Janice Hosenstein', deliveredDate: '2023-08-13' },
+  (() => {
+    const date = createOrderDate(1, 10);
+    return { id: 'ORD-1001', studioId: 1, studioName: 'Saiteja Laundry', date, amount: 450, isPaid: false, washType: 'standard', customerName: 'John Doe', deliveredDate: createDeliveredDate(date) };
+  })(),
+  (() => {
+    const date = createOrderDate(1, 12);
+    return { id: 'ORD-1002', studioId: 1, studioName: 'Saiteja Laundry', date, amount: 320, isPaid: false, washType: 'express', customerName: 'Jane Smith', deliveredDate: createDeliveredDate(date) };
+  })(),
+  (() => {
+    const date = createOrderDate(1, 15);
+    return { id: 'ORD-1003', studioId: 2, studioName: 'Sparkle Clean Laundry', date, amount: 550, isPaid: false, washType: 'standard', customerName: 'Robert Johnson', deliveredDate: createDeliveredDate(date) };
+  })(),
+  (() => {
+    const date = createOrderDate(1, 16);
+    return { id: 'ORD-1004', studioId: 3, studioName: 'Fresh Fold Services', date, amount: 400, isPaid: false, washType: 'express', customerName: 'Emily Wilson', deliveredDate: createDeliveredDate(date) };
+  })(),
+  (() => {
+    const date = createOrderDate(1, 18);
+    return { id: 'ORD-1005', studioId: 2, studioName: 'Sparkle Clean Laundry', date, amount: 280, isPaid: false, washType: 'standard', customerName: 'Michael Brown', deliveredDate: createDeliveredDate(date) };
+  })(),
+  (() => {
+    const date = createOrderDate(1, 20);
+    return { id: 'ORD-1006', studioId: 1, studioName: 'Saiteja Laundry', date, amount: 380, isPaid: false, washType: 'standard', customerName: 'Sarah Davis', deliveredDate: createDeliveredDate(date) };
+  })(),
+  (() => {
+    const date = createOrderDate(1, 22);
+    return { id: 'ORD-1007', studioId: 1, studioName: 'Saiteja Laundry', date, amount: 290, isPaid: false, washType: 'express', customerName: 'Thomas Miller', deliveredDate: createDeliveredDate(date) };
+  })(),
+  (() => {
+    const date = createOrderDate(1, 25);
+    return { id: 'ORD-1008', studioId: 3, studioName: 'Fresh Fold Services', date, amount: 650, isPaid: false, washType: 'combined', customerName: 'Laura Wilson', deliveredDate: createDeliveredDate(date) };
+  })(),
+  (() => {
+    const date = createOrderDate(1, 26);
+    return { id: 'ORD-1009', studioId: 2, studioName: 'Sparkle Clean Laundry', date, amount: 520, isPaid: false, washType: 'combined', customerName: 'Alex Johnson', deliveredDate: createDeliveredDate(date) };
+  })(),
+  (() => {
+    const date = createOrderDate(1, 28);
+    return { id: 'ORD-1010', studioId: 1, studioName: 'Saiteja Laundry', date, amount: 470, isPaid: false, washType: 'combined', customerName: 'Maya Patel', deliveredDate: createDeliveredDate(date) };
+  })(),
+  (() => {
+    const date = createOrderDate(2, 5);
+    return { id: 'ORD-2001', studioId: 1, studioName: 'Saiteja Laundry', date, amount: 540, isPaid: false, washType: 'express', customerName: 'Rachel Green', deliveredDate: createDeliveredDate(date) };
+  })(),
+  (() => {
+    const date = createOrderDate(2, 8);
+    return { id: 'ORD-2002', studioId: 1, studioName: 'Saiteja Laundry', date, amount: 320, isPaid: false, washType: 'standard', customerName: 'Joey Tribbiani', deliveredDate: createDeliveredDate(date) };
+  })(),
+  (() => {
+    const date = createOrderDate(2, 10);
+    return { id: 'ORD-2003', studioId: 1, studioName: 'Saiteja Laundry', date, amount: 410, isPaid: false, washType: 'combined', customerName: 'Chandler Bing', deliveredDate: createDeliveredDate(date) };
+  })(),
+  (() => {
+    const date = createOrderDate(2, 15);
+    return { id: 'ORD-2004', studioId: 1, studioName: 'Saiteja Laundry', date, amount: 380, isPaid: false, washType: 'express', customerName: 'Monica Geller', deliveredDate: createDeliveredDate(date) };
+  })(),
+  (() => {
+    const date = createOrderDate(2, 18);
+    return { id: 'ORD-2005', studioId: 1, studioName: 'Saiteja Laundry', date, amount: 430, isPaid: false, washType: 'standard', customerName: 'Ross Geller', deliveredDate: createDeliveredDate(date) };
+  })(),
+  (() => {
+    const date = createOrderDate(2, 22);
+    return { id: 'ORD-2006', studioId: 1, studioName: 'Saiteja Laundry', date, amount: 390, isPaid: false, washType: 'combined', customerName: 'Phoebe Buffay', deliveredDate: createDeliveredDate(date) };
+  })(),
+  (() => {
+    const date = createOrderDate(3, 5);
+    return { id: 'ORD-2007', studioId: 1, studioName: 'Saiteja Laundry', date, amount: 520, isPaid: false, washType: 'express', customerName: 'Richard Burke', deliveredDate: createDeliveredDate(date) };
+  })(),
+  (() => {
+    const date = createOrderDate(3, 10);
+    return { id: 'ORD-2008', studioId: 1, studioName: 'Saiteja Laundry', date, amount: 480, isPaid: false, washType: 'standard', customerName: 'Janice Hosenstein', deliveredDate: createDeliveredDate(date) };
+  })(),
 ];
 
 const initialPaymentHistory: PaymentRecord[] = [
-  { id: 'PMT-2001', studioId: 1, studioName: 'Saiteja Laundry', orderId: 'ORD-1000', amount: 520, paymentDate: '2023-06-05', referenceNumber: 'UTR12345678', washType: 'standard', deliveredDate: '2023-06-07' },
-  { id: 'PMT-2002', studioId: 2, studioName: 'Sparkle Clean Laundry', orderId: 'ORD-995', amount: 420, paymentDate: '2023-06-04', referenceNumber: 'UTR87654321', washType: 'express', deliveredDate: '2023-06-06' },
-  { id: 'PMT-2003', studioId: 1, studioName: 'Saiteja Laundry', orderId: 'ORD-990', amount: 350, paymentDate: '2023-06-02', referenceNumber: 'UTR23456789', washType: 'standard', deliveredDate: '2023-06-05' },
-  { id: 'PMT-2004', studioId: 3, studioName: 'Fresh Fold Services', orderId: 'ORD-985', amount: 600, paymentDate: '2023-05-30', referenceNumber: 'UTR98765432', washType: 'express', deliveredDate: '2023-06-01' },
-  { id: 'PMT-2005', studioId: 4, studioName: 'Royal Wash', orderId: 'ORD-980', amount: 480, paymentDate: '2023-05-28', referenceNumber: 'UTR34567890', washType: 'standard', deliveredDate: '2023-05-31' },
-  { id: 'PMT-2006', studioId: 1, studioName: 'Saiteja Laundry', orderId: 'ORD-975', amount: 410, paymentDate: '2023-05-25', referenceNumber: 'UTR45678901', washType: 'express', deliveredDate: '2023-05-27' },
-  { id: 'PMT-2007', studioId: 3, studioName: 'Fresh Fold Services', orderId: 'ORD-970', amount: 580, paymentDate: '2023-05-22', referenceNumber: 'UTR56789012', washType: 'combined', deliveredDate: '2023-05-25' },
-  { id: 'PMT-2008', studioId: 2, studioName: 'Sparkle Clean Laundry', orderId: 'ORD-965', amount: 490, paymentDate: '2023-05-20', referenceNumber: 'UTR67890123', washType: 'combined', deliveredDate: '2023-05-23' },
-  { id: 'PMT-3001', studioId: 1, studioName: 'Saiteja Laundry', orderId: 'ORD-3001', amount: 550, paymentDate: '2023-09-05', referenceNumber: 'UTR11223344', washType: 'express', deliveredDate: '2023-09-07' },
-  { id: 'PMT-3002', studioId: 1, studioName: 'Saiteja Laundry', orderId: 'ORD-3002', amount: 470, paymentDate: '2023-09-10', referenceNumber: 'UTR22334455', washType: 'standard', deliveredDate: '2023-09-13' },
-  { id: 'PMT-3003', studioId: 1, studioName: 'Saiteja Laundry', orderId: 'ORD-3003', amount: 510, paymentDate: '2023-09-15', referenceNumber: 'UTR33445566', washType: 'combined', deliveredDate: '2023-09-18' },
-  { id: 'PMT-3004', studioId: 1, studioName: 'Saiteja Laundry', orderId: 'ORD-3004', amount: 490, paymentDate: '2023-09-20', referenceNumber: 'UTR44556677', washType: 'express', deliveredDate: '2023-09-23' },
+  (() => {
+    const date = createOrderDate(1, 5);
+    return { id: 'PMT-2001', studioId: 1, studioName: 'Saiteja Laundry', orderId: 'ORD-1000', amount: 520, paymentDate: date, referenceNumber: 'UTR12345678', washType: 'standard', deliveredDate: createDeliveredDate(date) };
+  })(),
+  (() => {
+    const date = createOrderDate(1, 4);
+    return { id: 'PMT-2002', studioId: 2, studioName: 'Sparkle Clean Laundry', orderId: 'ORD-995', amount: 420, paymentDate: date, referenceNumber: 'UTR87654321', washType: 'express', deliveredDate: createDeliveredDate(date) };
+  })(),
+  (() => {
+    const date = createOrderDate(1, 2);
+    return { id: 'PMT-2003', studioId: 1, studioName: 'Saiteja Laundry', orderId: 'ORD-990', amount: 350, paymentDate: date, referenceNumber: 'UTR23456789', washType: 'standard', deliveredDate: createDeliveredDate(date) };
+  })(),
+  (() => {
+    const date = createOrderDate(1, 3);
+    return { id: 'PMT-2004', studioId: 3, studioName: 'Fresh Fold Services', orderId: 'ORD-985', amount: 600, paymentDate: date, referenceNumber: 'UTR98765432', washType: 'express', deliveredDate: createDeliveredDate(date) };
+  })(),
+  (() => {
+    const date = createOrderDate(1, 28);
+    return { id: 'PMT-2005', studioId: 4, studioName: 'Royal Wash', orderId: 'ORD-980', amount: 480, paymentDate: date, referenceNumber: 'UTR34567890', washType: 'standard', deliveredDate: createDeliveredDate(date) };
+  })(),
+  (() => {
+    const date = createOrderDate(1, 25);
+    return { id: 'PMT-2006', studioId: 1, studioName: 'Saiteja Laundry', orderId: 'ORD-975', amount: 410, paymentDate: date, referenceNumber: 'UTR45678901', washType: 'express', deliveredDate: createDeliveredDate(date) };
+  })(),
+  (() => {
+    const date = createOrderDate(1, 22);
+    return { id: 'PMT-2007', studioId: 3, studioName: 'Fresh Fold Services', orderId: 'ORD-970', amount: 580, paymentDate: date, referenceNumber: 'UTR56789012', washType: 'combined', deliveredDate: createDeliveredDate(date) };
+  })(),
+  (() => {
+    const date = createOrderDate(1, 20);
+    return { id: 'PMT-2008', studioId: 2, studioName: 'Sparkle Clean Laundry', orderId: 'ORD-965', amount: 490, paymentDate: date, referenceNumber: 'UTR67890123', washType: 'combined', deliveredDate: createDeliveredDate(date) };
+  })(),
+  (() => {
+    const date = createOrderDate(2, 5);
+    return { id: 'PMT-3001', studioId: 1, studioName: 'Saiteja Laundry', orderId: 'ORD-3001', amount: 550, paymentDate: date, referenceNumber: 'UTR11223344', washType: 'express', deliveredDate: createDeliveredDate(date) };
+  })(),
+  (() => {
+    const date = createOrderDate(2, 10);
+    return { id: 'PMT-3002', studioId: 1, studioName: 'Saiteja Laundry', orderId: 'ORD-3002', amount: 470, paymentDate: date, referenceNumber: 'UTR22334455', washType: 'standard', deliveredDate: createDeliveredDate(date) };
+  })(),
+  (() => {
+    const date = createOrderDate(2, 15);
+    return { id: 'PMT-3003', studioId: 1, studioName: 'Saiteja Laundry', orderId: 'ORD-3003', amount: 510, paymentDate: date, referenceNumber: 'UTR33445566', washType: 'combined', deliveredDate: createDeliveredDate(date) };
+  })(),
+  (() => {
+    const date = createOrderDate(2, 20);
+    return { id: 'PMT-3004', studioId: 1, studioName: 'Saiteja Laundry', orderId: 'ORD-3004', amount: 490, paymentDate: date, referenceNumber: 'UTR44556677', washType: 'express', deliveredDate: createDeliveredDate(date) };
+  })(),
 ];
 
 // Date filtering options type
