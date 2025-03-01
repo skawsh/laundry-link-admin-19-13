@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect, useMemo } from 'react';
 import AdminLayout from '@/components/layout/AdminLayout';
 import { 
@@ -497,6 +496,15 @@ const Drivers = () => {
     setSearchQuery(query);
   };
 
+  // Calculate active and inactive driver counts
+  const activeDriversCount = useMemo(() => {
+    return mockDrivers.filter(driver => driver.status === 'active').length;
+  }, [mockDrivers]);
+
+  const inactiveDriversCount = useMemo(() => {
+    return mockDrivers.filter(driver => driver.status === 'inactive').length;
+  }, [mockDrivers]);
+
   return (
     <AdminLayout>
       <div className="p-6">
@@ -665,16 +673,16 @@ const Drivers = () => {
             change={{ value: "+3", trend: "up" }}
           />
           <StatsCard 
-            title="Active Orders"
-            value="19"
-            icon={<Package className="h-5 w-5" />}
+            title="Active Drivers"
+            value={activeDriversCount.toString()}
+            icon={<User className="h-5 w-5" />}
             change={{ value: "+5", trend: "up" }}
           />
           <StatsCard 
-            title="Average Delivery Time"
-            value="42 min"
+            title="Inactive Drivers Count"
+            value={inactiveDriversCount.toString()}
             icon={<Clock className="h-5 w-5" />}
-            change={{ value: "-3 min", trend: "up" }}
+            change={{ value: "-3", trend: "up" }}
           />
         </div>
 
