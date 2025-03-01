@@ -3,38 +3,38 @@ import React from 'react';
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
 interface WashTypeTabsProps {
-  activeTab: 'all' | 'express' | 'standard' | 'combined';
-  setActiveTab: (value: 'all' | 'express' | 'standard' | 'combined') => void;
+  mainWashTypeTab: 'all' | 'express' | 'standard' | 'combined';
+  setMainWashTypeTab: (value: 'all' | 'express' | 'standard' | 'combined') => void;
 }
 
-const WashTypeTabs: React.FC<WashTypeTabsProps> = ({ activeTab, setActiveTab }) => {
+const WashTypeTabs: React.FC<WashTypeTabsProps> = ({ mainWashTypeTab, setMainWashTypeTab }) => {
   return (
     <TabsList className="bg-background border border-input">
       <TabsTrigger 
         value="all" 
-        className={activeTab === 'all' ? 'data-[state=active]:bg-primary data-[state=active]:text-primary-foreground' : ''} 
-        onClick={() => setActiveTab('all')}
+        className={mainWashTypeTab === 'all' ? 'data-[state=active]:bg-primary data-[state=active]:text-primary-foreground' : ''} 
+        onClick={() => setMainWashTypeTab('all')}
       >
         All Wash Types
       </TabsTrigger>
       <TabsTrigger 
         value="express" 
-        className={activeTab === 'express' ? 'data-[state=active]:bg-primary data-[state=active]:text-primary-foreground' : ''} 
-        onClick={() => setActiveTab('express')}
+        className={mainWashTypeTab === 'express' ? 'data-[state=active]:bg-primary data-[state=active]:text-primary-foreground' : ''} 
+        onClick={() => setMainWashTypeTab('express')}
       >
         Express Wash
       </TabsTrigger>
       <TabsTrigger 
         value="standard" 
-        className={activeTab === 'standard' ? 'data-[state=active]:bg-primary data-[state=active]:text-primary-foreground' : ''} 
-        onClick={() => setActiveTab('standard')}
+        className={mainWashTypeTab === 'standard' ? 'data-[state=active]:bg-primary data-[state=active]:text-primary-foreground' : ''} 
+        onClick={() => setMainWashTypeTab('standard')}
       >
         Standard Wash
       </TabsTrigger>
       <TabsTrigger 
         value="combined" 
-        className={activeTab === 'combined' ? 'data-[state=active]:bg-primary data-[state=active]:text-primary-foreground' : ''} 
-        onClick={() => setActiveTab('combined')}
+        className={mainWashTypeTab === 'combined' ? 'data-[state=active]:bg-primary data-[state=active]:text-primary-foreground' : ''} 
+        onClick={() => setMainWashTypeTab('combined')}
       >
         Both
       </TabsTrigger>
