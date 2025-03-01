@@ -1,4 +1,3 @@
-
 import React, { useEffect, useState } from 'react';
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { UnpaidOrder, PaymentRecord } from '@/types/paymentTypes';
@@ -62,13 +61,13 @@ const PaymentTabs: React.FC<PaymentTabsProps> = ({
 
   // Handle selection of individual items
   const handleSelect = (id: string) => {
-    setSelectedItems(prev => {
-      if (prev.includes(id)) {
-        return prev.filter(item => item !== id);
-      } else {
-        return [...prev, id];
-      }
-    });
+    // Create a new array based on previous selection state
+    const newSelectedItems = selectedItems.includes(id)
+      ? selectedItems.filter(item => item !== id)
+      : [...selectedItems, id];
+    
+    // Update the state with the new array
+    setSelectedItems(newSelectedItems);
   };
 
   // Handle select all
