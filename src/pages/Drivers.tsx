@@ -30,6 +30,8 @@ import {
   PopoverTrigger,
 } from "@/components/ui/popover";
 import { Checkbox } from "@/components/ui/checkbox";
+import ToggleSwitch from '@/components/ui/ToggleSwitch';
+import { toast } from 'sonner';
 
 const Drivers = () => {
   const [orderDetailsOpen, setOrderDetailsOpen] = useState(false);
@@ -66,7 +68,8 @@ const Drivers = () => {
     licenseNumber?: string;
   }>(null);
 
-  const mockDrivers = [
+  // Add a state for drivers that can be modified
+  const [mockDrivers, setMockDrivers] = useState([
     {
       id: 1,
       name: 'Ravi Kumar',
@@ -447,7 +450,25 @@ const Drivers = () => {
       vehicleInfo: 'Mahindra Thar (2020), Silver, License: TS28MN7890',
       licenseNumber: 'DLAP20209876543'
     }
-  ];
+  ]);
+
+  const toggleDriverStatus = (driverId: number) => {
+    setMockDrivers(prevDrivers => 
+      prevDrivers.map(driver => 
+        driver.id === driverId 
+          ? { ...driver, status: driver.status === 'active' ? 'inactive' : 'active' } 
+          : driver
+      )
+    );
+    
+    // Show toast notification for status change
+    const driver = mockDrivers.find(d => d.id === driverId);
+    const newStatus = driver?.status === 'active' ? 'inactive' : 'active';
+    toast.success(`${driver?.name}'s status updated to ${newStatus}`, {
+      duration: 3000,
+      position: 'top-right',
+    });
+  };
 
   const filteredDrivers = useMemo(() => {
     return mockDrivers.filter(driver => {
@@ -731,9 +752,11 @@ const Drivers = () => {
                       </div>
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap">
-                      <Badge variant={driver.status === 'active' ? 'default' : 'secondary'}>
-                        {driver.status === 'active' ? 'Active' : 'Inactive'}
-                      </Badge>
+                      <ToggleSwitch 
+                        isEnabled={driver.status === 'active'}
+                        onChange={() => toggleDriverStatus(driver.id)}
+                        label="Active"
+                      />
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
                       {driver.phone}

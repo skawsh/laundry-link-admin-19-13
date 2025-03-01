@@ -25,7 +25,7 @@ const ToggleSwitch: React.FC<ToggleSwitchProps> = ({
         disabled={disabled}
         className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors focus:outline-none focus:ring-2 focus:ring-primary/20 ${
           disabled ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer'
-        } ${isEnabled ? 'bg-admin-primary' : 'bg-gray-200'}`}
+        } ${isEnabled ? 'bg-emerald-500' : 'bg-gray-200'}`}
         aria-pressed={isEnabled}
       >
         <span
