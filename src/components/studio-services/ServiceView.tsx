@@ -26,12 +26,14 @@ const ServiceView: React.FC<ServiceViewProps> = ({
         onClick={() => onToggleService(service.id)}
       >
         <div className="flex items-center">
-          {service.isExpanded ? (
-            <ChevronDown className="h-5 w-5 text-gray-500 mr-2" />
-          ) : (
-            <ChevronRight className="h-5 w-5 text-gray-500 mr-2" />
-          )}
-          <h3 className="font-medium text-gray-800">{service.name}</h3>
+          <div className="cursor-pointer p-1 hover:bg-gray-200 rounded-full transition-colors">
+            {service.isExpanded ? (
+              <ChevronDown className="h-5 w-5 text-gray-500" />
+            ) : (
+              <ChevronRight className="h-5 w-5 text-gray-500" />
+            )}
+          </div>
+          <h3 className="font-medium text-gray-800 ml-1">{service.name}</h3>
           <Badge variant="outline" className="ml-3 bg-gray-100">
             {subservicesCount} subservices
           </Badge>

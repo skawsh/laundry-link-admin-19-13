@@ -26,12 +26,14 @@ const SubserviceView: React.FC<SubserviceViewProps> = ({
         onClick={() => onToggleSubservice(serviceId, subservice.id)}
       >
         <div className="flex items-center">
-          {subservice.isExpanded ? (
-            <ChevronDown className="h-4 w-4 text-gray-500 mr-2" />
-          ) : (
-            <ChevronRight className="h-4 w-4 text-gray-500 mr-2" />
-          )}
-          <h4 className="font-medium text-gray-700">{subservice.name}</h4>
+          <div className="cursor-pointer p-1 hover:bg-gray-100 rounded-full transition-colors">
+            {subservice.isExpanded ? (
+              <ChevronDown className="h-4 w-4 text-gray-500" />
+            ) : (
+              <ChevronRight className="h-4 w-4 text-gray-500" />
+            )}
+          </div>
+          <h4 className="font-medium text-gray-700 ml-1">{subservice.name}</h4>
           {subservice.pricePerUnit && (
             <span className="ml-2 text-sm text-gray-500">
               (₹{subservice.pricePerUnit} {subservice.unit})
