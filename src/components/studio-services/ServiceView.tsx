@@ -1,11 +1,10 @@
 
 import React from 'react';
-import { ChevronDown, ChevronRight, Eye } from 'lucide-react';
+import { ChevronDown, ChevronRight } from 'lucide-react';
 import { Badge } from "@/components/ui/badge";
 import { Service } from './types';
 import SubserviceView from './SubserviceView';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
-import { Button } from "@/components/ui/button";
 
 interface ServiceViewProps {
   service: Service;
@@ -54,19 +53,6 @@ const ServiceView: React.FC<ServiceViewProps> = ({
               <Badge variant="outline" className={`ml-1 ${service.isExpanded ? 'bg-blue-50 text-blue-600' : 'bg-gray-100'}`}>
                 {subservicesCount} {subservicesCount === 1 ? 'subservice' : 'subservices'}
               </Badge>
-              
-              <Button 
-                variant="ghost" 
-                size="sm" 
-                className="ml-2 flex gap-1" 
-                onClick={(e) => {
-                  e.stopPropagation();
-                  onToggleService(service.id);
-                }}
-              >
-                <Eye className="h-3.5 w-3.5" />
-                <span className="text-xs">{service.isExpanded ? 'Hide' : 'View'} Subservices</span>
-              </Button>
             </div>
           </div>
         </CollapsibleTrigger>

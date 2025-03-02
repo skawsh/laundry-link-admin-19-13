@@ -6,7 +6,6 @@ import { Service } from './types';
 import ServiceView from './ServiceView';
 import ServiceEdit from './ServiceEdit';
 import SearchBox from './SearchBox';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 
 interface ServiceListProps {
   mode: 'list' | 'edit';
@@ -95,21 +94,32 @@ const ServiceList: React.FC<ServiceListProps> = ({
 
       <div className="mb-6">
         <div className="flex flex-col sm:flex-row items-center space-y-2 sm:space-y-0 sm:space-x-4 bg-gray-50 p-3 rounded-md">
-          <span className="text-sm font-medium text-gray-700">Filter by:</span>
-          <div className="flex space-x-2 w-full sm:w-auto">
-            <Select 
-              value={activeFilter} 
-              onValueChange={(value) => handleFilterChange(value as 'services' | 'subservices' | 'items')}
+          <span className="text-sm font-medium text-gray-700 mr-2">Filter by:</span>
+          <div className="flex space-x-2">
+            <Button 
+              variant={activeFilter === 'services' ? 'secondary' : 'outline'} 
+              size="sm"
+              onClick={() => handleFilterChange('services')}
+              className="min-w-24"
             >
-              <SelectTrigger className="w-full sm:w-[180px]">
-                <SelectValue placeholder="Select filter" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="services">Services</SelectItem>
-                <SelectItem value="subservices">Subservices</SelectItem>
-                <SelectItem value="items">Items</SelectItem>
-              </SelectContent>
-            </Select>
+              Services
+            </Button>
+            <Button 
+              variant={activeFilter === 'subservices' ? 'secondary' : 'outline'} 
+              size="sm"
+              onClick={() => handleFilterChange('subservices')}
+              className="min-w-24"
+            >
+              Subservices
+            </Button>
+            <Button 
+              variant={activeFilter === 'items' ? 'secondary' : 'outline'} 
+              size="sm"
+              onClick={() => handleFilterChange('items')}
+              className="min-w-24"
+            >
+              Items
+            </Button>
           </div>
         </div>
       </div>
