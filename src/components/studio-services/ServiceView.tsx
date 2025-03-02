@@ -10,14 +10,14 @@ interface ServiceViewProps {
   service: Service;
   onToggleService: (serviceId: string) => void;
   onToggleSubservice: (serviceId: string, subserviceId: string) => void;
-  serviceIndex?: number; // Add the index prop
+  serviceIndex?: number;
 }
 
 const ServiceView: React.FC<ServiceViewProps> = ({ 
   service, 
   onToggleService,
   onToggleSubservice,
-  serviceIndex = 1 // Default to 1 if not provided
+  serviceIndex = 1
 }) => {
   // Calculate the actual number of subservices
   const subservicesCount = service.subservices ? service.subservices.length : 0;
