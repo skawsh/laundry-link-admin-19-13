@@ -1,17 +1,9 @@
+// Add this import with the other imports at the top of the file
+import LaundryServicesPage from './pages/LaundryServices';
+import { Route } from 'react-router-dom';
 
-import { RouteObject } from 'react-router-dom';
-import NotFound from './pages/NotFound';
-import DriverProfile from './pages/DriverProfile';
-
-const routes: RouteObject[] = [
-  {
-    path: '/driver-profile/:id',
-    element: <DriverProfile />
-  },
-  {
-    path: '*',
-    element: <NotFound />
-  }
-];
-
-export default routes;
+// Add our new route to the existing routes array:
+{
+  path: "/laundry-services",
+  element: <LaundryServicesPage />,
+},
