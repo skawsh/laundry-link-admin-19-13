@@ -19,8 +19,7 @@ const SubserviceView: React.FC<SubserviceViewProps> = ({
   // Calculate the actual number of items
   const itemsCount = subservice.items ? subservice.items.length : 0;
   
-  const handleToggleClick = (e: React.MouseEvent) => {
-    e.stopPropagation(); // Prevent event from bubbling up
+  const handleToggleClick = () => {
     onToggleSubservice(serviceId, subservice.id);
   };
   
@@ -34,11 +33,7 @@ const SubserviceView: React.FC<SubserviceViewProps> = ({
         tabIndex={0}
       >
         <div className="flex items-center gap-1.5">
-          <div 
-            className="cursor-pointer p-1.5 hover:bg-gray-100 rounded-full transition-colors"
-            onClick={handleToggleClick}
-            aria-label={subservice.isExpanded ? "Collapse subservice" : "Expand subservice"}
-          >
+          <div className="p-1.5 hover:bg-gray-100 rounded-full transition-colors">
             {subservice.isExpanded ? (
               <ChevronDown className="h-4 w-4 text-blue-500" />
             ) : (
