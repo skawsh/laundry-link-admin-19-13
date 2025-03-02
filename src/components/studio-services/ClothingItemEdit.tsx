@@ -15,6 +15,9 @@ interface ClothingItemEditProps {
   onUpdateExpressPrice: (serviceId: string, subserviceId: string, itemId: string, newPrice: string) => void;
   onSaveEdit: (serviceId: string, subserviceId: string, itemId: string) => void;
   onDeleteClick: (type: 'service' | 'subservice' | 'item', id: string, name: string, parentId?: string, subParentId?: string) => void;
+  serviceIndex?: number;
+  subserviceIndex?: number;
+  itemIndex?: number;
 }
 
 const ClothingItemEdit: React.FC<ClothingItemEditProps> = ({
@@ -26,7 +29,10 @@ const ClothingItemEdit: React.FC<ClothingItemEditProps> = ({
   onUpdatePrice,
   onUpdateExpressPrice,
   onSaveEdit,
-  onDeleteClick
+  onDeleteClick,
+  serviceIndex = 1,
+  subserviceIndex = 1,
+  itemIndex = 1
 }) => {
   if (item.isEditing) {
     return (
@@ -85,8 +91,12 @@ const ClothingItemEdit: React.FC<ClothingItemEditProps> = ({
     <div className="flex items-center justify-between py-1.5 px-2 rounded-md hover:bg-gray-100">
       <div className="flex items-center">
         <Shirt className="h-4 w-4 text-gray-400 mr-2" />
-        <span className="text-gray-700">{item.name}</span>
+        <span className="text-gray-700">
+          {item.name}
+          <span className="sr-only">{serviceIndex}.{subserviceIndex}.{itemIndex}</span>
+        </span>
       </div>
+      
       <div className="flex items-center gap-3">
         <div className="flex flex-col items-end">
           <div className="flex items-center">
