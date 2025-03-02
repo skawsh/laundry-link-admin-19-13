@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { Plus, PackageOpen } from 'lucide-react';
 import { Button } from "@/components/ui/button";
@@ -90,6 +89,37 @@ const ServiceList: React.FC<ServiceListProps> = ({
           <Plus className="h-4 w-4" />
           <span>Add New Service</span>
         </Button>
+      </div>
+
+      <div className="mb-6">
+        <div className="flex flex-col sm:flex-row items-center space-y-2 sm:space-y-0 sm:space-x-4 bg-gray-50 p-3 rounded-md">
+          <div className="flex space-x-2">
+            <Button 
+              variant={activeFilter === 'services' ? 'secondary' : 'outline'} 
+              size="sm"
+              onClick={() => handleFilterChange('services')}
+              className="min-w-24"
+            >
+              Services
+            </Button>
+            <Button 
+              variant={activeFilter === 'subservices' ? 'secondary' : 'outline'} 
+              size="sm"
+              onClick={() => handleFilterChange('subservices')}
+              className="min-w-24"
+            >
+              Subservices
+            </Button>
+            <Button 
+              variant={activeFilter === 'items' ? 'secondary' : 'outline'} 
+              size="sm"
+              onClick={() => handleFilterChange('items')}
+              className="min-w-24"
+            >
+              Items
+            </Button>
+          </div>
+        </div>
       </div>
 
       {filteredServices.length === 0 ? (
