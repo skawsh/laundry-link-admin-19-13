@@ -385,7 +385,7 @@ const StudioServices: React.FC = () => {
           return {
             ...service,
             subservices: [...service.subservices, newSubservice],
-            isExpanded: true // Auto-expand parent service
+            isExpanded: true
           };
         }
         return service;
@@ -405,7 +405,6 @@ const StudioServices: React.FC = () => {
     setIsSuccessDialogOpen(true);
   };
 
-  // Modified handleAddItem to support express pricing
   const handleAddItem = () => {
     if (newItemName.trim() === '' || !newItemPrice) {
       toast({
@@ -423,7 +422,7 @@ const StudioServices: React.FC = () => {
       id: `item-${Date.now()}`,
       name: newItemName.trim(),
       price: parseFloat(newItemPrice) || 0,
-      expressPrice: parseFloat(newItemPrice) * 1.5 || 0 // Default express price to 1.5x standard
+      expressPrice: parseFloat(newItemPrice) * 1.5 || 0
     };
 
     setServices(prev => 
@@ -431,12 +430,12 @@ const StudioServices: React.FC = () => {
         if (service.id === currentParentId) {
           return {
             ...service,
-            isExpanded: true, // Auto-expand parent service
+            isExpanded: true,
             subservices: service.subservices.map(subservice => {
               if (subservice.id === selectedSubserviceId) {
                 return {
                   ...subservice,
-                  isExpanded: true, // Auto-expand parent subservice
+                  isExpanded: true,
                   items: [...subservice.items, newItem]
                 };
               }
@@ -497,7 +496,6 @@ const StudioServices: React.FC = () => {
     );
   };
 
-  // Modified function to handle updating item names
   const updateItemName = (serviceId: string, subserviceId: string, itemId: string, newName: string) => {
     setServices(prev => 
       prev.map(service => {
@@ -525,7 +523,6 @@ const StudioServices: React.FC = () => {
     );
   };
 
-  // Modified function to update standard price
   const updateItemPrice = (serviceId: string, subserviceId: string, itemId: string, newPriceStr: string) => {
     const newPrice = parseFloat(newPriceStr);
     if (isNaN(newPrice)) return;
@@ -556,7 +553,6 @@ const StudioServices: React.FC = () => {
     );
   };
 
-  // New function to update express price
   const updateItemExpressPrice = (serviceId: string, subserviceId: string, itemId: string, newPriceStr: string) => {
     const newPrice = parseFloat(newPriceStr);
     if (isNaN(newPrice)) return;
@@ -623,7 +619,6 @@ const StudioServices: React.FC = () => {
   const handleFilterChange = (filter: 'all' | 'services' | 'subservices' | 'items') => {
     setActiveFilter(filter);
     
-    // Expand services/subservices based on the selected filter
     setServices(prev => 
       prev.map(service => ({
         ...service,
@@ -644,7 +639,6 @@ const StudioServices: React.FC = () => {
   const handleEditServiceToggle = (newMode: 'list' | 'edit') => {
     setViewMode(newMode);
     
-    // Reset editing states when switching modes
     setServices(prev => 
       prev.map(service => ({
         ...service,
@@ -883,4 +877,430 @@ const StudioServices: React.FC = () => {
 
             <TabsContent value="edit" className="mt-0">
               <div className="mb-6 flex flex-col sm:flex-row justify-between items-center space-y-4 sm:space-y-0">
-                <div
+                <div className="relative w-full sm:w-96">
+                  <Search className="absolute left-3 top-2.5 h-4 w-4 text-gray-400" />
+                  <input
+                    type="text"
+                    placeholder="Search services, items or prices..."
+                    value={searchQuery}
+                    onChange={(e) => setSearchQuery(e.target.value)}
+                    className="pl-10 pr-4 py-2 w-full border rounded-md focus:outline-none focus:ring-2 focus:ring-admin-primary/20 focus:border-admin-primary/40"
+                  />
+                  {searchQuery && (
+                    <button
+                      onClick={() => setSearchQuery('')}
+                      className="absolute right-3 top-2.5 text-gray-400 hover:text-gray-600"
+                    >
+                      <X className="h-4 w-4" />
+                    </button>
+                  )}
+                </div>
+                <Button 
+                  variant="service" 
+                  className="w-full sm:w-auto"
+                  onClick={() => setIsAddServiceModalOpen(true)}
+                >
+                  <Plus className="h-4 w-4" />
+                  <span>Add New Service</span>
+                </Button>
+              </div>
+
+              {filteredServices.length === 0 ? (
+                <div className="text-center py-10 border border-dashed rounded-lg">
+                  <PackageOpen className="mx-auto h-12 w-12 text-gray-300" />
+                  <h3 className="mt-4 text-lg font-medium text-gray-600">No services found</h3>
+                  <p className="mt-1 text-sm text-gray-500">
+                    {searchQuery ? "Try a different search term or add a new service." : "Add your first service to get started."}
+                  </p>
+                  <Button
+                    variant="service"
+                    className="mt-4"
+                    onClick={() => {
+                      setIsAddServiceModalOpen(true);
+                      setSearchQuery('');
+                    }}
+                  >
+                    <Plus className="h-4 w-4" />
+                    <span>Add Service</span>
+                  </Button>
+                </div>
+              ) : (
+                <div className="space-y-4">
+                  {filteredServices.map(service => (
+                    <div 
+                      key={service.id} 
+                      className="border rounded-lg overflow-hidden transition-all duration-200 hover:shadow-md"
+                    >
+                      <div className="flex items-center justify-between px-4 py-3 bg-gray-50">
+                        <div 
+                          className="flex items-center cursor-pointer"
+                          onClick={() => toggleServiceExpansion(service.id)}
+                        >
+                          {service.isExpanded ? (
+                            <ChevronDown className="h-5 w-5 text-gray-500 mr-2" />
+                          ) : (
+                            <ChevronRight className="h-5 w-5 text-gray-500 mr-2" />
+                          )}
+                          <h3 className="font-medium text-gray-800">{service.name}</h3>
+                          <Badge variant="outline" className="ml-3 bg-gray-100">
+                            {service.subservices.length} subservices
+                          </Badge>
+                        </div>
+                        <div className="flex items-center gap-2">
+                          <Button
+                            variant="edit" 
+                            size="xs"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              // Service edit logic here
+                            }}
+                          >
+                            <Edit className="h-3.5 w-3.5 mr-1" />
+                            <span>Edit</span>
+                          </Button>
+                          <Button
+                            variant="delete"
+                            size="xs"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              handleDeleteClick('service', service.id, service.name);
+                            }}
+                          >
+                            <Trash2 className="h-3.5 w-3.5 mr-1" />
+                            <span>Delete</span>
+                          </Button>
+                          <Button
+                            variant="subservice"
+                            size="xs"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              setCurrentParentId(service.id);
+                              setIsAddSubserviceModalOpen(true);
+                            }}
+                          >
+                            <Plus className="h-3.5 w-3.5 mr-1" />
+                            <span>Add Subservice</span>
+                          </Button>
+                        </div>
+                      </div>
+                      
+                      {service.isExpanded && (
+                        <div className="px-4 py-2 bg-white">
+                          {service.subservices.length === 0 ? (
+                            <div className="text-center py-4 text-gray-500 text-sm italic">
+                              No subservices found
+                            </div>
+                          ) : (
+                            <div className="space-y-3 pl-6">
+                              {service.subservices.map(subservice => (
+                                <div key={subservice.id} className="border-l-2 border-gray-200 pl-4">
+                                  <div className="flex items-center justify-between py-2">
+                                    <div 
+                                      className="flex items-center cursor-pointer"
+                                      onClick={() => toggleSubserviceExpansion(service.id, subservice.id)}
+                                    >
+                                      {subservice.isExpanded ? (
+                                        <ChevronDown className="h-4 w-4 text-gray-500 mr-2" />
+                                      ) : (
+                                        <ChevronRight className="h-4 w-4 text-gray-500 mr-2" />
+                                      )}
+                                      <h4 className="font-medium text-gray-700">{subservice.name}</h4>
+                                      {subservice.pricePerUnit && (
+                                        <span className="ml-2 text-sm text-gray-500">
+                                          (₹{subservice.pricePerUnit} {subservice.unit})
+                                        </span>
+                                      )}
+                                      <Badge variant="outline" className="ml-3 bg-gray-50">
+                                        {subservice.items.length} items
+                                      </Badge>
+                                    </div>
+                                    <div className="flex items-center gap-2">
+                                      <Button
+                                        variant="edit" 
+                                        size="xs"
+                                        onClick={(e) => {
+                                          e.stopPropagation();
+                                          // Subservice edit logic here
+                                        }}
+                                      >
+                                        <Edit className="h-3.5 w-3.5 mr-1" />
+                                        <span>Edit</span>
+                                      </Button>
+                                      <Button
+                                        variant="delete"
+                                        size="xs"
+                                        onClick={(e) => {
+                                          e.stopPropagation();
+                                          handleDeleteClick('subservice', subservice.id, subservice.name, service.id);
+                                        }}
+                                      >
+                                        <Trash2 className="h-3.5 w-3.5 mr-1" />
+                                        <span>Delete</span>
+                                      </Button>
+                                      <Button
+                                        variant="item"
+                                        size="xs"
+                                        onClick={(e) => {
+                                          e.stopPropagation();
+                                          setCurrentParentId(service.id);
+                                          setSelectedSubserviceId(subservice.id);
+                                          setIsAddItemModalOpen(true);
+                                        }}
+                                      >
+                                        <Plus className="h-3.5 w-3.5 mr-1" />
+                                        <span>Add Item</span>
+                                      </Button>
+                                    </div>
+                                  </div>
+                                  
+                                  {subservice.isExpanded && (
+                                    <div className="ml-6 my-2 bg-gray-50 rounded-md p-3">
+                                      {subservice.items.length === 0 ? (
+                                        <div className="text-center py-2 text-gray-500 text-sm italic">
+                                          No items found
+                                        </div>
+                                      ) : (
+                                        <div className="space-y-2">
+                                          {subservice.items.map(item => (
+                                            <div 
+                                              key={item.id} 
+                                              className="flex items-center justify-between py-1.5 px-2 rounded-md hover:bg-gray-100"
+                                            >
+                                              {item.isEditing ? (
+                                                <div className="flex-1 flex flex-col sm:flex-row gap-2">
+                                                  <div className="flex-1">
+                                                    <Input
+                                                      value={item.name}
+                                                      onChange={(e) => updateItemName(service.id, subservice.id, item.id, e.target.value)}
+                                                      placeholder="Item name"
+                                                      className="w-full"
+                                                    />
+                                                  </div>
+                                                  <div className="flex gap-2">
+                                                    <Input
+                                                      value={item.price.toString()}
+                                                      onChange={(e) => updateItemPrice(service.id, subservice.id, item.id, e.target.value)}
+                                                      placeholder="Standard price"
+                                                      prefix="₹"
+                                                      className="w-24"
+                                                    />
+                                                    <Input
+                                                      value={item.expressPrice?.toString() || ''}
+                                                      onChange={(e) => updateItemExpressPrice(service.id, subservice.id, item.id, e.target.value)}
+                                                      placeholder="Express price"
+                                                      prefix="₹"
+                                                      className="w-24"
+                                                    />
+                                                    <Button
+                                                      variant="success"
+                                                      size="xs"
+                                                      onClick={() => saveItemEdit(service.id, subservice.id, item.id)}
+                                                    >
+                                                      <Check className="h-3.5 w-3.5" />
+                                                    </Button>
+                                                    <Button
+                                                      variant="delete"
+                                                      size="xs"
+                                                      onClick={() => toggleItemEditMode(service.id, subservice.id, item.id)}
+                                                    >
+                                                      <X className="h-3.5 w-3.5" />
+                                                    </Button>
+                                                  </div>
+                                                </div>
+                                              ) : (
+                                                <>
+                                                  <div className="flex items-center">
+                                                    <Shirt className="h-4 w-4 text-gray-400 mr-2" />
+                                                    <span className="text-gray-700">{item.name}</span>
+                                                  </div>
+                                                  <div className="flex items-center gap-3">
+                                                    <div className="flex flex-col items-end">
+                                                      <span className="font-medium text-gray-800">₹{item.price.toFixed(2)}</span>
+                                                      {item.expressPrice && (
+                                                        <div className="flex items-center text-amber-600 text-xs">
+                                                          <Zap className="h-3 w-3 mr-1" />
+                                                          <span>₹{item.expressPrice.toFixed(2)}</span>
+                                                        </div>
+                                                      )}
+                                                    </div>
+                                                    <div className="flex items-center">
+                                                      <Button
+                                                        variant="edit"
+                                                        size="icon"
+                                                        className="h-7 w-7"
+                                                        onClick={() => toggleItemEditMode(service.id, subservice.id, item.id)}
+                                                      >
+                                                        <Edit className="h-3.5 w-3.5" />
+                                                      </Button>
+                                                      <Button
+                                                        variant="delete"
+                                                        size="icon"
+                                                        className="h-7 w-7 ml-1"
+                                                        onClick={() => handleDeleteClick('item', item.id, item.name, service.id, subservice.id)}
+                                                      >
+                                                        <Trash2 className="h-3.5 w-3.5" />
+                                                      </Button>
+                                                    </div>
+                                                  </div>
+                                                </>
+                                              )}
+                                            </div>
+                                          ))}
+                                        </div>
+                                      )}
+                                    </div>
+                                  )}
+                                </div>
+                              ))}
+                            </div>
+                          )}
+                        </div>
+                      )}
+                    </div>
+                  ))}
+                </div>
+              )}
+            </TabsContent>
+          </Tabs>
+        </div>
+      </div>
+
+      <Dialog open={isAddServiceModalOpen} onOpenChange={setIsAddServiceModalOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Add New Service</DialogTitle>
+            <DialogDescription>
+              Create a new service category for your laundry.
+            </DialogDescription>
+          </DialogHeader>
+          <div className="space-y-4 py-2">
+            <div className="space-y-2">
+              <FormLabel htmlFor="service-name">Service Name</FormLabel>
+              <Input
+                id="service-name"
+                placeholder="e.g., Dry Cleaning"
+                value={newServiceName}
+                onChange={(e) => setNewServiceName(e.target.value)}
+              />
+            </div>
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setIsAddServiceModalOpen(false)}>Cancel</Button>
+            <Button variant="service" onClick={handleAddService}>Add Service</Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      <Dialog open={isAddSubserviceModalOpen} onOpenChange={setIsAddSubserviceModalOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Add New Subservice</DialogTitle>
+            <DialogDescription>
+              Add a new subservice to the selected service.
+            </DialogDescription>
+          </DialogHeader>
+          <div className="space-y-4 py-2">
+            <div className="space-y-2">
+              <FormLabel htmlFor="subservice-name">Subservice Name</FormLabel>
+              <Input
+                id="subservice-name"
+                placeholder="e.g., Upper Wear"
+                value={newSubserviceName}
+                onChange={(e) => setNewSubserviceName(e.target.value)}
+              />
+            </div>
+            <div className="space-y-2">
+              <FormLabel htmlFor="price-per-unit">Price Per Unit (Optional)</FormLabel>
+              <Input
+                id="price-per-unit"
+                placeholder="e.g., 59"
+                prefix="₹"
+                value={newSubservicePricePerUnit}
+                onChange={(e) => setNewSubservicePricePerUnit(e.target.value)}
+              />
+            </div>
+            <div className="space-y-2">
+              <FormLabel htmlFor="unit">Unit (Optional)</FormLabel>
+              <Input
+                id="unit"
+                placeholder="e.g., per Kg"
+                value={newSubserviceUnit}
+                onChange={(e) => setNewSubserviceUnit(e.target.value)}
+              />
+            </div>
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setIsAddSubserviceModalOpen(false)}>Cancel</Button>
+            <Button variant="subservice" onClick={handleAddSubservice}>Add Subservice</Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      <Dialog open={isAddItemModalOpen} onOpenChange={setIsAddItemModalOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Add New Item</DialogTitle>
+            <DialogDescription>
+              Add a new clothing item to the selected subservice.
+            </DialogDescription>
+          </DialogHeader>
+          <div className="space-y-4 py-2">
+            <div className="space-y-2">
+              <FormLabel htmlFor="item-name">Item Name</FormLabel>
+              <Input
+                id="item-name"
+                placeholder="e.g., Shirt"
+                value={newItemName}
+                onChange={(e) => setNewItemName(e.target.value)}
+              />
+            </div>
+            <div className="space-y-2">
+              <FormLabel htmlFor="item-price">Standard Price</FormLabel>
+              <Input
+                id="item-price"
+                placeholder="e.g., 99"
+                prefix="₹"
+                value={newItemPrice}
+                onChange={(e) => setNewItemPrice(e.target.value)}
+              />
+              <p className="text-xs text-gray-500">Express price will be automatically set to 1.5x the standard price.</p>
+            </div>
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setIsAddItemModalOpen(false)}>Cancel</Button>
+            <Button variant="item" onClick={handleAddItem}>Add Item</Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      <ConfirmationDialog
+        open={isDeleteDialogOpen}
+        onOpenChange={setIsDeleteDialogOpen}
+        title={`Delete ${itemToDelete?.type === 'service' ? 'Service' : itemToDelete?.type === 'subservice' ? 'Subservice' : 'Item'}`}
+        description={`Are you sure you want to delete "${itemToDelete?.name}"? This action cannot be undone.`}
+        onConfirm={executeDelete}
+        confirmText="Delete"
+        cancelText="Cancel"
+      />
+
+      <Dialog open={isSuccessDialogOpen} onOpenChange={setIsSuccessDialogOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>{successMessage.title}</DialogTitle>
+            <DialogDescription>
+              {successMessage.message}
+            </DialogDescription>
+          </DialogHeader>
+          <div className="flex justify-center py-4">
+            <CheckCircle className="h-16 w-16 text-green-500" />
+          </div>
+          <DialogFooter>
+            <Button onClick={() => setIsSuccessDialogOpen(false)}>Close</Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+    </AdminLayout>
+  );
+};
+
+export default StudioServices;
