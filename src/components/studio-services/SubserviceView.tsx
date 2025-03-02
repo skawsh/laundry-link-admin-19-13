@@ -11,12 +11,16 @@ interface SubserviceViewProps {
   subservice: Subservice;
   serviceId: string;
   onToggleSubservice: (serviceId: string, subserviceId: string) => void;
+  serviceIndex?: number;
+  subserviceIndex?: number;
 }
 
 const SubserviceView: React.FC<SubserviceViewProps> = ({ 
   subservice, 
   serviceId, 
-  onToggleSubservice 
+  onToggleSubservice,
+  serviceIndex = 1,
+  subserviceIndex = 1
 }) => {
   // Calculate the actual number of items
   const itemsCount = subservice.items ? subservice.items.length : 0;
@@ -50,6 +54,7 @@ const SubserviceView: React.FC<SubserviceViewProps> = ({
               </div>
               <h4 className="font-medium text-gray-700">
                 {subservice.name}
+                <span className="sr-only">{serviceIndex}.{subserviceIndex}</span>
               </h4>
               {subservice.pricePerUnit && (
                 <span className="ml-1 text-sm text-gray-500">
@@ -79,8 +84,14 @@ const SubserviceView: React.FC<SubserviceViewProps> = ({
         <CollapsibleContent className="animate-accordion-down">
           {subservice.items && subservice.items.length > 0 && (
             <div className="ml-6 my-2 space-y-2.5">
-              {subservice.items.map(item => (
-                <ClothingItemView key={item.id} item={item} />
+              {subservice.items.map((item, index) => (
+                <ClothingItemView 
+                  key={item.id} 
+                  item={item} 
+                  serviceIndex={serviceIndex}
+                  subserviceIndex={subserviceIndex}
+                  itemIndex={index + 1}
+                />
               ))}
             </div>
           )}

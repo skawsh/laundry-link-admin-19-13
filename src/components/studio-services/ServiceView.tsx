@@ -10,12 +10,14 @@ interface ServiceViewProps {
   service: Service;
   onToggleService: (serviceId: string) => void;
   onToggleSubservice: (serviceId: string, subserviceId: string) => void;
+  serviceIndex?: number; // Add the index prop
 }
 
 const ServiceView: React.FC<ServiceViewProps> = ({ 
   service, 
   onToggleService,
-  onToggleSubservice
+  onToggleSubservice,
+  serviceIndex = 1 // Default to 1 if not provided
 }) => {
   // Calculate the actual number of subservices
   const subservicesCount = service.subservices ? service.subservices.length : 0;
@@ -49,6 +51,7 @@ const ServiceView: React.FC<ServiceViewProps> = ({
               </div>
               <h3 className={`font-medium transition-colors ${service.isExpanded ? 'text-gray-900' : 'text-gray-800'}`}>
                 {service.name}
+                <span className="sr-only">{serviceIndex}</span>
               </h3>
               <Badge variant="outline" className={`ml-1 ${service.isExpanded ? 'bg-blue-50 text-blue-600' : 'bg-gray-100'}`}>
                 {subservicesCount} {subservicesCount === 1 ? 'subservice' : 'subservices'}
@@ -61,12 +64,14 @@ const ServiceView: React.FC<ServiceViewProps> = ({
           {service.subservices && service.subservices.length > 0 && (
             <div className="px-2 py-2 bg-white">
               <div className="space-y-2">
-                {service.subservices.map(subservice => (
+                {service.subservices.map((subservice, index) => (
                   <SubserviceView 
                     key={subservice.id} 
                     subservice={subservice} 
                     serviceId={service.id}
                     onToggleSubservice={onToggleSubservice}
+                    serviceIndex={serviceIndex}
+                    subserviceIndex={index + 1}
                   />
                 ))}
               </div>

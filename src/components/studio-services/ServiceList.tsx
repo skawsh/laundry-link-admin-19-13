@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { Plus, PackageOpen } from 'lucide-react';
 import { Button } from "@/components/ui/button";
@@ -94,7 +93,6 @@ const ServiceList: React.FC<ServiceListProps> = ({
 
       <div className="mb-6">
         <div className="flex flex-col sm:flex-row items-center space-y-2 sm:space-y-0 sm:space-x-4 bg-gray-50 p-3 rounded-md">
-          <span className="text-sm font-medium text-gray-700 mr-2">Filter by:</span>
           <div className="flex space-x-2">
             <Button 
               variant={activeFilter === 'services' ? 'secondary' : 'outline'} 
@@ -146,16 +144,17 @@ const ServiceList: React.FC<ServiceListProps> = ({
         </div>
       ) : (
         <div className="space-y-4">
-          {mode === 'list' && filteredServices.map(service => (
+          {mode === 'list' && filteredServices.map((service, index) => (
             <ServiceView 
               key={service.id} 
               service={service} 
               onToggleService={toggleServiceExpansion}
               onToggleSubservice={toggleSubserviceExpansion}
+              serviceIndex={index + 1}
             />
           ))}
           
-          {mode === 'edit' && filteredServices.map(service => (
+          {mode === 'edit' && filteredServices.map((service, index) => (
             <ServiceEdit 
               key={service.id} 
               service={service} 
@@ -169,6 +168,7 @@ const ServiceList: React.FC<ServiceListProps> = ({
               onDeleteClick={handleDeleteClick}
               onAddSubservice={handleAddSubservice}
               onAddItem={handleAddItem}
+              serviceIndex={index + 1}
             />
           ))}
         </div>
