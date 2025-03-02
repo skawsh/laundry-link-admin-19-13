@@ -33,7 +33,7 @@ const ServiceView: React.FC<ServiceViewProps> = ({
         tabIndex={0}
       >
         <div className="flex items-center gap-2">
-          <div className="p-1.5 hover:bg-gray-200 rounded-full transition-colors">
+          <div className="p-1">
             {service.isExpanded ? (
               <ChevronDown className="h-5 w-5 text-gray-600" />
             ) : (
@@ -50,8 +50,8 @@ const ServiceView: React.FC<ServiceViewProps> = ({
       </div>
       
       {service.isExpanded && service.subservices && service.subservices.length > 0 && (
-        <div className="px-4 py-2 bg-white animate-accordion-down">
-          <div className="space-y-3 pl-6">
+        <div className="px-2 py-2 bg-white animate-accordion-down">
+          <div className="space-y-2">
             {service.subservices.map(subservice => (
               <SubserviceView 
                 key={subservice.id} 

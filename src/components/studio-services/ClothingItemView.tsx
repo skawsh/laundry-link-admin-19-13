@@ -8,8 +8,8 @@ interface ClothingItemViewProps {
 
 const ClothingItemView: React.FC<ClothingItemViewProps> = ({ item }) => {
   return (
-    <div className="flex items-center justify-between bg-white rounded-md p-3 shadow-sm hover:shadow-md transition-all duration-200">
-      <div className="font-medium">{item.name}</div>
+    <div className="flex items-center justify-between bg-white rounded-md p-2 shadow-sm">
+      <div className="font-medium text-gray-700">{item.name}</div>
       <div className="flex flex-col text-right">
         <div className="text-gray-800">
           <span className="text-xs text-gray-500 mr-1">Standard:</span>
