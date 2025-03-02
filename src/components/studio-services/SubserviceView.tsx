@@ -35,12 +35,12 @@ const SubserviceView: React.FC<SubserviceViewProps> = ({
             </span>
           )}
           <Badge variant="outline" className="ml-3 bg-gray-50">
-            {subservice.items.length} items
+            {subservice.items ? subservice.items.length : 0} items
           </Badge>
         </div>
       </div>
       
-      {subservice.isExpanded && (
+      {subservice.isExpanded && subservice.items && subservice.items.length > 0 && (
         <div className="ml-6 my-2 bg-gray-50 rounded-md p-3">
           {subservice.items.length === 0 ? (
             <div className="text-center py-2 text-gray-500 text-sm italic">

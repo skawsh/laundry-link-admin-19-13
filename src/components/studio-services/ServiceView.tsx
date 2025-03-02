@@ -35,7 +35,7 @@ const ServiceView: React.FC<ServiceViewProps> = ({
         </div>
       </div>
       
-      {service.isExpanded && (
+      {service.isExpanded && service.subservices && service.subservices.length > 0 && (
         <div className="px-4 py-2 bg-white">
           {service.subservices.length === 0 ? (
             <div className="text-center py-4 text-gray-500 text-sm italic">

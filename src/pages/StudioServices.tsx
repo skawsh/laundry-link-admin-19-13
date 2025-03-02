@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect, useRef } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { ArrowLeft } from 'lucide-react';
@@ -121,6 +122,7 @@ const StudioServices: React.FC = () => {
 
     switch (filterType) {
       case 'services':
+        // Services filter: Only show service names, not expanded
         result = servicesList.map(service => ({
           ...service,
           isExpanded: false,
@@ -129,6 +131,7 @@ const StudioServices: React.FC = () => {
         break;
 
       case 'subservices':
+        // Subservices filter: Show services with their subservices, no items
         result = servicesList.map(service => ({
           ...service,
           isExpanded: true,
@@ -141,6 +144,7 @@ const StudioServices: React.FC = () => {
         break;
 
       case 'items':
+        // Items filter: Show complete hierarchy
         result = servicesList.map(service => ({
           ...service,
           isExpanded: true,
