@@ -1,6 +1,6 @@
 
 import React from 'react';
-import { PageHeader } from '@/components/ui/PageHeader';
+import PageHeader from '@/components/ui/PageHeader';
 import LaundryServices from '@/components/laundry/LaundryServices';
 
 const LaundryServicesPage: React.FC = () => {
@@ -8,7 +8,7 @@ const LaundryServicesPage: React.FC = () => {
     <div className="container mx-auto px-4 py-6">
       <PageHeader
         title="Laundry Services"
-        description="Manage your laundry service offerings"
+        subtitle="Manage your laundry service offerings"
       />
       <LaundryServices />
     </div>
