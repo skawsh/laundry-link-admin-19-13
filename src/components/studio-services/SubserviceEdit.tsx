@@ -31,12 +31,17 @@ const SubserviceEdit: React.FC<SubserviceEditProps> = ({
   onDeleteClick,
   onAddItem
 }) => {
+  const handleToggleClick = (e: React.MouseEvent) => {
+    e.stopPropagation(); // Prevent the click from bubbling up to the parent
+    onToggleSubservice(serviceId, subservice.id);
+  };
+
   return (
     <div className="border-l-2 border-gray-200 pl-4">
       <div className="flex items-center justify-between py-2">
         <div 
           className="flex items-center cursor-pointer"
-          onClick={() => onToggleSubservice(serviceId, subservice.id)}
+          onClick={handleToggleClick}
         >
           {subservice.isExpanded ? (
             <ChevronDown className="h-4 w-4 text-gray-500 mr-2" />
@@ -58,7 +63,7 @@ const SubserviceEdit: React.FC<SubserviceEditProps> = ({
             variant="edit" 
             size="xs"
             onClick={(e) => {
-              e.stopPropagation();
+              e.stopPropagation(); // Prevent the click from bubbling up
               // Subservice edit logic here (future enhancement)
             }}
           >
@@ -69,7 +74,7 @@ const SubserviceEdit: React.FC<SubserviceEditProps> = ({
             variant="delete"
             size="xs"
             onClick={(e) => {
-              e.stopPropagation();
+              e.stopPropagation(); // Prevent the click from bubbling up
               onDeleteClick('subservice', subservice.id, subservice.name, serviceId);
             }}
           >
@@ -80,7 +85,7 @@ const SubserviceEdit: React.FC<SubserviceEditProps> = ({
             variant="item"
             size="xs"
             onClick={(e) => {
-              e.stopPropagation();
+              e.stopPropagation(); // Prevent the click from bubbling up
               onAddItem(serviceId, subservice.id);
             }}
           >
@@ -91,7 +96,7 @@ const SubserviceEdit: React.FC<SubserviceEditProps> = ({
       </div>
       
       {subservice.isExpanded && (
-        <div className="ml-6 my-2 bg-gray-50 rounded-md p-3">
+        <div className="ml-6 my-2 bg-gray-50 rounded-md p-3 animate-accordion-down">
           {subservice.items.length === 0 ? (
             <div className="text-center py-2 text-gray-500 text-sm italic">
               No items found

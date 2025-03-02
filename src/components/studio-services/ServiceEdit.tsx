@@ -33,12 +33,17 @@ const ServiceEdit: React.FC<ServiceEditProps> = ({
   onAddSubservice,
   onAddItem
 }) => {
+  const handleToggleClick = (e: React.MouseEvent) => {
+    // Call the toggle service function when the header is clicked
+    onToggleService(service.id);
+  };
+
   return (
     <div className="border rounded-lg overflow-hidden transition-all duration-200 hover:shadow-md">
       <div className="flex items-center justify-between px-4 py-3 bg-gray-50">
         <div 
           className="flex items-center cursor-pointer"
-          onClick={() => onToggleService(service.id)}
+          onClick={handleToggleClick}
         >
           {service.isExpanded ? (
             <ChevronDown className="h-5 w-5 text-gray-500 mr-2" />
@@ -55,7 +60,7 @@ const ServiceEdit: React.FC<ServiceEditProps> = ({
             variant="edit" 
             size="xs"
             onClick={(e) => {
-              e.stopPropagation();
+              e.stopPropagation(); // Prevent the click from bubbling up
               // Service edit logic here (future enhancement)
             }}
           >
@@ -66,7 +71,7 @@ const ServiceEdit: React.FC<ServiceEditProps> = ({
             variant="delete"
             size="xs"
             onClick={(e) => {
-              e.stopPropagation();
+              e.stopPropagation(); // Prevent the click from bubbling up
               onDeleteClick('service', service.id, service.name);
             }}
           >
@@ -77,7 +82,7 @@ const ServiceEdit: React.FC<ServiceEditProps> = ({
             variant="subservice"
             size="xs"
             onClick={(e) => {
-              e.stopPropagation();
+              e.stopPropagation(); // Prevent the click from bubbling up
               onAddSubservice(service.id);
             }}
           >
@@ -88,7 +93,7 @@ const ServiceEdit: React.FC<ServiceEditProps> = ({
       </div>
       
       {service.isExpanded && (
-        <div className="px-4 py-2 bg-white">
+        <div className="px-4 py-2 bg-white animate-accordion-down">
           {service.subservices.length === 0 ? (
             <div className="text-center py-4 text-gray-500 text-sm italic">
               No subservices found
