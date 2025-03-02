@@ -17,6 +17,8 @@ interface SubserviceEditProps {
   onSaveItemEdit: (serviceId: string, subserviceId: string, itemId: string) => void;
   onDeleteClick: (type: 'service' | 'subservice' | 'item', id: string, name: string, parentId?: string, subParentId?: string) => void;
   onAddItem: (serviceId: string, subserviceId: string) => void;
+  serviceIndex?: number;
+  subserviceIndex?: number;
 }
 
 const SubserviceEdit: React.FC<SubserviceEditProps> = ({ 
@@ -29,7 +31,9 @@ const SubserviceEdit: React.FC<SubserviceEditProps> = ({
   onUpdateItemExpressPrice,
   onSaveItemEdit,
   onDeleteClick,
-  onAddItem
+  onAddItem,
+  serviceIndex = 1,
+  subserviceIndex = 1
 }) => {
   const handleToggleClick = (e: React.MouseEvent) => {
     e.stopPropagation(); // Prevent the click from bubbling up to the parent
@@ -48,7 +52,10 @@ const SubserviceEdit: React.FC<SubserviceEditProps> = ({
           ) : (
             <ChevronRight className="h-4 w-4 text-gray-500 mr-2" />
           )}
-          <h4 className="font-medium text-gray-700">{subservice.name}</h4>
+          <h4 className="font-medium text-gray-700">
+            {subservice.name}
+            <span className="sr-only">{serviceIndex}.{subserviceIndex}</span>
+          </h4>
           {subservice.pricePerUnit && (
             <span className="ml-2 text-sm text-gray-500">
               (₹{subservice.pricePerUnit} {subservice.unit})
@@ -103,7 +110,7 @@ const SubserviceEdit: React.FC<SubserviceEditProps> = ({
             </div>
           ) : (
             <div className="space-y-2">
-              {subservice.items.map(item => (
+              {subservice.items.map((item, index) => (
                 <ClothingItemEdit 
                   key={item.id} 
                   item={item} 
@@ -115,6 +122,9 @@ const SubserviceEdit: React.FC<SubserviceEditProps> = ({
                   onUpdateExpressPrice={onUpdateItemExpressPrice}
                   onSaveEdit={onSaveItemEdit}
                   onDeleteClick={onDeleteClick}
+                  serviceIndex={serviceIndex}
+                  subserviceIndex={subserviceIndex}
+                  itemIndex={index + 1}
                 />
               ))}
             </div>

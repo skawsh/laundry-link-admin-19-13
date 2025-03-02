@@ -18,6 +18,7 @@ interface ServiceEditProps {
   onDeleteClick: (type: 'service' | 'subservice' | 'item', id: string, name: string, parentId?: string, subParentId?: string) => void;
   onAddSubservice: (serviceId: string) => void;
   onAddItem: (serviceId: string, subserviceId: string) => void;
+  serviceIndex?: number; // Add the serviceIndex prop
 }
 
 const ServiceEdit: React.FC<ServiceEditProps> = ({ 
@@ -31,7 +32,8 @@ const ServiceEdit: React.FC<ServiceEditProps> = ({
   onSaveItemEdit,
   onDeleteClick,
   onAddSubservice,
-  onAddItem
+  onAddItem,
+  serviceIndex = 1 // Default to 1 if not provided
 }) => {
   const handleToggleClick = (e: React.MouseEvent) => {
     // Call the toggle service function when the header is clicked
@@ -50,7 +52,10 @@ const ServiceEdit: React.FC<ServiceEditProps> = ({
           ) : (
             <ChevronRight className="h-5 w-5 text-gray-500 mr-2" />
           )}
-          <h3 className="font-medium text-gray-800">{service.name}</h3>
+          <h3 className="font-medium text-gray-800">
+            {service.name}
+            <span className="sr-only">{serviceIndex}</span>
+          </h3>
           <Badge variant="outline" className="ml-3 bg-gray-100">
             {service.subservices.length} subservices
           </Badge>
@@ -100,7 +105,7 @@ const ServiceEdit: React.FC<ServiceEditProps> = ({
             </div>
           ) : (
             <div className="space-y-3 pl-6">
-              {service.subservices.map(subservice => (
+              {service.subservices.map((subservice, index) => (
                 <SubserviceEdit 
                   key={subservice.id} 
                   subservice={subservice} 
@@ -113,6 +118,8 @@ const ServiceEdit: React.FC<ServiceEditProps> = ({
                   onSaveItemEdit={onSaveItemEdit}
                   onDeleteClick={onDeleteClick}
                   onAddItem={onAddItem}
+                  serviceIndex={serviceIndex}
+                  subserviceIndex={index + 1}
                 />
               ))}
             </div>
