@@ -11,6 +11,7 @@ export interface UnpaidOrder {
   deliveredDate: string; // Changed from optional to required
   status: string; // Added status field
   selected?: boolean; // For multi-selection
+  expressDelivery?: boolean; // Added express delivery indicator
 }
 
 export interface PaymentRecord {
@@ -26,6 +27,13 @@ export interface PaymentRecord {
   customerName: string; // Added missing field
   paymentMethod: string; // Added missing field
   status: string; // Added missing field
+  expressDelivery?: boolean; // Added express delivery indicator
 }
 
 export type DateFilterOption = 'all' | 'today' | 'yesterday' | 'this_week' | 'this_month' | 'custom';
+
+// New interface for service pricing
+export interface ServicePricing {
+  standardPrice: number;
+  expressPrice: number;
+}

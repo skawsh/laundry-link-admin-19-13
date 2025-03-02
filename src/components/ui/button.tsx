@@ -24,12 +24,16 @@ const buttonVariants = cva(
         service: "bg-admin-primary text-white hover:bg-admin-primary/90 border border-admin-primary/20 shadow-sm",
         subservice: "bg-indigo-100 text-indigo-700 hover:bg-indigo-200 border border-indigo-200",
         item: "bg-gray-100 text-gray-700 hover:bg-gray-200 border border-gray-200",
+        express: "bg-amber-100 text-amber-700 hover:bg-amber-200 border border-amber-200", // Added express variant for express service items
+        edit: "bg-blue-50 text-blue-600 hover:bg-blue-100 border border-blue-200", // Added edit variant for edit buttons
+        delete: "bg-red-50 text-red-600 hover:bg-red-100 border border-red-200", // Added delete variant for delete buttons
       },
       size: {
         default: "h-10 px-4 py-2",
         sm: "h-9 rounded-md px-3",
         lg: "h-11 rounded-md px-8",
         icon: "h-9 w-9 rounded-full", // Updated icon size for round back button
+        xs: "h-7 text-xs px-2 py-1 rounded-md", // Added extra small size
       },
     },
     defaultVariants: {
