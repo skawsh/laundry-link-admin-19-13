@@ -33,4 +33,4 @@ export type ItemToDelete = {
   subParentId?: string;
 } | null;
 
-export type FilterType = 'all' | 'services' | 'subservices' | 'items';
+export type FilterType = 'services' | 'subservices' | 'items';

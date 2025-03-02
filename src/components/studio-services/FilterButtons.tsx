@@ -11,16 +11,6 @@ const FilterButtons: React.FC<FilterButtonsProps> = ({ activeFilter, onFilterCha
   return (
     <div className="flex flex-wrap gap-2 mb-4">
       <button
-        onClick={() => onFilterChange('all')}
-        className={`px-3 py-1.5 text-sm rounded-full transition-colors ${
-          activeFilter === 'all' 
-            ? 'bg-admin-primary text-white' 
-            : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
-        }`}
-      >
-        All
-      </button>
-      <button
         onClick={() => onFilterChange('services')}
         className={`px-3 py-1.5 text-sm rounded-full transition-colors ${
           activeFilter === 'services' 

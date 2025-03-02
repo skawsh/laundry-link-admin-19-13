@@ -14,8 +14,8 @@ interface ServiceListProps {
   setSearchQuery: (query: string) => void;
   searchInputRef: React.RefObject<HTMLInputElement>;
   filteredServices: Service[];
-  activeFilter: 'all' | 'services' | 'subservices' | 'items';
-  handleFilterChange: (filter: 'all' | 'services' | 'subservices' | 'items') => void;
+  activeFilter: 'services' | 'subservices' | 'items';
+  handleFilterChange: (filter: 'services' | 'subservices' | 'items') => void;
   toggleServiceExpansion: (serviceId: string) => void;
   toggleSubserviceExpansion: (serviceId: string, subserviceId: string) => void;
   toggleItemEditMode: (serviceId: string, subserviceId: string, itemId: string) => void;
@@ -30,6 +30,7 @@ interface ServiceListProps {
   setCurrentParentId2: (id: string) => void;
   setSelectedSubserviceId: (id: string) => void;
   setIsAddItemModalOpen: (isOpen: boolean) => void;
+  onSearch?: (query: string) => void;
 }
 
 const ServiceList: React.FC<ServiceListProps> = ({
@@ -53,7 +54,8 @@ const ServiceList: React.FC<ServiceListProps> = ({
   setIsAddSubserviceModalOpen,
   setCurrentParentId2,
   setSelectedSubserviceId,
-  setIsAddItemModalOpen
+  setIsAddItemModalOpen,
+  onSearch
 }) => {
 
   const handleAddSubservice = (serviceId: string) => {
@@ -67,18 +69,24 @@ const ServiceList: React.FC<ServiceListProps> = ({
     setIsAddItemModalOpen(true);
   };
 
+  const handleAddServiceClick = (e: React.MouseEvent) => {
+    e.preventDefault(); // Prevent default navigation
+    setIsAddServiceModalOpen(true);
+  };
+
   return (
     <>
       <div className="mb-6 flex flex-col sm:flex-row justify-between items-center space-y-4 sm:space-y-0">
         <SearchBox 
           searchQuery={searchQuery} 
           setSearchQuery={setSearchQuery} 
-          searchInputRef={searchInputRef} 
+          searchInputRef={searchInputRef}
+          onSearch={onSearch}
         />
         <Button 
           variant="service" 
           className="w-full sm:w-auto"
-          onClick={() => setIsAddServiceModalOpen(true)}
+          onClick={handleAddServiceClick}
         >
           <Plus className="h-4 w-4" />
           <span>Add New Service</span>
@@ -99,7 +107,8 @@ const ServiceList: React.FC<ServiceListProps> = ({
           <Button
             variant="service"
             className="mt-4"
-            onClick={() => {
+            onClick={(e) => {
+              e.preventDefault(); // Prevent default navigation
               setIsAddServiceModalOpen(true);
               setSearchQuery('');
             }}
