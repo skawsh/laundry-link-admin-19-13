@@ -1,1195 +1,1283 @@
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { ChevronLeft, Plus, Edit, Trash2, ArrowLeft, ChevronDown, ChevronUp, Search, X, Save } from 'lucide-react';
+import { 
+  Plus, Trash2, Edit, Search, ChevronDown, ChevronRight, 
+  ArrowLeft, Save, Check, X, PackageOpen, Shirt, Tag, 
+  Filter, AlertCircle, CheckCircle 
+} from 'lucide-react';
 import AdminLayout from '../components/layout/AdminLayout';
 import PageHeader from '../components/ui/PageHeader';
-import { useToast } from "@/hooks/use-toast";
-import { Table, TableHeader, TableRow, TableHead, TableBody, TableCell } from "@/components/ui/table";
+import { useToast } from "../hooks/use-toast";
+import { ConfirmationDialog } from "@/components/ui/confirmation-dialog";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
-import { Card, CardHeader, CardTitle, CardDescription, CardContent, CardFooter } from "@/components/ui/card";
-import { Input } from "@/components/ui/input";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Form, FormControl, FormDescription, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
-import { Textarea } from "@/components/ui/textarea";
-import { z } from "zod";
-import { useForm } from "react-hook-form";
-import { zodResolver } from "@hookform/resolvers/zod";
+import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
+import { Input } from "@/components/ui/input";
+import { Card } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
 
-// Define interfaces for services data
 interface ClothingItem {
   id: string;
   name: string;
-  standardPrice: number;
-  expressPrice?: number;
+  price: number;
+  isEditing?: boolean;
 }
 
-interface SubService {
+interface Subservice {
   id: string;
   name: string;
-  pricePerUnit?: number;
-  priceUnit?: string;
-  clothingItems: ClothingItem[];
-  isExpanded?: boolean;
+  pricePerUnit?: string;
+  unit?: string;
+  items: ClothingItem[];
+  isExpanded: boolean;
   isEditing?: boolean;
 }
 
 interface Service {
   id: string;
-  title: string;
-  description?: string;
-  subServices: SubService[];
-  isExpanded?: boolean;
+  name: string;
+  subservices: Subservice[];
+  isExpanded: boolean;
   isEditing?: boolean;
 }
 
-interface StudioServices {
-  studioId: string;
-  studioName: string;
-  services: Service[];
-}
-
-// Form schemas
-const clothingItemSchema = z.object({
-  id: z.string().optional(),
-  name: z.string().min(2, "Name is required"),
-  standardPrice: z.coerce.number().min(1, "Price must be at least 1"),
-  expressPrice: z.coerce.number().optional(),
-});
-
-const subServiceSchema = z.object({
-  id: z.string().optional(),
-  name: z.string().min(2, "Name is required"),
-  pricePerUnit: z.coerce.number().optional(),
-  priceUnit: z.string().optional(),
-  clothingItems: z.array(clothingItemSchema).optional(),
-});
-
-const serviceSchema = z.object({
-  id: z.string().optional(),
-  title: z.string().min(2, "Title is required"),
-  description: z.string().optional(),
-});
-
-// Mock data for services based on the provided structure
-const mockServicesData: {[key: string]: StudioServices} = {
-  "1": {
-    studioId: "STU10001",
-    studioName: "Saiteja Laundry",
-    services: [
+// Mock data for services
+const initialServices: Service[] = [
+  {
+    id: "service-1",
+    name: "Core Laundry Services",
+    isExpanded: false,
+    subservices: [
       {
-        id: "serv1",
-        title: "Core Laundry Services",
-        description: "Basic washing and ironing services",
-        subServices: [
-          {
-            id: "sub1",
-            name: "Wash & Fold",
-            pricePerUnit: 59,
-            priceUnit: "Per Kg",
-            clothingItems: [
-              { id: "item1", name: "T-Shirt", standardPrice: 29, expressPrice: 40 },
-              { id: "item2", name: "Trousers", standardPrice: 39, expressPrice: 59 },
-              { id: "item3", name: "Shorts", standardPrice: 29, expressPrice: 45 }
-            ],
-          },
-          {
-            id: "sub2",
-            name: "Premium Wash",
-            pricePerUnit: 89,
-            priceUnit: "Per Kg",
-            clothingItems: [
-              { id: "item4", name: "Formal Shirt", standardPrice: 35, expressPrice: 55 },
-              { id: "item5", name: "Formal Trousers", standardPrice: 45, expressPrice: 65 }
-            ],
-          }
-        ],
+        id: "subservice-1-1",
+        name: "Wash & Fold",
+        pricePerUnit: "59",
+        unit: "per Kg",
+        isExpanded: false,
+        items: [
+          { id: "item-1-1-1", name: "Shirt", price: 10 },
+          { id: "item-1-1-2", name: "Pant", price: 20 },
+          { id: "item-1-1-3", name: "Shorts", price: 30 },
+          { id: "item-1-1-4", name: "T-shirt", price: 15 },
+          { id: "item-1-1-5", name: "Jeans", price: 25 },
+        ]
       },
       {
-        id: "serv2",
-        title: "Shoe Laundry",
-        description: "Specialized cleaning for all types of footwear",
-        subServices: [
-          {
-            id: "sub3",
-            name: "Regular Shoes",
-            clothingItems: [
-              { id: "item6", name: "Casual Shoes", standardPrice: 149, expressPrice: 199 },
-              { id: "item7", name: "Sports Shoes", standardPrice: 179, expressPrice: 249 }
-            ],
-          },
-          {
-            id: "sub4",
-            name: "Premium Footwear",
-            clothingItems: [
-              { id: "item8", name: "Leather Shoes", standardPrice: 249, expressPrice: 349 },
-              { id: "item9", name: "Boots", standardPrice: 299, expressPrice: 399 }
-            ],
-          }
-        ],
-      },
-      {
-        id: "serv3",
-        title: "Dry Cleaning",
-        description: "Professional dry cleaning services",
-        subServices: [
-          {
-            id: "sub5",
-            name: "Indian Ethnic Wear",
-            clothingItems: [
-              { id: "item10", name: "Saree", standardPrice: 249, expressPrice: 349 },
-              { id: "item11", name: "Kurta", standardPrice: 149, expressPrice: 249 }
-            ],
-          },
-          {
-            id: "sub6",
-            name: "Western Wear",
-            clothingItems: [
-              { id: "item12", name: "Coat", standardPrice: 349, expressPrice: 449 },
-              { id: "item13", name: "Blazer", standardPrice: 299, expressPrice: 399 }
-            ],
-          }
-        ],
+        id: "subservice-1-2",
+        name: "Wash & Iron",
+        pricePerUnit: "79",
+        unit: "per Kg",
+        isExpanded: false,
+        items: [
+          { id: "item-1-2-1", name: "Shirt", price: 15 },
+          { id: "item-1-2-2", name: "Pant", price: 25 },
+          { id: "item-1-2-3", name: "Shorts", price: 35 },
+        ]
       }
     ]
   },
-  "2": {
-    studioId: "STU10002",
-    studioName: "Sparkle Clean Laundry",
-    services: [
+  {
+    id: "service-2",
+    name: "Dry Cleaning",
+    isExpanded: false,
+    subservices: [
       {
-        id: "serv1",
-        title: "Core Laundry Services",
-        description: "Basic washing and ironing services",
-        subServices: [
-          {
-            id: "sub1",
-            name: "Wash & Fold",
-            pricePerUnit: 65,
-            priceUnit: "Per Kg",
-            clothingItems: [
-              { id: "item1", name: "T-Shirt", standardPrice: 30, expressPrice: 45 },
-              { id: "item2", name: "Trousers", standardPrice: 40, expressPrice: 60 }
-            ],
-          }
-        ],
+        id: "subservice-2-1",
+        name: "Upper Wear",
+        isExpanded: false,
+        items: [
+          { id: "item-2-1-1", name: "Shirt", price: 99 },
+          { id: "item-2-1-2", name: "T-shirt", price: 89 },
+          { id: "item-2-1-3", name: "Sweater", price: 149 },
+        ]
+      },
+      {
+        id: "subservice-2-2",
+        name: "Lower Wear",
+        isExpanded: false,
+        items: [
+          { id: "item-2-2-1", name: "Jeans", price: 120 },
+          { id: "item-2-2-2", name: "Trousers", price: 110 },
+        ]
+      }
+    ]
+  },
+  {
+    id: "service-3",
+    name: "Shoe Laundry",
+    isExpanded: false,
+    subservices: [
+      {
+        id: "subservice-3-1",
+        name: "Sports Shoes",
+        isExpanded: false,
+        items: [
+          { id: "item-3-1-1", name: "Casual Shoes", price: 149 },
+          { id: "item-3-1-2", name: "Running Shoes", price: 179 },
+        ]
+      },
+      {
+        id: "subservice-3-2",
+        name: "Formal Shoes",
+        isExpanded: false,
+        items: [
+          { id: "item-3-2-1", name: "Leather Shoes", price: 199 },
+          { id: "item-3-2-2", name: "Boots", price: 249 },
+        ]
+      }
+    ]
+  },
+  {
+    id: "service-4",
+    name: "Premium Services",
+    isExpanded: false,
+    subservices: [
+      {
+        id: "subservice-4-1",
+        name: "Winter Wear",
+        isExpanded: false,
+        items: [
+          { id: "item-4-1-1", name: "Coat", price: 299 },
+          { id: "item-4-1-2", name: "Jacket", price: 249 },
+          { id: "item-4-1-3", name: "Blanket", price: 399 },
+        ]
+      },
+      {
+        id: "subservice-4-2",
+        name: "Accessories",
+        isExpanded: false,
+        items: [
+          { id: "item-4-2-1", name: "Bag", price: 199 },
+          { id: "item-4-2-2", name: "Cap", price: 79 },
+        ]
       }
     ]
   }
-};
-
-// For other studio IDs, we can provide default mock data
-for (let i = 3; i <= 8; i++) {
-  mockServicesData[i.toString()] = {
-    studioId: `STU1000${i}`,
-    studioName: `Studio ${i}`,
-    services: [
-      {
-        id: "serv1",
-        title: "Core Laundry Services",
-        description: "Basic washing and ironing services",
-        subServices: [
-          {
-            id: "sub1",
-            name: "Wash & Fold",
-            pricePerUnit: 60 + i,
-            priceUnit: "Per Kg",
-            clothingItems: [
-              { id: "item1", name: "T-Shirt", standardPrice: 25 + i, expressPrice: 40 + i },
-              { id: "item2", name: "Trousers", standardPrice: 35 + i, expressPrice: 55 + i }
-            ],
-          }
-        ],
-      }
-    ]
-  };
-}
+];
 
 const StudioServices: React.FC = () => {
   const { studioId } = useParams<{ studioId: string }>();
-  const [loading, setLoading] = useState(true);
-  const [studioServices, setStudioServices] = useState<StudioServices | null>(null);
-  const [searchTerm, setSearchTerm] = useState("");
-  const [currentTab, setCurrentTab] = useState("view");
-  const [editingService, setEditingService] = useState<Service | null>(null);
-  const [editingSubService, setEditingSubService] = useState<SubService | null>(null);
-  const [editingClothingItem, setEditingClothingItem] = useState<ClothingItem | null>(null);
+  const [services, setServices] = useState<Service[]>(initialServices);
+  const [viewMode, setViewMode] = useState<'list' | 'edit'>('list');
+  const [searchQuery, setSearchQuery] = useState('');
+  const [filteredServices, setFilteredServices] = useState<Service[]>(initialServices);
+  const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
+  const [itemToDelete, setItemToDelete] = useState<{ type: 'service' | 'subservice' | 'item', id: string, name: string, parentId?: string, subParentId?: string } | null>(null);
+  const [isAddServiceModalOpen, setIsAddServiceModalOpen] = useState(false);
+  const [isAddSubserviceModalOpen, setIsAddSubserviceModalOpen] = useState(false);
+  const [isAddItemModalOpen, setIsAddItemModalOpen] = useState(false);
+  const [selectedServiceId, setSelectedServiceId] = useState<string | null>(null);
+  const [selectedSubserviceId, setSelectedSubserviceId] = useState<string | null>(null);
+  const [currentParentId, setCurrentParentId] = useState<string | null>(null);
+  const [newServiceName, setNewServiceName] = useState('');
+  const [newSubserviceName, setNewSubserviceName] = useState('');
+  const [newSubservicePricePerUnit, setNewSubservicePricePerUnit] = useState('');
+  const [newSubserviceUnit, setNewSubserviceUnit] = useState('');
+  const [newItemName, setNewItemName] = useState('');
+  const [newItemPrice, setNewItemPrice] = useState('');
+  const [isSuccessDialogOpen, setIsSuccessDialogOpen] = useState(false);
+  const [successMessage, setSuccessMessage] = useState({ title: '', message: '' });
+  const [activeFilter, setActiveFilter] = useState<'all' | 'services' | 'subservices' | 'items'>('all');
+
   const { toast } = useToast();
   const navigate = useNavigate();
-
-  const serviceForm = useForm<z.infer<typeof serviceSchema>>({
-    resolver: zodResolver(serviceSchema),
-    defaultValues: {
-      title: "",
-      description: "",
-    },
-  });
-
-  const subServiceForm = useForm<z.infer<typeof subServiceSchema>>({
-    resolver: zodResolver(subServiceSchema),
-    defaultValues: {
-      name: "",
-      pricePerUnit: undefined,
-      priceUnit: "",
-    },
-  });
-
-  const clothingItemForm = useForm<z.infer<typeof clothingItemSchema>>({
-    resolver: zodResolver(clothingItemSchema),
-    defaultValues: {
-      name: "",
-      standardPrice: 0,
-      expressPrice: undefined,
-    },
-  });
+  const searchInputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
-    // Simulate API call to fetch studio services
-    const fetchStudioServices = () => {
-      setLoading(true);
-      
-      // Artificial delay to simulate API call
-      setTimeout(() => {
-        if (studioId && mockServicesData[studioId]) {
-          const data = JSON.parse(JSON.stringify(mockServicesData[studioId]));
-          
-          // Initialize expansion state
-          data.services.forEach((service: Service) => {
-            service.isExpanded = false;
-            service.subServices.forEach((subService: SubService) => {
-              subService.isExpanded = false;
-            });
-          });
-          
-          setStudioServices(data);
-        } else {
-          toast({
-            title: "Error",
-            description: "Studio services not found",
-            variant: "destructive",
-          });
-        }
-        setLoading(false);
-      }, 800);
-    };
+    if (searchQuery === '') {
+      setFilteredServices(services);
+      return;
+    }
 
-    fetchStudioServices();
-  }, [studioId, toast]);
+    const query = searchQuery.toLowerCase().trim();
 
-  const handleBackClick = () => {
-    navigate('/studios');
-  };
+    const filtered = services.map(service => {
+      const matchedSubservices = service.subservices
+        .map(subservice => {
+          const matchedItems = subservice.items.filter(item => 
+            item.name.toLowerCase().includes(query) || 
+            item.price.toString().includes(query)
+          );
 
-  const toggleServiceExpansion = (serviceId: string) => {
-    if (!studioServices) return;
-    
-    const updatedServices = studioServices.services.map(service => {
-      if (service.id === serviceId) {
-        return { ...service, isExpanded: !service.isExpanded };
-      }
-      return service;
-    });
-    
-    setStudioServices({
-      ...studioServices,
-      services: updatedServices
-    });
-  };
-
-  const toggleSubServiceExpansion = (serviceId: string, subServiceId: string) => {
-    if (!studioServices) return;
-    
-    const updatedServices = studioServices.services.map(service => {
-      if (service.id === serviceId) {
-        const updatedSubServices = service.subServices.map(subService => {
-          if (subService.id === subServiceId) {
-            return { ...subService, isExpanded: !subService.isExpanded };
+          if (matchedItems.length > 0 || subservice.name.toLowerCase().includes(query)) {
+            return {
+              ...subservice,
+              items: matchedItems.length > 0 ? matchedItems : subservice.items,
+              isExpanded: matchedItems.length > 0 || subservice.name.toLowerCase().includes(query)
+            };
           }
-          return subService;
-        });
-        
-        return { ...service, subServices: updatedSubServices };
-      }
-      return service;
-    });
-    
-    setStudioServices({
-      ...studioServices,
-      services: updatedServices
-    });
-  };
+          return null;
+        })
+        .filter((subservice): subservice is Subservice => subservice !== null);
 
-  const handleAddNewService = () => {
-    serviceForm.reset({
-      title: "",
-      description: "",
-    });
-    setEditingService({
-      id: `new-service-${Date.now()}`,
-      title: "",
-      description: "",
-      subServices: [],
-      isEditing: true,
-    });
-  };
-
-  const handleAddSubService = (serviceId: string) => {
-    subServiceForm.reset({
-      name: "",
-      pricePerUnit: undefined,
-      priceUnit: "",
-    });
-    
-    setEditingSubService({
-      id: `new-subservice-${Date.now()}`,
-      name: "",
-      clothingItems: [],
-      isEditing: true,
-    });
-    
-    // Find the service to add the subservice to
-    const service = studioServices?.services.find(s => s.id === serviceId);
-    if (service) {
-      setEditingService(service);
-    }
-  };
-
-  const handleAddClothingItem = (serviceId: string, subServiceId: string) => {
-    clothingItemForm.reset({
-      name: "",
-      standardPrice: 0,
-      expressPrice: undefined,
-    });
-    
-    setEditingClothingItem({
-      id: `new-clothing-${Date.now()}`,
-      name: "",
-      standardPrice: 0,
-    });
-    
-    // Find the service and subservice to add the clothing item to
-    const service = studioServices?.services.find(s => s.id === serviceId);
-    if (service) {
-      const subService = service.subServices.find(ss => ss.id === subServiceId);
-      if (subService) {
-        setEditingSubService(subService);
-        setEditingService(service);
-      }
-    }
-  };
-
-  const handleEditService = (service: Service) => {
-    serviceForm.reset({
-      title: service.title,
-      description: service.description || "",
-    });
-    setEditingService(service);
-  };
-
-  const handleEditSubService = (service: Service, subService: SubService) => {
-    subServiceForm.reset({
-      name: subService.name,
-      pricePerUnit: subService.pricePerUnit,
-      priceUnit: subService.priceUnit || "",
-    });
-    setEditingSubService(subService);
-    setEditingService(service);
-  };
-
-  const handleEditClothingItem = (service: Service, subService: SubService, item: ClothingItem) => {
-    clothingItemForm.reset({
-      name: item.name,
-      standardPrice: item.standardPrice,
-      expressPrice: item.expressPrice,
-    });
-    setEditingClothingItem(item);
-    setEditingSubService(subService);
-    setEditingService(service);
-  };
-
-  const handleDeleteService = (serviceId: string) => {
-    if (!studioServices) return;
-    
-    const updatedServices = studioServices.services.filter(service => service.id !== serviceId);
-    
-    setStudioServices({
-      ...studioServices,
-      services: updatedServices
-    });
-    
-    toast({
-      title: "Service Deleted",
-      description: "The service has been removed successfully.",
-    });
-  };
-
-  const handleDeleteSubService = (serviceId: string, subServiceId: string) => {
-    if (!studioServices) return;
-    
-    const updatedServices = studioServices.services.map(service => {
-      if (service.id === serviceId) {
+      if (matchedSubservices.length > 0 || service.name.toLowerCase().includes(query)) {
         return {
           ...service,
-          subServices: service.subServices.filter(subService => subService.id !== subServiceId)
+          subservices: matchedSubservices.length > 0 ? matchedSubservices : [],
+          isExpanded: matchedSubservices.length > 0 || service.name.toLowerCase().includes(query)
         };
       }
-      return service;
-    });
-    
-    setStudioServices({
-      ...studioServices,
-      services: updatedServices
-    });
-    
-    toast({
-      title: "Subservice Deleted",
-      description: "The subservice has been removed successfully.",
-    });
+      return null;
+    }).filter((service): service is Service => service !== null);
+
+    setFilteredServices(filtered);
+  }, [searchQuery, services]);
+
+  const toggleServiceExpansion = (serviceId: string) => {
+    setServices(prev => 
+      prev.map(service => {
+        if (service.id === serviceId) {
+          return { ...service, isExpanded: !service.isExpanded };
+        }
+        return service;
+      })
+    );
   };
 
-  const handleDeleteClothingItem = (serviceId: string, subServiceId: string, itemId: string) => {
-    if (!studioServices) return;
-    
-    const updatedServices = studioServices.services.map(service => {
-      if (service.id === serviceId) {
-        const updatedSubServices = service.subServices.map(subService => {
-          if (subService.id === subServiceId) {
-            return {
-              ...subService,
-              clothingItems: subService.clothingItems.filter(item => item.id !== itemId)
-            };
-          }
-          return subService;
-        });
-        
-        return { ...service, subServices: updatedSubServices };
-      }
-      return service;
-    });
-    
-    setStudioServices({
-      ...studioServices,
-      services: updatedServices
-    });
-    
-    toast({
-      title: "Item Deleted",
-      description: "The clothing item has been removed successfully.",
-    });
-  };
-
-  const saveService = (serviceData: z.infer<typeof serviceSchema>) => {
-    if (!studioServices) return;
-    
-    if (editingService) {
-      const isNew = editingService.id.startsWith('new-service');
-      
-      if (isNew) {
-        // Add new service
-        const newService: Service = {
-          id: `serv-${Date.now()}`,
-          title: serviceData.title,
-          description: serviceData.description,
-          subServices: [],
-          isExpanded: true,
-        };
-        
-        setStudioServices({
-          ...studioServices,
-          services: [...studioServices.services, newService]
-        });
-      } else {
-        // Update existing service
-        const updatedServices = studioServices.services.map(service => {
-          if (service.id === editingService.id) {
-            return {
-              ...service,
-              title: serviceData.title,
-              description: serviceData.description,
-            };
-          }
-          return service;
-        });
-        
-        setStudioServices({
-          ...studioServices,
-          services: updatedServices
-        });
-      }
-      
-      setEditingService(null);
-      toast({
-        title: "Service Saved",
-        description: isNew ? "New service added successfully." : "Service updated successfully.",
-      });
-    }
-  };
-
-  const saveSubService = (subServiceData: z.infer<typeof subServiceSchema>) => {
-    if (!studioServices || !editingService) return;
-    
-    const isNew = editingSubService?.id.startsWith('new-subservice');
-    
-    const updatedServices = studioServices.services.map(service => {
-      if (service.id === editingService.id) {
-        let updatedSubServices;
-        
-        if (isNew) {
-          // Add new subservice
-          const newSubService: SubService = {
-            id: `sub-${Date.now()}`,
-            name: subServiceData.name,
-            pricePerUnit: subServiceData.pricePerUnit,
-            priceUnit: subServiceData.priceUnit,
-            clothingItems: [],
-            isExpanded: true,
+  const toggleSubserviceExpansion = (serviceId: string, subserviceId: string) => {
+    setServices(prev => 
+      prev.map(service => {
+        if (service.id === serviceId) {
+          return {
+            ...service,
+            subservices: service.subservices.map(subservice => {
+              if (subservice.id === subserviceId) {
+                return { ...subservice, isExpanded: !subservice.isExpanded };
+              }
+              return subservice;
+            })
           };
-          
-          updatedSubServices = [...service.subServices, newSubService];
-        } else {
-          // Update existing subservice
-          updatedSubServices = service.subServices.map(subService => {
-            if (subService.id === editingSubService?.id) {
-              return {
-                ...subService,
-                name: subServiceData.name,
-                pricePerUnit: subServiceData.pricePerUnit,
-                priceUnit: subServiceData.priceUnit,
-              };
-            }
-            return subService;
+        }
+        return service;
+      })
+    );
+  };
+
+  const handleDeleteClick = (type: 'service' | 'subservice' | 'item', id: string, name: string, parentId?: string, subParentId?: string) => {
+    setItemToDelete({ type, id, name, parentId, subParentId });
+    setIsDeleteDialogOpen(true);
+  };
+
+  const executeDelete = () => {
+    if (!itemToDelete) return;
+
+    const { type, id, parentId, subParentId } = itemToDelete;
+
+    switch (type) {
+      case 'service':
+        setServices(prev => prev.filter(service => service.id !== id));
+        toast({
+          title: "Service Deleted",
+          description: `${itemToDelete.name} has been successfully removed.`,
+          duration: 3000,
+        });
+        break;
+      case 'subservice':
+        if (parentId) {
+          setServices(prev => 
+            prev.map(service => {
+              if (service.id === parentId) {
+                return {
+                  ...service,
+                  subservices: service.subservices.filter(subservice => subservice.id !== id)
+                };
+              }
+              return service;
+            })
+          );
+          toast({
+            title: "Subservice Deleted",
+            description: `${itemToDelete.name} has been successfully removed.`,
+            duration: 3000,
           });
         }
-        
-        return { ...service, subServices: updatedSubServices };
-      }
-      return service;
-    });
-    
-    setStudioServices({
-      ...studioServices,
-      services: updatedServices
-    });
-    
-    setEditingSubService(null);
-    toast({
-      title: "Subservice Saved",
-      description: isNew ? "New subservice added successfully." : "Subservice updated successfully.",
-    });
-  };
-
-  const saveClothingItem = (itemData: z.infer<typeof clothingItemSchema>) => {
-    if (!studioServices || !editingService || !editingSubService) return;
-    
-    const isNew = editingClothingItem?.id.startsWith('new-clothing');
-    
-    const updatedServices = studioServices.services.map(service => {
-      if (service.id === editingService.id) {
-        const updatedSubServices = service.subServices.map(subService => {
-          if (subService.id === editingSubService.id) {
-            let updatedItems;
-            
-            if (isNew) {
-              // Add new clothing item
-              const newItem: ClothingItem = {
-                id: `item-${Date.now()}`,
-                name: itemData.name,
-                standardPrice: itemData.standardPrice,
-                expressPrice: itemData.expressPrice,
-              };
-              
-              updatedItems = [...subService.clothingItems, newItem];
-            } else {
-              // Update existing clothing item
-              updatedItems = subService.clothingItems.map(item => {
-                if (item.id === editingClothingItem?.id) {
-                  return {
-                    ...item,
-                    name: itemData.name,
-                    standardPrice: itemData.standardPrice,
-                    expressPrice: itemData.expressPrice,
-                  };
-                }
-                return item;
-              });
-            }
-            
-            return { ...subService, clothingItems: updatedItems };
-          }
-          return subService;
-        });
-        
-        return { ...service, subServices: updatedSubServices };
-      }
-      return service;
-    });
-    
-    setStudioServices({
-      ...studioServices,
-      services: updatedServices
-    });
-    
-    setEditingClothingItem(null);
-    toast({
-      title: "Clothing Item Saved",
-      description: isNew ? "New clothing item added successfully." : "Clothing item updated successfully.",
-    });
-  };
-
-  // Filter services based on search term
-  const filteredServices = studioServices?.services.filter(service => {
-    const searchLower = searchTerm.toLowerCase();
-    
-    // Check if service title or description matches
-    if (service.title.toLowerCase().includes(searchLower) || 
-        (service.description && service.description.toLowerCase().includes(searchLower))) {
-      return true;
+        break;
+      case 'item':
+        if (parentId && subParentId) {
+          setServices(prev => 
+            prev.map(service => {
+              if (service.id === parentId) {
+                return {
+                  ...service,
+                  subservices: service.subservices.map(subservice => {
+                    if (subservice.id === subParentId) {
+                      return {
+                        ...subservice,
+                        items: subservice.items.filter(item => item.id !== id)
+                      };
+                    }
+                    return subservice;
+                  })
+                };
+              }
+              return service;
+            })
+          );
+          toast({
+            title: "Item Deleted",
+            description: `${itemToDelete.name} has been successfully removed.`,
+            duration: 3000,
+          });
+        }
+        break;
     }
+
+    setIsDeleteDialogOpen(false);
+    setItemToDelete(null);
+  };
+
+  const handleAddService = () => {
+    if (newServiceName.trim() === '') {
+      toast({
+        title: "Validation Error",
+        description: "Service name cannot be empty",
+        variant: "destructive",
+        duration: 3000,
+      });
+      return;
+    }
+
+    const newService: Service = {
+      id: `service-${Date.now()}`,
+      name: newServiceName.trim(),
+      subservices: [],
+      isExpanded: false
+    };
+
+    setServices(prev => [...prev, newService]);
+    setIsAddServiceModalOpen(false);
+    setNewServiceName('');
     
-    // Check if any subservice matches
-    const subServiceMatch = service.subServices.some(subService => {
-      if (subService.name.toLowerCase().includes(searchLower)) {
-        return true;
-      }
-      
-      // Check if any clothing item matches
-      return subService.clothingItems.some(item => 
-        item.name.toLowerCase().includes(searchLower)
-      );
+    setSuccessMessage({
+      title: "Service Added",
+      message: `${newServiceName.trim()} has been successfully added.`
     });
+    setIsSuccessDialogOpen(true);
+  };
+
+  const handleAddSubservice = () => {
+    if (newSubserviceName.trim() === '') {
+      toast({
+        title: "Validation Error",
+        description: "Subservice name cannot be empty",
+        variant: "destructive",
+        duration: 3000,
+      });
+      return;
+    }
+
+    if (!currentParentId) return;
+
+    const newSubservice: Subservice = {
+      id: `subservice-${Date.now()}`,
+      name: newSubserviceName.trim(),
+      pricePerUnit: newSubservicePricePerUnit.trim() || undefined,
+      unit: newSubserviceUnit.trim() || undefined,
+      items: [],
+      isExpanded: false
+    };
+
+    setServices(prev => 
+      prev.map(service => {
+        if (service.id === currentParentId) {
+          return {
+            ...service,
+            subservices: [...service.subservices, newSubservice],
+            isExpanded: true // Auto-expand parent service
+          };
+        }
+        return service;
+      })
+    );
+
+    setIsAddSubserviceModalOpen(false);
+    setNewSubserviceName('');
+    setNewSubservicePricePerUnit('');
+    setNewSubserviceUnit('');
+    setCurrentParentId(null);
     
-    return subServiceMatch;
-  });
+    setSuccessMessage({
+      title: "Subservice Added",
+      message: `${newSubserviceName.trim()} has been successfully added.`
+    });
+    setIsSuccessDialogOpen(true);
+  };
 
-  if (loading) {
-    return (
-      <AdminLayout>
-        <div className="flex items-center justify-center h-96">
-          <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-admin-primary"></div>
-        </div>
-      </AdminLayout>
-    );
-  }
+  const handleAddItem = () => {
+    if (newItemName.trim() === '' || !newItemPrice) {
+      toast({
+        title: "Validation Error",
+        description: "Item name and price are required",
+        variant: "destructive",
+        duration: 3000,
+      });
+      return;
+    }
 
-  if (!studioServices) {
-    return (
-      <AdminLayout>
-        <div className="flex flex-col items-center justify-center h-96">
-          <h2 className="text-xl font-semibold text-gray-700 mb-4">Studio services not found</h2>
-          <Button onClick={handleBackClick} variant="outline" className="flex items-center">
-            <ArrowLeft className="mr-2 h-4 w-4" />
-            Back to Studios
-          </Button>
-        </div>
-      </AdminLayout>
+    if (!currentParentId || !selectedSubserviceId) return;
+
+    const newItem: ClothingItem = {
+      id: `item-${Date.now()}`,
+      name: newItemName.trim(),
+      price: parseFloat(newItemPrice) || 0
+    };
+
+    setServices(prev => 
+      prev.map(service => {
+        if (service.id === currentParentId) {
+          return {
+            ...service,
+            isExpanded: true, // Auto-expand parent service
+            subservices: service.subservices.map(subservice => {
+              if (subservice.id === selectedSubserviceId) {
+                return {
+                  ...subservice,
+                  isExpanded: true, // Auto-expand parent subservice
+                  items: [...subservice.items, newItem]
+                };
+              }
+              return subservice;
+            })
+          };
+        }
+        return service;
+      })
     );
-  }
+
+    setIsAddItemModalOpen(false);
+    setNewItemName('');
+    setNewItemPrice('');
+    setCurrentParentId(null);
+    setSelectedSubserviceId(null);
+    
+    setSuccessMessage({
+      title: "Item Added",
+      message: `${newItemName.trim()} has been successfully added.`
+    });
+    setIsSuccessDialogOpen(true);
+  };
+
+  const toggleItemEditMode = (serviceId: string, subserviceId: string, itemId: string) => {
+    setServices(prev => 
+      prev.map(service => {
+        if (service.id === serviceId) {
+          return {
+            ...service,
+            subservices: service.subservices.map(subservice => {
+              if (subservice.id === subserviceId) {
+                return {
+                  ...subservice,
+                  items: subservice.items.map(item => {
+                    if (item.id === itemId) {
+                      return { ...item, isEditing: !item.isEditing };
+                    }
+                    return { ...item, isEditing: false };
+                  })
+                };
+              }
+              return {
+                ...subservice,
+                items: subservice.items.map(item => ({ ...item, isEditing: false }))
+              };
+            })
+          };
+        }
+        return {
+          ...service,
+          subservices: service.subservices.map(subservice => ({
+            ...subservice,
+            items: subservice.items.map(item => ({ ...item, isEditing: false }))
+          }))
+        };
+      })
+    );
+  };
+
+  const updateItemName = (serviceId: string, subserviceId: string, itemId: string, newName: string) => {
+    setServices(prev => 
+      prev.map(service => {
+        if (service.id === serviceId) {
+          return {
+            ...service,
+            subservices: service.subservices.map(subservice => {
+              if (subservice.id === subserviceId) {
+                return {
+                  ...subservice,
+                  items: subservice.items.map(item => {
+                    if (item.id === itemId) {
+                      return { ...item, name: newName };
+                    }
+                    return item;
+                  })
+                };
+              }
+              return subservice;
+            })
+          };
+        }
+        return service;
+      })
+    );
+  };
+
+  const updateItemPrice = (serviceId: string, subserviceId: string, itemId: string, newPriceStr: string) => {
+    const newPrice = parseFloat(newPriceStr);
+    if (isNaN(newPrice)) return;
+
+    setServices(prev => 
+      prev.map(service => {
+        if (service.id === serviceId) {
+          return {
+            ...service,
+            subservices: service.subservices.map(subservice => {
+              if (subservice.id === subserviceId) {
+                return {
+                  ...subservice,
+                  items: subservice.items.map(item => {
+                    if (item.id === itemId) {
+                      return { ...item, price: newPrice };
+                    }
+                    return item;
+                  })
+                };
+              }
+              return subservice;
+            })
+          };
+        }
+        return service;
+      })
+    );
+  };
+
+  const saveItemEdit = (serviceId: string, subserviceId: string, itemId: string) => {
+    setServices(prev => 
+      prev.map(service => {
+        if (service.id === serviceId) {
+          return {
+            ...service,
+            subservices: service.subservices.map(subservice => {
+              if (subservice.id === subserviceId) {
+                return {
+                  ...subservice,
+                  items: subservice.items.map(item => {
+                    if (item.id === itemId) {
+                      return { ...item, isEditing: false };
+                    }
+                    return item;
+                  })
+                };
+              }
+              return subservice;
+            })
+          };
+        }
+        return service;
+      })
+    );
+
+    toast({
+      title: "Item Updated",
+      description: "Item has been successfully updated.",
+      duration: 2000,
+    });
+  };
+
+  const handleFilterChange = (filter: 'all' | 'services' | 'subservices' | 'items') => {
+    setActiveFilter(filter);
+    
+    // Expand services/subservices based on the selected filter
+    setServices(prev => 
+      prev.map(service => ({
+        ...service,
+        isExpanded: filter === 'all' ? false : 
+                    filter === 'services' ? true :
+                    filter === 'subservices' || filter === 'items',
+        subservices: service.subservices.map(subservice => ({
+          ...subservice,
+          isExpanded: filter === 'all' ? false :
+                      filter === 'services' ? false :
+                      filter === 'subservices' ? true :
+                      filter === 'items'
+        }))
+      }))
+    );
+  };
+
+  const handleEditServiceToggle = (newMode: 'list' | 'edit') => {
+    setViewMode(newMode);
+    
+    // Reset editing states when switching modes
+    setServices(prev => 
+      prev.map(service => ({
+        ...service,
+        isEditing: false,
+        subservices: service.subservices.map(subservice => ({
+          ...subservice,
+          isEditing: false,
+          items: subservice.items.map(item => ({
+            ...item,
+            isEditing: false
+          }))
+        }))
+      }))
+    );
+  };
 
   return (
     <AdminLayout>
       <PageHeader 
-        title={`${studioServices.studioName} Services`}
-        subtitle={`Manage services for ${studioServices.studioName} (ID: ${studioServices.studioId})`}
-        backButton={
-          <Button variant="outline" size="sm" onClick={handleBackClick} className="mr-2">
-            <ChevronLeft className="h-4 w-4 mr-1" />
-            Back
-          </Button>
-        }
+        title="Studio Services" 
+        subtitle={`Manage services for Studio ID: ${studioId}`}
       >
-        <div className="flex space-x-2">
-          <div className="relative w-64">
-            <Search className="absolute left-2 top-2.5 h-4 w-4 text-gray-400" />
-            <Input
-              placeholder="Search services..."
-              className="pl-8"
-              value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
-            />
-            {searchTerm && (
-              <button 
-                className="absolute right-2 top-2.5"
-                onClick={() => setSearchTerm("")}
-              >
-                <X className="h-4 w-4 text-gray-400" />
-              </button>
-            )}
-          </div>
-          <Button className="bg-admin-primary text-white" onClick={handleAddNewService}>
-            <Plus className="h-4 w-4 mr-2" />
-            Add New Service
-          </Button>
+        <div className="flex items-center gap-3">
+          <button
+            onClick={() => navigate('/studios')}
+            className="flex items-center gap-1 text-gray-600 hover:text-gray-900"
+          >
+            <ArrowLeft className="h-4 w-4" />
+            <span>Back to Studios</span>
+          </button>
+          <Tabs value={viewMode} onValueChange={(v) => handleEditServiceToggle(v as 'list' | 'edit')} className="ml-4">
+            <TabsList>
+              <TabsTrigger value="list">View Services</TabsTrigger>
+              <TabsTrigger value="edit">Edit Services</TabsTrigger>
+            </TabsList>
+          </Tabs>
         </div>
       </PageHeader>
 
-      <Tabs defaultValue="view" className="w-full" onValueChange={setCurrentTab}>
-        <TabsList className="w-full max-w-xs mb-6">
-          <TabsTrigger value="view" className="flex-1">View Services</TabsTrigger>
-          <TabsTrigger value="edit" className="flex-1">Edit Services</TabsTrigger>
-        </TabsList>
-        
-        <TabsContent value="view" className="space-y-6">
-          {filteredServices && filteredServices.length > 0 ? (
-            filteredServices.map((service) => (
-              <Card key={service.id} className="overflow-hidden">
-                <CardHeader 
-                  className="bg-white pb-2 cursor-pointer"
-                  onClick={() => toggleServiceExpansion(service.id)}
+      <div className="bg-white rounded-lg shadow-sm mb-8">
+        <div className="p-6">
+          <Tabs value={viewMode} onValueChange={(v) => handleEditServiceToggle(v as 'list' | 'edit')}>
+            <TabsContent value="list" className="mt-0">
+              <div className="mb-6 flex flex-col sm:flex-row justify-between items-center space-y-4 sm:space-y-0">
+                <div className="relative w-full sm:w-96">
+                  <Search className="absolute left-3 top-2.5 h-4 w-4 text-gray-400" />
+                  <input
+                    ref={searchInputRef}
+                    type="text"
+                    placeholder="Search services, items or prices..."
+                    value={searchQuery}
+                    onChange={(e) => setSearchQuery(e.target.value)}
+                    className="pl-10 pr-4 py-2 w-full border rounded-md focus:outline-none focus:ring-2 focus:ring-admin-primary/20 focus:border-admin-primary/40"
+                  />
+                  {searchQuery && (
+                    <button
+                      onClick={() => setSearchQuery('')}
+                      className="absolute right-3 top-2.5 text-gray-400 hover:text-gray-600"
+                    >
+                      <X className="h-4 w-4" />
+                    </button>
+                  )}
+                </div>
+                <Button 
+                  variant="service" 
+                  className="w-full sm:w-auto"
+                  onClick={() => setIsAddServiceModalOpen(true)}
                 >
-                  <div className="flex justify-between items-center">
-                    <div>
-                      <CardTitle className="text-lg font-semibold text-gray-800">{service.title}</CardTitle>
-                      {service.description && (
-                        <CardDescription className="text-sm text-gray-500">{service.description}</CardDescription>
-                      )}
-                    </div>
-                    {service.isExpanded ? (
-                      <ChevronUp className="h-5 w-5 text-gray-400" />
-                    ) : (
-                      <ChevronDown className="h-5 w-5 text-gray-400" />
-                    )}
-                  </div>
-                </CardHeader>
-                
-                {service.isExpanded && (
-                  <CardContent className="pt-4">
-                    <div className="space-y-4">
-                      {service.subServices.map((subService) => (
-                        <div key={subService.id} className="border rounded-md">
-                          <div 
-                            className="flex justify-between items-center p-3 cursor-pointer bg-gray-50"
-                            onClick={() => toggleSubServiceExpansion(service.id, subService.id)}
-                          >
-                            <div className="flex items-center">
-                              <h3 className="text-md font-medium">{subService.name}</h3>
-                              {subService.pricePerUnit && (
-                                <span className="ml-2 text-sm text-gray-500">
-                                  (₹{subService.pricePerUnit} {subService.priceUnit})
-                                </span>
-                              )}
+                  <Plus className="h-4 w-4" />
+                  <span>Add New Service</span>
+                </Button>
+              </div>
+
+              <div className="flex flex-wrap gap-2 mb-4">
+                <button
+                  onClick={() => handleFilterChange('all')}
+                  className={`px-3 py-1.5 text-sm rounded-full transition-colors ${
+                    activeFilter === 'all' 
+                      ? 'bg-admin-primary text-white' 
+                      : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
+                  }`}
+                >
+                  All
+                </button>
+                <button
+                  onClick={() => handleFilterChange('services')}
+                  className={`px-3 py-1.5 text-sm rounded-full transition-colors ${
+                    activeFilter === 'services' 
+                      ? 'bg-admin-primary text-white' 
+                      : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
+                  }`}
+                >
+                  Services
+                </button>
+                <button
+                  onClick={() => handleFilterChange('subservices')}
+                  className={`px-3 py-1.5 text-sm rounded-full transition-colors ${
+                    activeFilter === 'subservices' 
+                      ? 'bg-admin-primary text-white' 
+                      : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
+                  }`}
+                >
+                  Subservices
+                </button>
+                <button
+                  onClick={() => handleFilterChange('items')}
+                  className={`px-3 py-1.5 text-sm rounded-full transition-colors ${
+                    activeFilter === 'items' 
+                      ? 'bg-admin-primary text-white' 
+                      : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
+                  }`}
+                >
+                  Items
+                </button>
+              </div>
+
+              {filteredServices.length === 0 ? (
+                <div className="text-center py-10 border border-dashed rounded-lg">
+                  <PackageOpen className="mx-auto h-12 w-12 text-gray-300" />
+                  <h3 className="mt-4 text-lg font-medium text-gray-600">No services found</h3>
+                  <p className="mt-1 text-sm text-gray-500">
+                    {searchQuery ? "Try a different search term or add a new service." : "Add your first service to get started."}
+                  </p>
+                  <button
+                    className="mt-4 px-4 py-2 bg-admin-primary text-white rounded-md hover:bg-admin-primary/90 transition-colors"
+                    onClick={() => {
+                      setIsAddServiceModalOpen(true);
+                      setSearchQuery('');
+                    }}
+                  >
+                    <Plus className="inline-block h-4 w-4 mr-2" />
+                    Add Service
+                  </button>
+                </div>
+              ) : (
+                <div className="space-y-4">
+                  {filteredServices.map(service => (
+                    <div 
+                      key={service.id} 
+                      className="border rounded-lg overflow-hidden transition-all duration-200 hover:shadow-md"
+                    >
+                      <div 
+                        className="flex items-center justify-between px-4 py-3 bg-gray-50 cursor-pointer"
+                        onClick={() => toggleServiceExpansion(service.id)}
+                      >
+                        <div className="flex items-center">
+                          {service.isExpanded ? (
+                            <ChevronDown className="h-5 w-5 text-gray-500 mr-2" />
+                          ) : (
+                            <ChevronRight className="h-5 w-5 text-gray-500 mr-2" />
+                          )}
+                          <h3 className="font-medium text-gray-800">{service.name}</h3>
+                          <Badge variant="outline" className="ml-3 bg-gray-100">
+                            {service.subservices.length} subservices
+                          </Badge>
+                        </div>
+                      </div>
+                      
+                      {service.isExpanded && (
+                        <div className="px-4 py-2 bg-white">
+                          {service.subservices.length === 0 ? (
+                            <div className="text-center py-4 text-gray-500 text-sm italic">
+                              No subservices found
                             </div>
-                            {subService.isExpanded ? (
-                              <ChevronUp className="h-4 w-4 text-gray-400" />
-                            ) : (
-                              <ChevronDown className="h-4 w-4 text-gray-400" />
-                            )}
-                          </div>
-                          
-                          {subService.isExpanded && (
-                            <div className="p-3">
-                              <Table>
-                                <TableHeader>
-                                  <TableRow className="bg-gray-100">
-                                    <TableHead>Item</TableHead>
-                                    <TableHead className="text-right">Standard Price (₹)</TableHead>
-                                    <TableHead className="text-right">Express Price (₹)</TableHead>
-                                  </TableRow>
-                                </TableHeader>
-                                <TableBody>
-                                  {subService.clothingItems.map((item) => (
-                                    <TableRow key={item.id} className="border-b border-gray-100">
-                                      <TableCell className="font-medium">{item.name}</TableCell>
-                                      <TableCell className="text-right">{item.standardPrice}</TableCell>
-                                      <TableCell className="text-right">{item.expressPrice || "-"}</TableCell>
-                                    </TableRow>
-                                  ))}
-                                </TableBody>
-                              </Table>
+                          ) : (
+                            <div className="space-y-3 pl-6">
+                              {service.subservices.map(subservice => (
+                                <div key={subservice.id} className="border-l-2 border-gray-200 pl-4">
+                                  <div 
+                                    className="flex items-center justify-between py-2 cursor-pointer"
+                                    onClick={() => toggleSubserviceExpansion(service.id, subservice.id)}
+                                  >
+                                    <div className="flex items-center">
+                                      {subservice.isExpanded ? (
+                                        <ChevronDown className="h-4 w-4 text-gray-500 mr-2" />
+                                      ) : (
+                                        <ChevronRight className="h-4 w-4 text-gray-500 mr-2" />
+                                      )}
+                                      <h4 className="font-medium text-gray-700">{subservice.name}</h4>
+                                      {subservice.pricePerUnit && (
+                                        <span className="ml-2 text-sm text-gray-500">
+                                          (₹{subservice.pricePerUnit} {subservice.unit})
+                                        </span>
+                                      )}
+                                      <Badge variant="outline" className="ml-3 bg-gray-50">
+                                        {subservice.items.length} items
+                                      </Badge>
+                                    </div>
+                                  </div>
+                                  
+                                  {subservice.isExpanded && (
+                                    <div className="ml-6 my-2 bg-gray-50 rounded-md p-3">
+                                      {subservice.items.length === 0 ? (
+                                        <div className="text-center py-2 text-gray-500 text-sm italic">
+                                          No items found
+                                        </div>
+                                      ) : (
+                                        <div className="space-y-2">
+                                          {subservice.items.map(item => (
+                                            <div 
+                                              key={item.id} 
+                                              className="flex items-center justify-between py-1.5 px-2 rounded-md hover:bg-gray-100"
+                                            >
+                                              <div className="flex items-center">
+                                                <Shirt className="h-4 w-4 text-gray-400 mr-2" />
+                                                <span className="text-gray-700">{item.name}</span>
+                                              </div>
+                                              <div className="flex items-center">
+                                                <span className="font-medium text-gray-800">₹{item.price.toFixed(2)}</span>
+                                              </div>
+                                            </div>
+                                          ))}
+                                        </div>
+                                      )}
+                                    </div>
+                                  )}
+                                </div>
+                              ))}
                             </div>
                           )}
                         </div>
-                      ))}
-                    </div>
-                  </CardContent>
-                )}
-              </Card>
-            ))
-          ) : (
-            <div className="flex flex-col items-center justify-center p-12 border rounded-md bg-gray-50">
-              <p className="text-gray-500 mb-4">
-                {searchTerm ? "No services match your search criteria." : "No services available for this studio."}
-              </p>
-              <Button onClick={handleAddNewService}>
-                <Plus className="h-4 w-4 mr-2" />
-                Add New Service
-              </Button>
-            </div>
-          )}
-        </TabsContent>
-        
-        <TabsContent value="edit" className="space-y-6">
-          {/* Service Edit Form */}
-          {editingService && (
-            <Card className="mb-6 border-2 border-blue-200">
-              <CardHeader>
-                <CardTitle className="text-lg">
-                  {editingService.id.startsWith('new-service') ? "Add New Service" : "Edit Service"}
-                </CardTitle>
-              </CardHeader>
-              <CardContent>
-                <Form {...serviceForm}>
-                  <form onSubmit={serviceForm.handleSubmit(saveService)} className="space-y-4">
-                    <FormField
-                      control={serviceForm.control}
-                      name="title"
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel>Service Title</FormLabel>
-                          <FormControl>
-                            <Input placeholder="Enter service title" {...field} />
-                          </FormControl>
-                          <FormMessage />
-                        </FormItem>
                       )}
-                    />
-                    
-                    <FormField
-                      control={serviceForm.control}
-                      name="description"
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel>Description (Optional)</FormLabel>
-                          <FormControl>
-                            <Textarea placeholder="Enter service description" {...field} />
-                          </FormControl>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
-                    
-                    <div className="flex justify-end space-x-2 pt-2">
-                      <Button 
-                        type="button" 
-                        variant="outline" 
-                        onClick={() => setEditingService(null)}
-                      >
-                        Cancel
-                      </Button>
-                      <Button type="submit">
-                        <Save className="h-4 w-4 mr-2" />
-                        Save Service
-                      </Button>
                     </div>
-                  </form>
-                </Form>
-              </CardContent>
-            </Card>
-          )}
-          
-          {/* SubService Edit Form */}
-          {editingSubService && editingService && (
-            <Card className="mb-6 border-2 border-blue-200">
-              <CardHeader>
-                <CardTitle className="text-lg">
-                  {editingSubService.id.startsWith('new-subservice') ? "Add New Subservice" : "Edit Subservice"}
-                </CardTitle>
-                <CardDescription>
-                  For service: {editingService.title}
-                </CardDescription>
-              </CardHeader>
-              <CardContent>
-                <Form {...subServiceForm}>
-                  <form onSubmit={subServiceForm.handleSubmit(saveSubService)} className="space-y-4">
-                    <FormField
-                      control={subServiceForm.control}
-                      name="name"
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel>Subservice Name</FormLabel>
-                          <FormControl>
-                            <Input placeholder="Enter subservice name" {...field} />
-                          </FormControl>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
-                    
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                      <FormField
-                        control={subServiceForm.control}
-                        name="pricePerUnit"
-                        render={({ field }) => (
-                          <FormItem>
-                            <FormLabel>Price Per Unit (Optional)</FormLabel>
-                            <FormControl>
-                              <Input type="number" {...field} />
-                            </FormControl>
-                            <FormMessage />
-                          </FormItem>
-                        )}
-                      />
-                      
-                      <FormField
-                        control={subServiceForm.control}
-                        name="priceUnit"
-                        render={({ field }) => (
-                          <FormItem>
-                            <FormLabel>Price Unit (Optional)</FormLabel>
-                            <Select
-                              onValueChange={field.onChange}
-                              defaultValue={field.value}
-                            >
-                              <FormControl>
-                                <SelectTrigger>
-                                  <SelectValue placeholder="Select unit" />
-                                </SelectTrigger>
-                              </FormControl>
-                              <SelectContent>
-                                <SelectItem value="Per Kg">Per Kg</SelectItem>
-                                <SelectItem value="Per Unit">Per Unit</SelectItem>
-                                <SelectItem value="Per Sq Ft">Per Sq Ft</SelectItem>
-                                <SelectItem value="Per Pair">Per Pair</SelectItem>
-                              </SelectContent>
-                            </Select>
-                            <FormMessage />
-                          </FormItem>
-                        )}
-                      />
-                    </div>
-                    
-                    <div className="flex justify-end space-x-2 pt-2">
-                      <Button 
-                        type="button" 
-                        variant="outline" 
-                        onClick={() => setEditingSubService(null)}
-                      >
-                        Cancel
-                      </Button>
-                      <Button type="submit">
-                        <Save className="h-4 w-4 mr-2" />
-                        Save Subservice
-                      </Button>
-                    </div>
-                  </form>
-                </Form>
-              </CardContent>
-            </Card>
-          )}
-          
-          {/* Clothing Item Edit Form */}
-          {editingClothingItem && editingSubService && editingService && (
-            <Card className="mb-6 border-2 border-blue-200">
-              <CardHeader>
-                <CardTitle className="text-lg">
-                  {editingClothingItem.id.startsWith('new-clothing') ? "Add New Clothing Item" : "Edit Clothing Item"}
-                </CardTitle>
-                <CardDescription>
-                  For {editingService.title} / {editingSubService.name}
-                </CardDescription>
-              </CardHeader>
-              <CardContent>
-                <Form {...clothingItemForm}>
-                  <form onSubmit={clothingItemForm.handleSubmit(saveClothingItem)} className="space-y-4">
-                    <FormField
-                      control={clothingItemForm.control}
-                      name="name"
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel>Item Name</FormLabel>
-                          <FormControl>
-                            <Input placeholder="Enter item name" {...field} />
-                          </FormControl>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
-                    
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                      <FormField
-                        control={clothingItemForm.control}
-                        name="standardPrice"
-                        render={({ field }) => (
-                          <FormItem>
-                            <FormLabel>Standard Price (₹)</FormLabel>
-                            <FormControl>
-                              <Input type="number" {...field} />
-                            </FormControl>
-                            <FormMessage />
-                          </FormItem>
-                        )}
-                      />
-                      
-                      <FormField
-                        control={clothingItemForm.control}
-                        name="expressPrice"
-                        render={({ field }) => (
-                          <FormItem>
-                            <FormLabel>Express Price (₹) (Optional)</FormLabel>
-                            <FormControl>
-                              <Input type="number" {...field} />
-                            </FormControl>
-                            <FormMessage />
-                          </FormItem>
-                        )}
-                      />
-                    </div>
-                    
-                    <div className="flex justify-end space-x-2 pt-2">
-                      <Button 
-                        type="button" 
-                        variant="outline" 
-                        onClick={() => setEditingClothingItem(null)}
-                      >
-                        Cancel
-                      </Button>
-                      <Button type="submit">
-                        <Save className="h-4 w-4 mr-2" />
-                        Save Item
-                      </Button>
-                    </div>
-                  </form>
-                </Form>
-              </CardContent>
-            </Card>
-          )}
-          
-          {/* Services List for Editing */}
-          <div className="space-y-6">
-            {filteredServices && filteredServices.length > 0 ? (
-              filteredServices.map((service) => (
-                <Card key={service.id} className="overflow-hidden">
-                  <CardHeader className="bg-white pb-2">
-                    <div className="flex justify-between items-center">
-                      <div>
-                        <CardTitle className="text-lg font-semibold text-gray-800">{service.title}</CardTitle>
-                        {service.description && (
-                          <CardDescription className="text-sm text-gray-500">{service.description}</CardDescription>
-                        )}
-                      </div>
-                      <div className="flex space-x-2">
-                        <Button 
-                          variant="outline" 
-                          size="sm" 
-                          onClick={() => handleAddSubService(service.id)}
-                        >
-                          <Plus className="h-4 w-4 mr-1" />
-                          Add Subservice
-                        </Button>
-                        <Button 
-                          variant="outline" 
-                          size="sm" 
-                          onClick={() => handleEditService(service)}
-                        >
-                          <Edit className="h-4 w-4 mr-1" />
-                          Edit
-                        </Button>
-                        <Button 
-                          variant="outline" 
-                          size="sm" 
-                          className="text-red-500" 
-                          onClick={() => handleDeleteService(service.id)}
-                        >
-                          <Trash2 className="h-4 w-4" />
-                        </Button>
-                      </div>
-                    </div>
-                  </CardHeader>
-                  
-                  <CardContent className="pt-4">
-                    <div className="space-y-4">
-                      {service.subServices.map((subService) => (
-                        <div key={subService.id} className="border rounded-md">
-                          <div className="flex justify-between items-center p-3 bg-gray-50">
-                            <div className="flex items-center">
-                              <h3 className="text-md font-medium">{subService.name}</h3>
-                              {subService.pricePerUnit && (
-                                <span className="ml-2 text-sm text-gray-500">
-                                  (₹{subService.pricePerUnit} {subService.priceUnit})
-                                </span>
-                              )}
-                            </div>
-                            <div className="flex space-x-2">
-                              <Button 
-                                variant="outline" 
-                                size="sm" 
-                                onClick={() => handleAddClothingItem(service.id, subService.id)}
-                              >
-                                <Plus className="h-4 w-4 mr-1" />
-                                Add Item
-                              </Button>
-                              <Button 
-                                variant="outline" 
-                                size="sm" 
-                                onClick={() => handleEditSubService(service, subService)}
-                              >
-                                <Edit className="h-4 w-4 mr-1" />
-                                Edit
-                              </Button>
-                              <Button 
-                                variant="outline" 
-                                size="sm" 
-                                className="text-red-500" 
-                                onClick={() => handleDeleteSubService(service.id, subService.id)}
-                              >
-                                <Trash2 className="h-4 w-4" />
-                              </Button>
-                            </div>
-                          </div>
-                          
-                          <div className="p-3">
-                            <Table>
-                              <TableHeader>
-                                <TableRow className="bg-gray-100">
-                                  <TableHead>Item</TableHead>
-                                  <TableHead className="text-right">Standard Price (₹)</TableHead>
-                                  <TableHead className="text-right">Express Price (₹)</TableHead>
-                                  <TableHead className="text-right">Actions</TableHead>
-                                </TableRow>
-                              </TableHeader>
-                              <TableBody>
-                                {subService.clothingItems.map((item) => (
-                                  <TableRow key={item.id} className="border-b border-gray-100">
-                                    <TableCell className="font-medium">{item.name}</TableCell>
-                                    <TableCell className="text-right">{item.standardPrice}</TableCell>
-                                    <TableCell className="text-right">{item.expressPrice || "-"}</TableCell>
-                                    <TableCell className="text-right">
-                                      <div className="flex justify-end space-x-2">
-                                        <Button 
-                                          variant="ghost" 
-                                          size="sm" 
-                                          onClick={() => handleEditClothingItem(service, subService, item)}
-                                        >
-                                          <Edit className="h-4 w-4" />
-                                        </Button>
-                                        <Button 
-                                          variant="ghost" 
-                                          size="sm" 
-                                          className="text-red-500" 
-                                          onClick={() => handleDeleteClothingItem(service.id, subService.id, item.id)}
-                                        >
-                                          <Trash2 className="h-4 w-4" />
-                                        </Button>
-                                      </div>
-                                    </TableCell>
-                                  </TableRow>
-                                ))}
-                              </TableBody>
-                            </Table>
-                          </div>
-                        </div>
-                      ))}
-                    </div>
-                  </CardContent>
-                </Card>
-              ))
-            ) : (
-              <div className="flex flex-col items-center justify-center p-12 border rounded-md bg-gray-50">
-                <p className="text-gray-500 mb-4">
-                  {searchTerm ? "No services match your search criteria." : "No services available for this studio."}
-                </p>
-                <Button onClick={handleAddNewService}>
-                  <Plus className="h-4 w-4 mr-2" />
-                  Add New Service
+                  ))}
+                </div>
+              )}
+            </TabsContent>
+
+            <TabsContent value="edit" className="mt-0">
+              <div className="mb-6 flex flex-col sm:flex-row justify-between items-center space-y-4 sm:space-y-0">
+                <div className="relative w-full sm:w-96">
+                  <Search className="absolute left-3 top-2.5 h-4 w-4 text-gray-400" />
+                  <input
+                    type="text"
+                    placeholder="Search services, items or prices..."
+                    value={searchQuery}
+                    onChange={(e) => setSearchQuery(e.target.value)}
+                    className="pl-10 pr-4 py-2 w-full border rounded-md focus:outline-none focus:ring-2 focus:ring-admin-primary/20 focus:border-admin-primary/40"
+                  />
+                  {searchQuery && (
+                    <button
+                      onClick={() => setSearchQuery('')}
+                      className="absolute right-3 top-2.5 text-gray-400 hover:text-gray-600"
+                    >
+                      <X className="h-4 w-4" />
+                    </button>
+                  )}
+                </div>
+                <Button 
+                  variant="service" 
+                  className="w-full sm:w-auto"
+                  onClick={() => setIsAddServiceModalOpen(true)}
+                >
+                  <Plus className="h-4 w-4" />
+                  <span>Add New Service</span>
                 </Button>
               </div>
-            )}
+
+              {filteredServices.length === 0 ? (
+                <div className="text-center py-10 border border-dashed rounded-lg">
+                  <PackageOpen className="mx-auto h-12 w-12 text-gray-300" />
+                  <h3 className="mt-4 text-lg font-medium text-gray-600">No services found</h3>
+                  <p className="mt-1 text-sm text-gray-500">
+                    {searchQuery ? "Try a different search term or add a new service." : "Add your first service to get started."}
+                  </p>
+                  <button
+                    className="mt-4 px-4 py-2 bg-admin-primary text-white rounded-md hover:bg-admin-primary/90 transition-colors"
+                    onClick={() => {
+                      setIsAddServiceModalOpen(true);
+                      setSearchQuery('');
+                    }}
+                  >
+                    <Plus className="inline-block h-4 w-4 mr-2" />
+                    Add Service
+                  </button>
+                </div>
+              ) : (
+                <div className="space-y-4">
+                  {filteredServices.map(service => (
+                    <Card key={service.id} className="transition-all duration-200 hover:shadow-md">
+                      <div className="p-4 bg-gray-50 border-b flex items-center justify-between">
+                        <div 
+                          className="flex items-center cursor-pointer flex-1"
+                          onClick={() => toggleServiceExpansion(service.id)}
+                        >
+                          {service.isExpanded ? (
+                            <ChevronDown className="h-5 w-5 text-gray-500 mr-2" />
+                          ) : (
+                            <ChevronRight className="h-5 w-5 text-gray-500 mr-2" />
+                          )}
+                          <h3 className="font-medium text-gray-800">{service.name}</h3>
+                        </div>
+                        <div className="flex items-center space-x-2">
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            onClick={() => {
+                              setCurrentParentId(service.id);
+                              setIsAddSubserviceModalOpen(true);
+                            }}
+                            className="text-admin-primary hover:text-admin-primary/90"
+                          >
+                            <Plus className="h-4 w-4 mr-1" />
+                            Add Subservice
+                          </Button>
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            onClick={() => handleDeleteClick('service', service.id, service.name)}
+                            className="text-red-500 hover:text-red-600"
+                          >
+                            <Trash2 className="h-4 w-4" />
+                          </Button>
+                        </div>
+                      </div>
+                      
+                      {service.isExpanded && (
+                        <div className="p-4">
+                          {service.subservices.length === 0 ? (
+                            <div className="text-center py-4 text-gray-500 text-sm italic">
+                              No subservices found. 
+                              <Button
+                                variant="link"
+                                onClick={() => {
+                                  setCurrentParentId(service.id);
+                                  setIsAddSubserviceModalOpen(true);
+                                }}
+                                className="text-admin-primary font-medium"
+                              >
+                                Add one now
+                              </Button>
+                            </div>
+                          ) : (
+                            <div className="space-y-4 pl-6">
+                              {service.subservices.map(subservice => (
+                                <div key={subservice.id} className="border-l-2 border-gray-200 pl-4">
+                                  <div className="flex items-center justify-between py-2">
+                                    <div 
+                                      className="flex items-center cursor-pointer flex-1"
+                                      onClick={() => toggleSubserviceExpansion(service.id, subservice.id)}
+                                    >
+                                      {subservice.isExpanded ? (
+                                        <ChevronDown className="h-4 w-4 text-gray-500 mr-2" />
+                                      ) : (
+                                        <ChevronRight className="h-4 w-4 text-gray-500 mr-2" />
+                                      )}
+                                      <h4 className="font-medium text-gray-700">{subservice.name}</h4>
+                                      {subservice.pricePerUnit && (
+                                        <span className="ml-2 text-sm text-gray-500">
+                                          (₹{subservice.pricePerUnit} {subservice.unit})
+                                        </span>
+                                      )}
+                                    </div>
+                                    <div className="flex items-center space-x-2">
+                                      <Button
+                                        variant="ghost"
+                                        size="sm"
+                                        onClick={() => {
+                                          setCurrentParentId(service.id);
+                                          setSelectedSubserviceId(subservice.id);
+                                          setIsAddItemModalOpen(true);
+                                        }}
+                                        className="text-admin-primary hover:text-admin-primary/90"
+                                      >
+                                        <Plus className="h-4 w-4 mr-1" />
+                                        Add Item
+                                      </Button>
+                                      <Button
+                                        variant="ghost"
+                                        size="sm"
+                                        onClick={() => handleDeleteClick('subservice', subservice.id, subservice.name, service.id)}
+                                        className="text-red-500 hover:text-red-600"
+                                      >
+                                        <Trash2 className="h-4 w-4" />
+                                      </Button>
+                                    </div>
+                                  </div>
+                                  
+                                  {subservice.isExpanded && (
+                                    <div className="ml-6 my-2 bg-gray-50 rounded-md p-3">
+                                      {subservice.items.length === 0 ? (
+                                        <div className="text-center py-2 text-gray-500 text-sm italic">
+                                          No items found. 
+                                          <Button
+                                            variant="link"
+                                            onClick={() => {
+                                              setCurrentParentId(service.id);
+                                              setSelectedSubserviceId(subservice.id);
+                                              setIsAddItemModalOpen(true);
+                                            }}
+                                            className="text-admin-primary font-medium"
+                                          >
+                                            Add one now
+                                          </Button>
+                                        </div>
+                                      ) : (
+                                        <div className="space-y-3">
+                                          {subservice.items.map(item => (
+                                            <div 
+                                              key={item.id} 
+                                              className={`p-2 rounded-md ${item.isEditing ? 'bg-blue-50 border border-blue-200' : 'hover:bg-gray-100'}`}
+                                            >
+                                              {item.isEditing ? (
+                                                <div className="flex flex-col sm:flex-row items-start sm:items-center sm:justify-between gap-2">
+                                                  <div className="flex items-center gap-2 flex-1">
+                                                    <Shirt className="h-4 w-4 text-gray-400" />
+                                                    <input
+                                                      type="text"
+                                                      value={item.name}
+                                                      onChange={(e) => updateItemName(service.id, subservice.id, item.id, e.target.value)}
+                                                      className="flex-1 px-2 py-1 border rounded text-sm focus:outline-none focus:ring-2 focus:ring-admin-primary/20"
+                                                      placeholder="Item name"
+                                                    />
+                                                  </div>
+                                                  <div className="flex items-center gap-2 w-full sm:w-auto">
+                                                    <Tag className="h-4 w-4 text-gray-400" />
+                                                    <div className="relative flex items-center">
+                                                      <span className="absolute left-2 text-gray-500">₹</span>
+                                                      <input
+                                                        type="number"
+                                                        value={item.price}
+                                                        onChange={(e) => updateItemPrice(service.id, subservice.id, item.id, e.target.value)}
+                                                        className="pl-6 pr-2 py-1 border rounded text-sm w-24 focus:outline-none focus:ring-2 focus:ring-admin-primary/20"
+                                                        placeholder="Price"
+                                                        min="0"
+                                                        step="0.01"
+                                                      />
+                                                    </div>
+                                                    <Button
+                                                      variant="ghost"
+                                                      size="sm"
+                                                      onClick={() => saveItemEdit(service.id, subservice.id, item.id)}
+                                                      className="text-green-600 hover:text-green-700"
+                                                    >
+                                                      <Check className="h-4 w-4" />
+                                                    </Button>
+                                                    <Button
+                                                      variant="ghost"
+                                                      size="sm"
+                                                      onClick={() => toggleItemEditMode(service.id, subservice.id, item.id)}
+                                                      className="text-gray-500 hover:text-gray-600"
+                                                    >
+                                                      <X className="h-4 w-4" />
+                                                    </Button>
+                                                  </div>
+                                                </div>
+                                              ) : (
+                                                <div className="flex items-center justify-between">
+                                                  <div className="flex items-center">
+                                                    <Shirt className="h-4 w-4 text-gray-400 mr-2" />
+                                                    <span className="text-gray-700">{item.name}</span>
+                                                  </div>
+                                                  <div className="flex items-center space-x-2">
+                                                    <span className="font-medium text-gray-800">₹{item.price.toFixed(2)}</span>
+                                                    <Button
+                                                      variant="ghost"
+                                                      size="sm"
+                                                      onClick={() => toggleItemEditMode(service.id, subservice.id, item.id)}
+                                                      className="text-blue-500 hover:text-blue-600"
+                                                    >
+                                                      <Edit className="h-4 w-4" />
+                                                    </Button>
+                                                    <Button
+                                                      variant="ghost"
+                                                      size="sm"
+                                                      onClick={() => handleDeleteClick('item', item.id, item.name, service.id, subservice.id)}
+                                                      className="text-red-500 hover:text-red-600"
+                                                    >
+                                                      <Trash2 className="h-4 w-4" />
+                                                    </Button>
+                                                  </div>
+                                                </div>
+                                              )}
+                                            </div>
+                                          ))}
+                                        </div>
+                                      )}
+                                    </div>
+                                  )}
+                                </div>
+                              ))}
+                            </div>
+                          )}
+                        </div>
+                      )}
+                    </Card>
+                  ))}
+                </div>
+              )}
+            </TabsContent>
+          </Tabs>
+        </div>
+      </div>
+
+      {/* Delete Confirmation Dialog */}
+      <ConfirmationDialog
+        open={isDeleteDialogOpen}
+        onOpenChange={setIsDeleteDialogOpen}
+        onConfirm={executeDelete}
+        title={`Delete ${itemToDelete?.type === 'service' ? 'Service' : itemToDelete?.type === 'subservice' ? 'Subservice' : 'Item'}`}
+        description={
+          <div className="flex items-center space-x-2">
+            <AlertCircle className="h-5 w-5 text-amber-500" />
+            <span>Are you sure you want to delete "{itemToDelete?.name}"? This action cannot be undone.</span>
           </div>
-        </TabsContent>
-      </Tabs>
+        }
+        confirmText="Delete"
+        confirmWithTimer={3}
+      />
+
+      {/* Add Service Modal */}
+      <Dialog open={isAddServiceModalOpen} onOpenChange={setIsAddServiceModalOpen}>
+        <DialogContent className="sm:max-w-[425px]">
+          <DialogHeader>
+            <DialogTitle>Add New Service</DialogTitle>
+            <DialogDescription>
+              Add a new service category. You can add subservices to it later.
+            </DialogDescription>
+          </DialogHeader>
+          <div className="grid gap-4 py-4">
+            <div className="grid gap-2">
+              <label htmlFor="serviceName" className="text-sm font-medium">
+                Service Name
+              </label>
+              <input
+                id="serviceName"
+                value={newServiceName}
+                onChange={(e) => setNewServiceName(e.target.value)}
+                className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+                placeholder="e.g., Dry Cleaning, Shoe Laundry"
+              />
+            </div>
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setIsAddServiceModalOpen(false)}>
+              Cancel
+            </Button>
+            <Button onClick={handleAddService}>Add Service</Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Add Subservice Modal */}
+      <Dialog open={isAddSubserviceModalOpen} onOpenChange={setIsAddSubserviceModalOpen}>
+        <DialogContent className="sm:max-w-[425px]">
+          <DialogHeader>
+            <DialogTitle>Add New Subservice</DialogTitle>
+            <DialogDescription>
+              Add a new subservice to the selected service category.
+            </DialogDescription>
+          </DialogHeader>
+          <div className="grid gap-4 py-4">
+            <div className="grid gap-2">
+              <label htmlFor="subserviceName" className="text-sm font-medium">
+                Subservice Name
+              </label>
+              <input
+                id="subserviceName"
+                value={newSubserviceName}
+                onChange={(e) => setNewSubserviceName(e.target.value)}
+                className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+                placeholder="e.g., Wash & Fold, Upper Wear"
+              />
+            </div>
+            <div className="grid grid-cols-2 gap-4">
+              <div className="grid gap-2">
+                <label htmlFor="pricePerUnit" className="text-sm font-medium">
+                  Price Per Unit (Optional)
+                </label>
+                <input
+                  id="pricePerUnit"
+                  value={newSubservicePricePerUnit}
+                  onChange={(e) => setNewSubservicePricePerUnit(e.target.value)}
+                  className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+                  placeholder="e.g., 59"
+                />
+              </div>
+              <div className="grid gap-2">
+                <label htmlFor="unit" className="text-sm font-medium">
+                  Unit (Optional)
+                </label>
+                <input
+                  id="unit"
+                  value={newSubserviceUnit}
+                  onChange={(e) => setNewSubserviceUnit(e.target.value)}
+                  className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+                  placeholder="e.g., per Kg"
+                />
+              </div>
+            </div>
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setIsAddSubserviceModalOpen(false)}>
+              Cancel
+            </Button>
+            <Button onClick={handleAddSubservice}>Add Subservice</Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Add Item Modal */}
+      <Dialog open={isAddItemModalOpen} onOpenChange={setIsAddItemModalOpen}>
+        <DialogContent className="sm:max-w-[425px]">
+          <DialogHeader>
+            <DialogTitle>Add New Item</DialogTitle>
+            <DialogDescription>
+              Add a new clothing item to the selected subservice.
+            </DialogDescription>
+          </DialogHeader>
+          <div className="grid gap-4 py-4">
+            <div className="grid gap-2">
+              <label htmlFor="itemName" className="text-sm font-medium">
+                Item Name
+              </label>
+              <input
+                id="itemName"
+                value={newItemName}
+                onChange={(e) => setNewItemName(e.target.value)}
+                className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+                placeholder="e.g., Shirt, Jeans, Coat"
+              />
+            </div>
+            <div className="grid gap-2">
+              <label htmlFor="itemPrice" className="text-sm font-medium">
+                Price (₹)
+              </label>
+              <input
+                id="itemPrice"
+                type="number"
+                value={newItemPrice}
+                onChange={(e) => setNewItemPrice(e.target.value)}
+                className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+                placeholder="e.g., 99"
+                min="0"
+                step="0.01"
+              />
+            </div>
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setIsAddItemModalOpen(false)}>
+              Cancel
+            </Button>
+            <Button onClick={handleAddItem}>Add Item</Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Success Dialog */}
+      <Dialog open={isSuccessDialogOpen} onOpenChange={setIsSuccessDialogOpen}>
+        <DialogContent className="sm:max-w-[425px]">
+          <DialogHeader>
+            <DialogTitle>{successMessage.title}</DialogTitle>
+            <DialogDescription>
+              <div className="flex items-center space-x-2 mt-2">
+                <CheckCircle className="h-5 w-5 text-green-500" />
+                <span>{successMessage.message}</span>
+              </div>
+            </DialogDescription>
+          </DialogHeader>
+          <DialogFooter>
+            <Button onClick={() => setIsSuccessDialogOpen(false)}>
+              OK
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </AdminLayout>
   );
 };
 
 export default StudioServices;
-

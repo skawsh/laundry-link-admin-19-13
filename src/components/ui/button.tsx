@@ -21,6 +21,9 @@ const buttonVariants = cva(
         link: "text-primary underline-offset-4 hover:underline",
         success: "bg-green-600 text-white hover:bg-green-700", // Added green variant
         back: "bg-gray-50 text-gray-600 hover:bg-gray-100 border border-gray-200 rounded-full", // Updated back button variant for icon-only
+        service: "bg-admin-primary text-white hover:bg-admin-primary/90 border border-admin-primary/20 shadow-sm",
+        subservice: "bg-indigo-100 text-indigo-700 hover:bg-indigo-200 border border-indigo-200",
+        item: "bg-gray-100 text-gray-700 hover:bg-gray-200 border border-gray-200",
       },
       size: {
         default: "h-10 px-4 py-2",
