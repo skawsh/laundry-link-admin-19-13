@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect, useRef } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { ArrowLeft } from 'lucide-react';
@@ -44,43 +43,110 @@ const StudioServices: React.FC = () => {
 
   useEffect(() => {
     if (searchQuery === '') {
-      setFilteredServices(services);
+      applyFilters(services, activeFilter);
       return;
     }
 
     const query = searchQuery.toLowerCase().trim();
+    let filteredResults: Service[] = [];
 
-    const filtered = services.map(service => {
-      const matchedSubservices = service.subservices
-        .map(subservice => {
-          const matchedItems = subservice.items.filter(item => 
-            item.name.toLowerCase().includes(query) || 
-            item.price.toString().includes(query)
-          );
+    switch (activeFilter) {
+      case 'services':
+        filteredResults = services
+          .filter(service => service.name.toLowerCase().includes(query))
+          .map(service => ({
+            ...service,
+            isExpanded: true,
+            subservices: service.subservices.map(sub => ({ ...sub, isExpanded: false }))
+          }));
+        break;
 
-          if (matchedItems.length > 0 || subservice.name.toLowerCase().includes(query)) {
-            return {
-              ...subservice,
-              items: matchedItems.length > 0 ? matchedItems : subservice.items,
-              isExpanded: matchedItems.length > 0 || subservice.name.toLowerCase().includes(query)
-            };
-          }
-          return null;
-        })
-        .filter((subservice): subservice is any => subservice !== null);
+      case 'subservices':
+        filteredResults = services
+          .map(service => {
+            const matchedSubservices = service.subservices
+              .filter(subservice => subservice.name.toLowerCase().includes(query));
+            
+            if (matchedSubservices.length > 0) {
+              return {
+                ...service,
+                isExpanded: true,
+                subservices: matchedSubservices.map(sub => ({ ...sub, isExpanded: true }))
+              };
+            }
+            return null;
+          })
+          .filter((service): service is Service => service !== null);
+        break;
 
-      if (matchedSubservices.length > 0 || service.name.toLowerCase().includes(query)) {
-        return {
+      case 'items':
+        filteredResults = services
+          .map(service => {
+            const matchedSubservices = service.subservices
+              .map(subservice => {
+                const matchedItems = subservice.items.filter(item => 
+                  item.name.toLowerCase().includes(query) || 
+                  item.price.toString().includes(query)
+                );
+
+                if (matchedItems.length > 0) {
+                  return {
+                    ...subservice,
+                    items: matchedItems,
+                    isExpanded: true
+                  };
+                }
+                return null;
+              })
+              .filter((subservice): subservice is any => subservice !== null);
+
+            if (matchedSubservices.length > 0) {
+              return {
+                ...service,
+                subservices: matchedSubservices,
+                isExpanded: true
+              };
+            }
+            return null;
+          })
+          .filter((service): service is Service => service !== null);
+        break;
+    }
+
+    setFilteredServices(filteredResults);
+  }, [searchQuery, services, activeFilter]);
+
+  const applyFilters = (servicesList: Service[], filterType: FilterType) => {
+    let result: Service[] = [];
+
+    switch (filterType) {
+      case 'services':
+        result = servicesList.map(service => ({
           ...service,
-          subservices: matchedSubservices.length > 0 ? matchedSubservices : [],
-          isExpanded: matchedSubservices.length > 0 || service.name.toLowerCase().includes(query)
-        };
-      }
-      return null;
-    }).filter((service): service is Service => service !== null);
+          isExpanded: true,
+          subservices: service.subservices.map(sub => ({ ...sub, isExpanded: false }))
+        }));
+        break;
 
-    setFilteredServices(filtered);
-  }, [searchQuery, services]);
+      case 'subservices':
+        result = servicesList.map(service => ({
+          ...service,
+          isExpanded: true,
+          subservices: service.subservices.map(sub => ({ ...sub, isExpanded: true }))
+        }));
+        break;
+
+      case 'items':
+        result = servicesList.map(service => ({
+          ...service,
+          isExpanded: true,
+          subservices: service.subservices.map(sub => ({ ...sub, isExpanded: true }))
+        }));
+        break;
+    }
+
+    setFilteredServices(result);
+  };
 
   const toggleServiceExpansion = (serviceId: string) => {
     setServices(prev => 
@@ -183,9 +249,13 @@ const StudioServices: React.FC = () => {
 
     setIsDeleteDialogOpen(false);
     setItemToDelete(null);
+    
+    applyFilters(services, activeFilter);
   };
 
-  const handleAddService = () => {
+  const handleAddService = (e?: React.FormEvent) => {
+    if (e) e.preventDefault();
+    
     if (newServiceName.trim() === '') {
       toast({
         title: "Validation Error",
@@ -203,7 +273,8 @@ const StudioServices: React.FC = () => {
       isExpanded: false
     };
 
-    setServices(prev => [...prev, newService]);
+    const updatedServices = [...services, newService];
+    setServices(updatedServices);
     setIsAddServiceModalOpen(false);
     setNewServiceName('');
     
@@ -212,9 +283,13 @@ const StudioServices: React.FC = () => {
       message: `${newServiceName.trim()} has been successfully added.`
     });
     setIsSuccessDialogOpen(true);
+    
+    applyFilters(updatedServices, activeFilter);
   };
 
-  const handleAddSubservice = () => {
+  const handleAddSubservice = (e?: React.FormEvent) => {
+    if (e) e.preventDefault();
+    
     if (newSubserviceName.trim() === '') {
       toast({
         title: "Validation Error",
@@ -236,19 +311,18 @@ const StudioServices: React.FC = () => {
       isExpanded: false
     };
 
-    setServices(prev => 
-      prev.map(service => {
-        if (service.id === currentParentId) {
-          return {
-            ...service,
-            subservices: [...service.subservices, newSubservice],
-            isExpanded: true
-          };
-        }
-        return service;
-      })
-    );
+    const updatedServices = services.map(service => {
+      if (service.id === currentParentId) {
+        return {
+          ...service,
+          subservices: [...service.subservices, newSubservice],
+          isExpanded: true
+        };
+      }
+      return service;
+    });
 
+    setServices(updatedServices);
     setIsAddSubserviceModalOpen(false);
     setNewSubserviceName('');
     setNewSubservicePricePerUnit('');
@@ -260,9 +334,13 @@ const StudioServices: React.FC = () => {
       message: `${newSubserviceName.trim()} has been successfully added.`
     });
     setIsSuccessDialogOpen(true);
+    
+    applyFilters(updatedServices, activeFilter);
   };
 
-  const handleAddItem = () => {
+  const handleAddItem = (e?: React.FormEvent) => {
+    if (e) e.preventDefault();
+    
     if (newItemName.trim() === '' || !newItemPrice) {
       toast({
         title: "Validation Error",
@@ -282,28 +360,27 @@ const StudioServices: React.FC = () => {
       expressPrice: parseFloat(newItemPrice) * 1.5 || 0
     };
 
-    setServices(prev => 
-      prev.map(service => {
-        if (service.id === currentParentId) {
-          return {
-            ...service,
-            isExpanded: true,
-            subservices: service.subservices.map(subservice => {
-              if (subservice.id === selectedSubserviceId) {
-                return {
-                  ...subservice,
-                  isExpanded: true,
-                  items: [...subservice.items, newItem]
-                };
-              }
-              return subservice;
-            })
-          };
-        }
-        return service;
-      })
-    );
+    const updatedServices = services.map(service => {
+      if (service.id === currentParentId) {
+        return {
+          ...service,
+          isExpanded: true,
+          subservices: service.subservices.map(subservice => {
+            if (subservice.id === selectedSubserviceId) {
+              return {
+                ...subservice,
+                isExpanded: true,
+                items: [...subservice.items, newItem]
+              };
+            }
+            return subservice;
+          })
+        };
+      }
+      return service;
+    });
 
+    setServices(updatedServices);
     setIsAddItemModalOpen(false);
     setNewItemName('');
     setNewItemPrice('');
@@ -315,6 +392,8 @@ const StudioServices: React.FC = () => {
       message: `${newItemName.trim()} has been successfully added.`
     });
     setIsSuccessDialogOpen(true);
+    
+    applyFilters(updatedServices, activeFilter);
   };
 
   const toggleItemEditMode = (serviceId: string, subserviceId: string, itemId: string) => {
@@ -475,17 +554,7 @@ const StudioServices: React.FC = () => {
 
   const handleFilterChange = (filter: FilterType) => {
     setActiveFilter(filter);
-    
-    setServices(prev => 
-      prev.map(service => ({
-        ...service,
-        isExpanded: filter === 'services' ? true : filter === 'subservices' || filter === 'items',
-        subservices: service.subservices.map(subservice => ({
-          ...subservice,
-          isExpanded: filter === 'services' ? false : filter === 'subservices' ? true : filter === 'items'
-        }))
-      }))
-    );
+    applyFilters(services, filter);
   };
 
   const handleEditServiceToggle = (newMode: 'list' | 'edit') => {
@@ -505,6 +574,12 @@ const StudioServices: React.FC = () => {
         }))
       }))
     );
+
+    applyFilters(services, activeFilter);
+  };
+
+  const handleSearch = (query: string) => {
+    setSearchQuery(query);
   };
 
   return (
@@ -557,7 +632,7 @@ const StudioServices: React.FC = () => {
                 setCurrentParentId2={setCurrentParentId}
                 setSelectedSubserviceId={setSelectedSubserviceId}
                 setIsAddItemModalOpen={setIsAddItemModalOpen}
-                onSearch={(query) => setSearchQuery(query)}
+                onSearch={handleSearch}
               />
             </TabsContent>
 
@@ -584,7 +659,7 @@ const StudioServices: React.FC = () => {
                 setCurrentParentId2={setCurrentParentId}
                 setSelectedSubserviceId={setSelectedSubserviceId}
                 setIsAddItemModalOpen={setIsAddItemModalOpen}
-                onSearch={(query) => setSearchQuery(query)}
+                onSearch={handleSearch}
               />
             </TabsContent>
           </Tabs>

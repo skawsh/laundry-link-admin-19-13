@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { CheckCircle } from 'lucide-react';
 import { 
@@ -20,7 +19,7 @@ interface ServiceModalsProps {
   setIsAddServiceModalOpen: (isOpen: boolean) => void;
   newServiceName: string;
   setNewServiceName: (name: string) => void;
-  handleAddService: () => void;
+  handleAddService: (e?: React.FormEvent) => void;
   isAddSubserviceModalOpen: boolean;
   setIsAddSubserviceModalOpen: (isOpen: boolean) => void;
   newSubserviceName: string;
@@ -29,14 +28,14 @@ interface ServiceModalsProps {
   setNewSubservicePricePerUnit: (price: string) => void;
   newSubserviceUnit: string;
   setNewSubserviceUnit: (unit: string) => void;
-  handleAddSubservice: () => void;
+  handleAddSubservice: (e?: React.FormEvent) => void;
   isAddItemModalOpen: boolean;
   setIsAddItemModalOpen: (isOpen: boolean) => void;
   newItemName: string;
   setNewItemName: (name: string) => void;
   newItemPrice: string;
   setNewItemPrice: (price: string) => void;
-  handleAddItem: () => void;
+  handleAddItem: (e?: React.FormEvent) => void;
   isSuccessDialogOpen: boolean;
   setIsSuccessDialogOpen: (isOpen: boolean) => void;
   successMessage: { title: string; message: string };
@@ -86,109 +85,145 @@ const ServiceModals: React.FC<ServiceModalsProps> = ({
 
       <Dialog open={isAddServiceModalOpen} onOpenChange={setIsAddServiceModalOpen}>
         <DialogContent>
-          <DialogHeader>
-            <DialogTitle>Add New Service</DialogTitle>
-            <DialogDescription>
-              Create a new service category for your laundry.
-            </DialogDescription>
-          </DialogHeader>
-          <div className="space-y-4 py-2">
-            <div className="space-y-2">
-              <FormLabel htmlFor="service-name">Service Name</FormLabel>
-              <Input
-                id="service-name"
-                placeholder="e.g., Dry Cleaning"
-                value={newServiceName}
-                onChange={(e) => setNewServiceName(e.target.value)}
-              />
+          <form onSubmit={handleAddService}>
+            <DialogHeader>
+              <DialogTitle>Add New Service</DialogTitle>
+              <DialogDescription>
+                Create a new service category for your laundry.
+              </DialogDescription>
+            </DialogHeader>
+            <div className="space-y-4 py-2">
+              <div className="space-y-2">
+                <label htmlFor="service-name" className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70">Service Name</label>
+                <Input
+                  id="service-name"
+                  placeholder="e.g., Dry Cleaning"
+                  value={newServiceName}
+                  onChange={(e) => setNewServiceName(e.target.value)}
+                  autoFocus
+                />
+              </div>
             </div>
-          </div>
-          <DialogFooter>
-            <Button variant="outline" onClick={() => setIsAddServiceModalOpen(false)}>Cancel</Button>
-            <Button variant="service" onClick={handleAddService}>Add Service</Button>
-          </DialogFooter>
+            <DialogFooter className="mt-4">
+              <Button 
+                type="button" 
+                variant="outline" 
+                onClick={() => setIsAddServiceModalOpen(false)}>
+                Cancel
+              </Button>
+              <Button 
+                type="submit" 
+                variant="service">
+                Add Service
+              </Button>
+            </DialogFooter>
+          </form>
         </DialogContent>
       </Dialog>
 
       <Dialog open={isAddSubserviceModalOpen} onOpenChange={setIsAddSubserviceModalOpen}>
         <DialogContent>
-          <DialogHeader>
-            <DialogTitle>Add New Subservice</DialogTitle>
-            <DialogDescription>
-              Add a new subservice to the selected service.
-            </DialogDescription>
-          </DialogHeader>
-          <div className="space-y-4 py-2">
-            <div className="space-y-2">
-              <FormLabel htmlFor="subservice-name">Subservice Name</FormLabel>
-              <Input
-                id="subservice-name"
-                placeholder="e.g., Upper Wear"
-                value={newSubserviceName}
-                onChange={(e) => setNewSubserviceName(e.target.value)}
-              />
+          <form onSubmit={handleAddSubservice}>
+            <DialogHeader>
+              <DialogTitle>Add New Subservice</DialogTitle>
+              <DialogDescription>
+                Add a new subservice to the selected service.
+              </DialogDescription>
+            </DialogHeader>
+            <div className="space-y-4 py-2">
+              <div className="space-y-2">
+                <label htmlFor="subservice-name" className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70">Subservice Name</label>
+                <Input
+                  id="subservice-name"
+                  placeholder="e.g., Upper Wear"
+                  value={newSubserviceName}
+                  onChange={(e) => setNewSubserviceName(e.target.value)}
+                  autoFocus
+                />
+              </div>
+              <div className="space-y-2">
+                <label htmlFor="price-per-unit" className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70">Price Per Unit (Optional)</label>
+                <Input
+                  id="price-per-unit"
+                  placeholder="e.g., 59"
+                  prefix="₹"
+                  value={newSubservicePricePerUnit}
+                  onChange={(e) => setNewSubservicePricePerUnit(e.target.value)}
+                />
+              </div>
+              <div className="space-y-2">
+                <label htmlFor="unit" className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70">Unit (Optional)</label>
+                <Input
+                  id="unit"
+                  placeholder="e.g., per Kg"
+                  value={newSubserviceUnit}
+                  onChange={(e) => setNewSubserviceUnit(e.target.value)}
+                />
+              </div>
             </div>
-            <div className="space-y-2">
-              <FormLabel htmlFor="price-per-unit">Price Per Unit (Optional)</FormLabel>
-              <Input
-                id="price-per-unit"
-                placeholder="e.g., 59"
-                prefix="₹"
-                value={newSubservicePricePerUnit}
-                onChange={(e) => setNewSubservicePricePerUnit(e.target.value)}
-              />
-            </div>
-            <div className="space-y-2">
-              <FormLabel htmlFor="unit">Unit (Optional)</FormLabel>
-              <Input
-                id="unit"
-                placeholder="e.g., per Kg"
-                value={newSubserviceUnit}
-                onChange={(e) => setNewSubserviceUnit(e.target.value)}
-              />
-            </div>
-          </div>
-          <DialogFooter>
-            <Button variant="outline" onClick={() => setIsAddSubserviceModalOpen(false)}>Cancel</Button>
-            <Button variant="subservice" onClick={handleAddSubservice}>Add Subservice</Button>
-          </DialogFooter>
+            <DialogFooter className="mt-4">
+              <Button 
+                type="button" 
+                variant="outline" 
+                onClick={() => setIsAddSubserviceModalOpen(false)}>
+                Cancel
+              </Button>
+              <Button 
+                type="submit" 
+                variant="subservice">
+                Add Subservice
+              </Button>
+            </DialogFooter>
+          </form>
         </DialogContent>
       </Dialog>
 
       <Dialog open={isAddItemModalOpen} onOpenChange={setIsAddItemModalOpen}>
         <DialogContent>
-          <DialogHeader>
-            <DialogTitle>Add New Item</DialogTitle>
-            <DialogDescription>
-              Add a new clothing item to the selected subservice.
-            </DialogDescription>
-          </DialogHeader>
-          <div className="space-y-4 py-2">
-            <div className="space-y-2">
-              <FormLabel htmlFor="item-name">Item Name</FormLabel>
-              <Input
-                id="item-name"
-                placeholder="e.g., Shirt"
-                value={newItemName}
-                onChange={(e) => setNewItemName(e.target.value)}
-              />
+          <form onSubmit={handleAddItem}>
+            <DialogHeader>
+              <DialogTitle>Add New Item</DialogTitle>
+              <DialogDescription>
+                Add a new clothing item to the selected subservice.
+              </DialogDescription>
+            </DialogHeader>
+            <div className="space-y-4 py-2">
+              <div className="space-y-2">
+                <label htmlFor="item-name" className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70">Item Name</label>
+                <Input
+                  id="item-name"
+                  placeholder="e.g., Shirt"
+                  value={newItemName}
+                  onChange={(e) => setNewItemName(e.target.value)}
+                  autoFocus
+                />
+              </div>
+              <div className="space-y-2">
+                <label htmlFor="item-price" className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70">Standard Price</label>
+                <Input
+                  id="item-price"
+                  placeholder="e.g., 99"
+                  prefix="₹"
+                  value={newItemPrice}
+                  onChange={(e) => setNewItemPrice(e.target.value)}
+                />
+                <p className="text-xs text-gray-500">Express price will be automatically set to 1.5x the standard price.</p>
+              </div>
             </div>
-            <div className="space-y-2">
-              <FormLabel htmlFor="item-price">Standard Price</FormLabel>
-              <Input
-                id="item-price"
-                placeholder="e.g., 99"
-                prefix="₹"
-                value={newItemPrice}
-                onChange={(e) => setNewItemPrice(e.target.value)}
-              />
-              <p className="text-xs text-gray-500">Express price will be automatically set to 1.5x the standard price.</p>
-            </div>
-          </div>
-          <DialogFooter>
-            <Button variant="outline" onClick={() => setIsAddItemModalOpen(false)}>Cancel</Button>
-            <Button variant="item" onClick={handleAddItem}>Add Item</Button>
-          </DialogFooter>
+            <DialogFooter className="mt-4">
+              <Button 
+                type="button" 
+                variant="outline" 
+                onClick={() => setIsAddItemModalOpen(false)}>
+                Cancel
+              </Button>
+              <Button 
+                type="submit" 
+                variant="item">
+                Add Item
+              </Button>
+            </DialogFooter>
+          </form>
         </DialogContent>
       </Dialog>
 
