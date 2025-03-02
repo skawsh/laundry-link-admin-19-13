@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect, useRef } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { ArrowLeft } from 'lucide-react';
@@ -35,7 +36,7 @@ const StudioServices: React.FC = () => {
   const [newItemPrice, setNewItemPrice] = useState('');
   const [isSuccessDialogOpen, setIsSuccessDialogOpen] = useState(false);
   const [successMessage, setSuccessMessage] = useState({ title: '', message: '' });
-  const [activeFilter, setActiveFilter] = useState<FilterType>('all');
+  const [activeFilter, setActiveFilter] = useState<FilterType>('services');
 
   const { toast } = useToast();
   const navigate = useNavigate();
@@ -478,15 +479,10 @@ const StudioServices: React.FC = () => {
     setServices(prev => 
       prev.map(service => ({
         ...service,
-        isExpanded: filter === 'all' ? false : 
-                    filter === 'services' ? true :
-                    filter === 'subservices' || filter === 'items',
+        isExpanded: filter === 'services' ? true : filter === 'subservices' || filter === 'items',
         subservices: service.subservices.map(subservice => ({
           ...subservice,
-          isExpanded: filter === 'all' ? false :
-                      filter === 'services' ? false :
-                      filter === 'subservices' ? true :
-                      filter === 'items'
+          isExpanded: filter === 'services' ? false : filter === 'subservices' ? true : filter === 'items'
         }))
       }))
     );
@@ -561,6 +557,7 @@ const StudioServices: React.FC = () => {
                 setCurrentParentId2={setCurrentParentId}
                 setSelectedSubserviceId={setSelectedSubserviceId}
                 setIsAddItemModalOpen={setIsAddItemModalOpen}
+                onSearch={(query) => setSearchQuery(query)}
               />
             </TabsContent>
 
@@ -587,6 +584,7 @@ const StudioServices: React.FC = () => {
                 setCurrentParentId2={setCurrentParentId}
                 setSelectedSubserviceId={setSelectedSubserviceId}
                 setIsAddItemModalOpen={setIsAddItemModalOpen}
+                onSearch={(query) => setSearchQuery(query)}
               />
             </TabsContent>
           </Tabs>
