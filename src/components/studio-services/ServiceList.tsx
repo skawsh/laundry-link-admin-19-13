@@ -6,6 +6,7 @@ import { Service } from './types';
 import ServiceView from './ServiceView';
 import ServiceEdit from './ServiceEdit';
 import SearchBox from './SearchBox';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 
 interface ServiceListProps {
   mode: 'list' | 'edit';
@@ -75,7 +76,7 @@ const ServiceList: React.FC<ServiceListProps> = ({
 
   return (
     <>
-      <div className="mb-6 flex flex-col sm:flex-row justify-between items-center space-y-4 sm:space-y-0">
+      <div className="mb-4 flex flex-col sm:flex-row justify-between items-center space-y-4 sm:space-y-0">
         <SearchBox 
           searchQuery={searchQuery} 
           setSearchQuery={setSearchQuery} 
@@ -90,6 +91,27 @@ const ServiceList: React.FC<ServiceListProps> = ({
           <Plus className="h-4 w-4" />
           <span>Add New Service</span>
         </Button>
+      </div>
+
+      <div className="mb-6">
+        <div className="flex flex-col sm:flex-row items-center space-y-2 sm:space-y-0 sm:space-x-4 bg-gray-50 p-3 rounded-md">
+          <span className="text-sm font-medium text-gray-700">Filter by:</span>
+          <div className="flex space-x-2 w-full sm:w-auto">
+            <Select 
+              value={activeFilter} 
+              onValueChange={(value) => handleFilterChange(value as 'services' | 'subservices' | 'items')}
+            >
+              <SelectTrigger className="w-full sm:w-[180px]">
+                <SelectValue placeholder="Select filter" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="services">Services</SelectItem>
+                <SelectItem value="subservices">Subservices</SelectItem>
+                <SelectItem value="items">Items</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
+        </div>
       </div>
 
       {filteredServices.length === 0 ? (
