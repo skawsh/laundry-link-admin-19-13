@@ -19,7 +19,8 @@ const ServiceView: React.FC<ServiceViewProps> = ({
   // Calculate the actual number of subservices
   const subservicesCount = service.subservices ? service.subservices.length : 0;
   
-  const handleToggleClick = () => {
+  const handleToggleClick = (e: React.MouseEvent) => {
+    e.stopPropagation(); // Prevent event bubbling
     onToggleService(service.id);
   };
   

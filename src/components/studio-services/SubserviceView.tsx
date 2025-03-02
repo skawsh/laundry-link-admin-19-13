@@ -20,14 +20,14 @@ const SubserviceView: React.FC<SubserviceViewProps> = ({
   const itemsCount = subservice.items ? subservice.items.length : 0;
   
   const handleToggleClick = (e: React.MouseEvent) => {
-    e.stopPropagation(); // Prevent the click from bubbling up to the parent
+    e.stopPropagation(); // Prevent event bubbling
     onToggleSubservice(serviceId, subservice.id);
   };
   
   return (
     <div className="border-l-2 border-gray-200 pl-4 ml-4">
       <div 
-        className="flex items-center justify-between py-2 cursor-pointer"
+        className="flex items-center justify-between py-2 cursor-pointer hover:bg-gray-50 rounded-md"
         onClick={handleToggleClick}
         aria-expanded={subservice.isExpanded}
         role="button"

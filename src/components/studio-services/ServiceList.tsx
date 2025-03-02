@@ -70,7 +70,7 @@ const ServiceList: React.FC<ServiceListProps> = ({
   };
 
   const handleAddServiceClick = (e: React.MouseEvent) => {
-    e.preventDefault(); // Prevent default navigation
+    e.preventDefault();
     setIsAddServiceModalOpen(true);
   };
 
@@ -108,7 +108,7 @@ const ServiceList: React.FC<ServiceListProps> = ({
             variant="service"
             className="mt-4"
             onClick={(e) => {
-              e.preventDefault(); // Prevent default navigation
+              e.preventDefault();
               setIsAddServiceModalOpen(true);
               setSearchQuery('');
             }}
