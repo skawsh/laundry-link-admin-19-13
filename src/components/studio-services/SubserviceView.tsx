@@ -19,14 +19,22 @@ const SubserviceView: React.FC<SubserviceViewProps> = ({
   // Calculate the actual number of items
   const itemsCount = subservice.items ? subservice.items.length : 0;
   
+  const handleToggleClick = (e: React.MouseEvent) => {
+    e.stopPropagation(); // Prevent event from bubbling up
+    onToggleSubservice(serviceId, subservice.id);
+  };
+  
   return (
     <div className="border-l-2 border-gray-200 pl-4">
       <div 
         className="flex items-center justify-between py-2 cursor-pointer"
-        onClick={() => onToggleSubservice(serviceId, subservice.id)}
+        onClick={handleToggleClick}
       >
         <div className="flex items-center">
-          <div className="cursor-pointer p-1 hover:bg-gray-100 rounded-full transition-colors">
+          <div 
+            className="cursor-pointer p-1 hover:bg-gray-100 rounded-full transition-colors"
+            onClick={handleToggleClick}
+          >
             {subservice.isExpanded ? (
               <ChevronDown className="h-4 w-4 text-gray-500" />
             ) : (
