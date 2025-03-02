@@ -16,6 +16,9 @@ const ServiceView: React.FC<ServiceViewProps> = ({
   onToggleService,
   onToggleSubservice
 }) => {
+  // Calculate the actual number of subservices
+  const subservicesCount = service.subservices ? service.subservices.length : 0;
+  
   return (
     <div className="border rounded-lg overflow-hidden transition-all duration-200 hover:shadow-md">
       <div 
@@ -30,29 +33,23 @@ const ServiceView: React.FC<ServiceViewProps> = ({
           )}
           <h3 className="font-medium text-gray-800">{service.name}</h3>
           <Badge variant="outline" className="ml-3 bg-gray-100">
-            {service.subservices.length} subservices
+            {subservicesCount} subservices
           </Badge>
         </div>
       </div>
       
       {service.isExpanded && service.subservices && service.subservices.length > 0 && (
         <div className="px-4 py-2 bg-white">
-          {service.subservices.length === 0 ? (
-            <div className="text-center py-4 text-gray-500 text-sm italic">
-              No subservices found
-            </div>
-          ) : (
-            <div className="space-y-3 pl-6">
-              {service.subservices.map(subservice => (
-                <SubserviceView 
-                  key={subservice.id} 
-                  subservice={subservice} 
-                  serviceId={service.id}
-                  onToggleSubservice={onToggleSubservice}
-                />
-              ))}
-            </div>
-          )}
+          <div className="space-y-3 pl-6">
+            {service.subservices.map(subservice => (
+              <SubserviceView 
+                key={subservice.id} 
+                subservice={subservice} 
+                serviceId={service.id}
+                onToggleSubservice={onToggleSubservice}
+              />
+            ))}
+          </div>
         </div>
       )}
     </div>

@@ -16,6 +16,9 @@ const SubserviceView: React.FC<SubserviceViewProps> = ({
   serviceId, 
   onToggleSubservice 
 }) => {
+  // Calculate the actual number of items
+  const itemsCount = subservice.items ? subservice.items.length : 0;
+  
   return (
     <div className="border-l-2 border-gray-200 pl-4">
       <div 
@@ -35,24 +38,18 @@ const SubserviceView: React.FC<SubserviceViewProps> = ({
             </span>
           )}
           <Badge variant="outline" className="ml-3 bg-gray-50">
-            {subservice.items ? subservice.items.length : 0} items
+            {itemsCount} items
           </Badge>
         </div>
       </div>
       
       {subservice.isExpanded && subservice.items && subservice.items.length > 0 && (
         <div className="ml-6 my-2 bg-gray-50 rounded-md p-3">
-          {subservice.items.length === 0 ? (
-            <div className="text-center py-2 text-gray-500 text-sm italic">
-              No items found
-            </div>
-          ) : (
-            <div className="space-y-2">
-              {subservice.items.map(item => (
-                <ClothingItemView key={item.id} item={item} />
-              ))}
-            </div>
-          )}
+          <div className="space-y-2">
+            {subservice.items.map(item => (
+              <ClothingItemView key={item.id} item={item} />
+            ))}
+          </div>
         </div>
       )}
     </div>
