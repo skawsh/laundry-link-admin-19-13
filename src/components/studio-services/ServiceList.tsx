@@ -5,7 +5,6 @@ import { Button } from "@/components/ui/button";
 import { Service } from './types';
 import ServiceView from './ServiceView';
 import ServiceEdit from './ServiceEdit';
-import FilterButtons from './FilterButtons';
 import SearchBox from './SearchBox';
 
 interface ServiceListProps {
@@ -93,10 +92,6 @@ const ServiceList: React.FC<ServiceListProps> = ({
         </Button>
       </div>
 
-      {mode === 'list' && (
-        <FilterButtons activeFilter={activeFilter} onFilterChange={handleFilterChange} />
-      )}
-
       {filteredServices.length === 0 ? (
         <div className="text-center py-10 border border-dashed rounded-lg">
           <PackageOpen className="mx-auto h-12 w-12 text-gray-300" />
@@ -142,8 +137,6 @@ const ServiceList: React.FC<ServiceListProps> = ({
               onDeleteClick={handleDeleteClick}
               onAddSubservice={handleAddSubservice}
               onAddItem={handleAddItem}
-              activeFilter={activeFilter}
-              onFilterChange={handleFilterChange}
             />
           ))}
         </div>

@@ -27,7 +27,7 @@ const ServiceView: React.FC<ServiceViewProps> = ({
   return (
     <div className={`border rounded-lg overflow-hidden transition-all duration-300 ${service.isExpanded ? 'shadow-md' : 'hover:shadow-sm'}`}>
       <div 
-        className={`flex items-center justify-between px-4 py-3 cursor-pointer transition-colors ${service.isExpanded ? 'bg-gray-100' : 'bg-gray-50'}`}
+        className={`flex items-center justify-between px-4 py-3.5 cursor-pointer transition-colors ${service.isExpanded ? 'bg-gray-100' : 'bg-gray-50'}`}
         onClick={handleToggleClick}
         aria-expanded={service.isExpanded}
         role="button"
@@ -41,7 +41,7 @@ const ServiceView: React.FC<ServiceViewProps> = ({
               <ChevronRight className="h-5 w-5 text-gray-600" />
             )}
           </div>
-          <h3 className={`font-medium text-gray-800 transition-colors ${service.isExpanded ? 'text-gray-900' : ''}`}>
+          <h3 className={`font-medium transition-colors ${service.isExpanded ? 'text-gray-900' : 'text-gray-800'}`}>
             {service.name}
           </h3>
           <Badge variant="outline" className={`ml-1 ${service.isExpanded ? 'bg-blue-50 text-blue-600' : 'bg-gray-100'}`}>

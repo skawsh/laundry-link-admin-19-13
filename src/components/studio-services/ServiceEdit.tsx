@@ -1,16 +1,10 @@
 
 import React from 'react';
-import { ChevronDown, ChevronRight, Edit, Trash2, Plus, Filter } from 'lucide-react';
+import { ChevronDown, ChevronRight, Edit, Trash2, Plus } from 'lucide-react';
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Service, FilterType } from './types';
+import { Service } from './types';
 import SubserviceEdit from './SubserviceEdit';
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger
-} from "@/components/ui/dropdown-menu";
 
 interface ServiceEditProps {
   service: Service;
@@ -24,8 +18,6 @@ interface ServiceEditProps {
   onDeleteClick: (type: 'service' | 'subservice' | 'item', id: string, name: string, parentId?: string, subParentId?: string) => void;
   onAddSubservice: (serviceId: string) => void;
   onAddItem: (serviceId: string, subserviceId: string) => void;
-  activeFilter?: FilterType;
-  onFilterChange?: (filter: FilterType) => void;
 }
 
 const ServiceEdit: React.FC<ServiceEditProps> = ({ 
@@ -39,9 +31,7 @@ const ServiceEdit: React.FC<ServiceEditProps> = ({
   onSaveItemEdit,
   onDeleteClick,
   onAddSubservice,
-  onAddItem,
-  activeFilter,
-  onFilterChange
+  onAddItem
 }) => {
   const handleToggleClick = (e: React.MouseEvent) => {
     // Call the toggle service function when the header is clicked
@@ -66,42 +56,6 @@ const ServiceEdit: React.FC<ServiceEditProps> = ({
           </Badge>
         </div>
         <div className="flex items-center gap-2">
-          {onFilterChange && (
-            <DropdownMenu>
-              <DropdownMenuTrigger asChild>
-                <Button
-                  variant="outline"
-                  size="xs"
-                  onClick={(e) => {
-                    e.stopPropagation(); // Prevent the click from bubbling up
-                  }}
-                >
-                  <Filter className="h-3.5 w-3.5 mr-1" />
-                  <span>Filter</span>
-                </Button>
-              </DropdownMenuTrigger>
-              <DropdownMenuContent className="bg-white">
-                <DropdownMenuItem
-                  className={activeFilter === 'services' ? "bg-gray-100" : ""}
-                  onClick={() => onFilterChange('services')}
-                >
-                  Services
-                </DropdownMenuItem>
-                <DropdownMenuItem 
-                  className={activeFilter === 'subservices' ? "bg-gray-100" : ""}
-                  onClick={() => onFilterChange('subservices')}
-                >
-                  Subservices
-                </DropdownMenuItem>
-                <DropdownMenuItem 
-                  className={activeFilter === 'items' ? "bg-gray-100" : ""}
-                  onClick={() => onFilterChange('items')}
-                >
-                  Items
-                </DropdownMenuItem>
-              </DropdownMenuContent>
-            </DropdownMenu>
-          )}
           <Button
             variant="edit" 
             size="xs"

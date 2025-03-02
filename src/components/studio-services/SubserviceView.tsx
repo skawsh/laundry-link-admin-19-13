@@ -27,7 +27,7 @@ const SubserviceView: React.FC<SubserviceViewProps> = ({
   return (
     <div className="border-l-2 border-gray-200 pl-4 ml-4">
       <div 
-        className="flex items-center justify-between py-2 cursor-pointer hover:bg-gray-50 rounded-md"
+        className="flex items-center justify-between py-2.5 px-3 cursor-pointer hover:bg-gray-50 rounded-md transition-colors"
         onClick={handleToggleClick}
         aria-expanded={subservice.isExpanded}
         role="button"
@@ -56,7 +56,7 @@ const SubserviceView: React.FC<SubserviceViewProps> = ({
       </div>
       
       {subservice.isExpanded && subservice.items && subservice.items.length > 0 && (
-        <div className="ml-6 my-2 space-y-2 animate-accordion-down">
+        <div className="ml-6 my-2 space-y-2.5 animate-accordion-down">
           {subservice.items.map(item => (
             <ClothingItemView key={item.id} item={item} />
           ))}
