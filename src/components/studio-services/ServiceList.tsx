@@ -142,6 +142,8 @@ const ServiceList: React.FC<ServiceListProps> = ({
               onDeleteClick={handleDeleteClick}
               onAddSubservice={handleAddSubservice}
               onAddItem={handleAddItem}
+              activeFilter={activeFilter}
+              onFilterChange={handleFilterChange}
             />
           ))}
         </div>
