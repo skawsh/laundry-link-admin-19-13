@@ -9,7 +9,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
 import ServiceList from '@/components/studio-services/ServiceList';
 import ServiceModals from '@/components/studio-services/ServiceModals';
-import { Service, ItemToDelete, FilterType } from '@/components/studio-services/types';
+import { Service, ItemToDelete, FilterType, Subservice, ClothingItem } from '@/components/studio-services/types';
 
 import { initialServices } from '@/data/mockServiceData';
 
@@ -42,7 +42,11 @@ const StudioServices: React.FC = () => {
   const searchInputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
-    if (searchQuery === '') {
+    applyFilters(services, activeFilter);
+  }, [services, activeFilter]);
+
+  useEffect(() => {
+    if (searchQuery.trim() === '') {
       applyFilters(services, activeFilter);
       return;
     }
@@ -56,8 +60,7 @@ const StudioServices: React.FC = () => {
           .filter(service => service.name.toLowerCase().includes(query))
           .map(service => ({
             ...service,
-            isExpanded: true,
-            subservices: service.subservices.map(sub => ({ ...sub, isExpanded: false }))
+            subservices: []
           }));
         break;
 
@@ -70,8 +73,7 @@ const StudioServices: React.FC = () => {
             if (matchedSubservices.length > 0) {
               return {
                 ...service,
-                isExpanded: true,
-                subservices: matchedSubservices.map(sub => ({ ...sub, isExpanded: true }))
+                subservices: matchedSubservices.map(sub => ({ ...sub, items: [] }))
               };
             }
             return null;
@@ -92,19 +94,17 @@ const StudioServices: React.FC = () => {
                 if (matchedItems.length > 0) {
                   return {
                     ...subservice,
-                    items: matchedItems,
-                    isExpanded: true
+                    items: matchedItems
                   };
                 }
                 return null;
               })
-              .filter((subservice): subservice is any => subservice !== null);
+              .filter((subservice): subservice is Subservice => subservice !== null);
 
             if (matchedSubservices.length > 0) {
               return {
                 ...service,
-                subservices: matchedSubservices,
-                isExpanded: true
+                subservices: matchedSubservices
               };
             }
             return null;
@@ -123,8 +123,8 @@ const StudioServices: React.FC = () => {
       case 'services':
         result = servicesList.map(service => ({
           ...service,
-          isExpanded: true,
-          subservices: service.subservices.map(sub => ({ ...sub, isExpanded: false }))
+          isExpanded: false,
+          subservices: []
         }));
         break;
 
@@ -132,7 +132,11 @@ const StudioServices: React.FC = () => {
         result = servicesList.map(service => ({
           ...service,
           isExpanded: true,
-          subservices: service.subservices.map(sub => ({ ...sub, isExpanded: true }))
+          subservices: service.subservices.map(sub => ({ 
+            ...sub, 
+            isExpanded: false,
+            items: []
+          }))
         }));
         break;
 
@@ -140,7 +144,10 @@ const StudioServices: React.FC = () => {
         result = servicesList.map(service => ({
           ...service,
           isExpanded: true,
-          subservices: service.subservices.map(sub => ({ ...sub, isExpanded: true }))
+          subservices: service.subservices.map(sub => ({ 
+            ...sub, 
+            isExpanded: true 
+          }))
         }));
         break;
     }
