@@ -1,11 +1,10 @@
 
 import React from 'react';
-import { ChevronDown, ChevronRight, Eye } from 'lucide-react';
+import { ChevronDown, ChevronRight } from 'lucide-react';
 import { Badge } from "@/components/ui/badge";
 import { Subservice } from './types';
 import ClothingItemView from './ClothingItemView';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
-import { Button } from "@/components/ui/button";
 
 interface SubserviceViewProps {
   subservice: Subservice;
@@ -64,19 +63,6 @@ const SubserviceView: React.FC<SubserviceViewProps> = ({
               <Badge variant="outline" className="ml-1 text-xs bg-gray-50">
                 {itemsCount} {itemsCount === 1 ? 'item' : 'items'}
               </Badge>
-              
-              <Button 
-                variant="ghost" 
-                size="xs" 
-                className="ml-1 flex gap-1" 
-                onClick={(e) => {
-                  e.stopPropagation();
-                  onToggleSubservice(serviceId, subservice.id);
-                }}
-              >
-                <Eye className="h-3 w-3" />
-                <span className="text-xs">{subservice.isExpanded ? 'Hide' : 'View'} Items</span>
-              </Button>
             </div>
           </div>
         </CollapsibleTrigger>
