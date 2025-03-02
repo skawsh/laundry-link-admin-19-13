@@ -53,24 +53,19 @@ const PaymentTabs: React.FC<PaymentTabsProps> = ({
 }) => {
   const [selectAll, setSelectAll] = useState(false);
 
-  // Reset selections when view type changes
   useEffect(() => {
     setSelectedItems([]);
     setSelectAll(false);
   }, [viewType, mainWashTypeTab, orderIdSearch, dateFilter, setSelectedItems]);
 
-  // Handle selection of individual items
   const handleSelect = (id: string) => {
-    // Create a new array based on previous selection state
     const newSelectedItems = selectedItems.includes(id)
       ? selectedItems.filter(item => item !== id)
       : [...selectedItems, id];
     
-    // Update the state with the new array
     setSelectedItems(newSelectedItems);
   };
 
-  // Handle select all
   const handleSelectAll = () => {
     if (selectAll) {
       setSelectedItems([]);
@@ -81,7 +76,6 @@ const PaymentTabs: React.FC<PaymentTabsProps> = ({
     setSelectAll(!selectAll);
   };
 
-  // Update selectAll state when selections change
   useEffect(() => {
     if (filteredData.length > 0 && selectedItems.length === filteredData.length) {
       setSelectAll(true);
@@ -90,7 +84,6 @@ const PaymentTabs: React.FC<PaymentTabsProps> = ({
     }
   }, [selectedItems, filteredData]);
 
-  // Add checkbox to columns
   const unpaidColumnsWithCheckbox = [
     {
       header: (
@@ -132,17 +125,14 @@ const PaymentTabs: React.FC<PaymentTabsProps> = ({
                   setMainWashTypeTab={setMainWashTypeTab} 
                 />
                 
-                {/* Search Bar - Right aligned */}
                 <SearchBar
                   orderIdSearch={orderIdSearch}
                   setOrderIdSearch={setOrderIdSearch}
                 />
               </div>
 
-              {/* Filters Row - Below the tabs */}
               <div className="flex flex-wrap items-center justify-between gap-3 mb-5">
                 <div className="flex items-center gap-3">
-                  {/* Date Filter */}
                   <DateFilterPopover 
                     dateFilter={dateFilter}
                     setDateFilter={setDateFilter}
@@ -154,7 +144,6 @@ const PaymentTabs: React.FC<PaymentTabsProps> = ({
                   />
                 </div>
                 
-                {/* Bulk Payment Button */}
                 <Button 
                   variant="success" 
                   onClick={openBulkPaymentModal}
@@ -192,14 +181,12 @@ const PaymentTabs: React.FC<PaymentTabsProps> = ({
                   setMainWashTypeTab={setMainWashTypeTab} 
                 />
 
-                {/* Search Bar */}
                 <SearchBar
                   orderIdSearch={orderIdSearch}
                   setOrderIdSearch={setOrderIdSearch}
                 />
               </div>
 
-              {/* Date Filter */}
               <div className="flex flex-wrap items-center gap-3 mb-5">
                 <DateFilterPopover 
                   dateFilter={dateFilter}

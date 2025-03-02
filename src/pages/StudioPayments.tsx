@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { CheckCircle, Download, InfoIcon, ArrowLeft } from 'lucide-react';
@@ -152,7 +151,10 @@ const StudioPayments: React.FC = () => {
       paymentDate: paymentDate,
       referenceNumber: paymentReference,
       washType: order.washType,
-      deliveredDate: order.deliveredDate
+      deliveredDate: order.deliveredDate,
+      customerName: order.customerName,
+      paymentMethod: "UPI",
+      status: "completed"
     }));
 
     const paidOrderIds = ordersToPay.map(order => order.id);
