@@ -158,6 +158,179 @@ export const mockServices: Service[] = [
       },
     ],
   },
+  {
+    id: "service3",
+    name: "Home Laundry",
+    enabled: true,
+    subservices: [
+      {
+        id: "sub6",
+        name: "Bedding",
+        basePrice: 120,
+        priceUnit: "per piece",
+        enabled: true,
+        items: [
+          {
+            id: "item15",
+            name: "Bed Sheet",
+            standardPrice: 90,
+            expressPrice: 140,
+            icon: "sheet",
+          },
+          {
+            id: "item16",
+            name: "Duvet Cover",
+            standardPrice: 120,
+            expressPrice: 180,
+            icon: "cover",
+          },
+          {
+            id: "item17",
+            name: "Pillow Case",
+            standardPrice: 40,
+            expressPrice: 60,
+            icon: "pillow",
+          }
+        ],
+      },
+      {
+        id: "sub7",
+        name: "Bath Essentials",
+        basePrice: 80,
+        priceUnit: "per piece",
+        enabled: true,
+        items: [
+          {
+            id: "item18",
+            name: "Bath Towel",
+            standardPrice: 60,
+            expressPrice: 90,
+            icon: "towel",
+          },
+          {
+            id: "item19",
+            name: "Bath Mat",
+            standardPrice: 45,
+            expressPrice: 70,
+            icon: "mat",
+          }
+        ],
+      }
+    ],
+  },
+  {
+    id: "service4",
+    name: "Business Laundry",
+    enabled: true,
+    subservices: [
+      {
+        id: "sub8",
+        name: "Formal Wear",
+        basePrice: 100,
+        priceUnit: "per piece",
+        enabled: true,
+        items: [
+          {
+            id: "item20",
+            name: "Business Shirt",
+            standardPrice: 80,
+            expressPrice: 120,
+            icon: "shirt",
+          },
+          {
+            id: "item21",
+            name: "Formal Trousers",
+            standardPrice: 90,
+            expressPrice: 135,
+            icon: "pants",
+          },
+          {
+            id: "item22",
+            name: "Tie",
+            standardPrice: 40,
+            expressPrice: 60,
+            icon: "tie",
+          }
+        ],
+      },
+      {
+        id: "sub9",
+        name: "Workwear Cleaning",
+        basePrice: 110,
+        priceUnit: "per piece",
+        enabled: true,
+        items: [
+          {
+            id: "item23",
+            name: "Uniform",
+            standardPrice: 85,
+            expressPrice: 130,
+            icon: "shirt",
+          },
+          {
+            id: "item24",
+            name: "Lab Coat",
+            standardPrice: 75,
+            expressPrice: 115,
+            icon: "coat",
+          }
+        ],
+      }
+    ],
+  },
+  {
+    id: "service5",
+    name: "Specialty Cleaning",
+    enabled: true,
+    subservices: [
+      {
+        id: "sub10",
+        name: "Leather Care",
+        basePrice: 250,
+        priceUnit: "per piece",
+        enabled: true,
+        items: [
+          {
+            id: "item25",
+            name: "Leather Jacket",
+            standardPrice: 350,
+            expressPrice: 500,
+            icon: "jacket",
+          },
+          {
+            id: "item26",
+            name: "Leather Shoes",
+            standardPrice: 200,
+            expressPrice: 300,
+            icon: "shoes",
+          }
+        ],
+      },
+      {
+        id: "sub11",
+        name: "Wedding Attire",
+        basePrice: 500,
+        priceUnit: "per piece",
+        enabled: true,
+        items: [
+          {
+            id: "item27",
+            name: "Wedding Gown",
+            standardPrice: 800,
+            expressPrice: 1200,
+            icon: "dress",
+          },
+          {
+            id: "item28",
+            name: "Wedding Suit",
+            standardPrice: 400,
+            expressPrice: 600,
+            icon: "suit",
+          }
+        ],
+      }
+    ],
+  }
 ];
 
 export const mockStudios: Studio[] = [
