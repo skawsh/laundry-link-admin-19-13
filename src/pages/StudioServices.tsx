@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { ArrowLeft, Plus } from 'lucide-react';
@@ -7,7 +6,9 @@ import {
   getStudioById, 
   addServiceToStudio, 
   addSubserviceToService, 
-  addItemToSubservice 
+  addItemToSubservice,
+  toggleServiceEnabled,
+  toggleSubserviceEnabled
 } from '@/data/mockServiceData';
 import ServiceList from '@/components/services/ServiceList';
 import SearchBox from '@/components/services/SearchBox';
@@ -23,9 +24,8 @@ const StudioServices: React.FC = () => {
   const { toast } = useToast();
   const [searchTerm, setSearchTerm] = useState('');
   const [addServiceModalOpen, setAddServiceModalOpen] = useState(false);
-  const [refreshKey, setRefreshKey] = useState(0); // Used to force re-fetch of studio data
+  const [refreshKey, setRefreshKey] = useState(0);
 
-  // Get studio data
   const studio = getStudioById(studioId || '');
 
   if (!studio) {
@@ -56,13 +56,11 @@ const StudioServices: React.FC = () => {
 
   const handleAddServiceSubmit = (serviceName: string, subservices: Omit<Subservice, "id">[]) => {
     try {
-      // Create a new service
       const newService = addServiceToStudio(studioId || '', {
         name: serviceName,
         subservices: []
       });
       
-      // Add all subservices
       subservices.forEach(subservice => {
         addSubserviceToService(studioId || '', newService.id, subservice);
       });
@@ -73,7 +71,6 @@ const StudioServices: React.FC = () => {
         duration: 3000,
       });
       
-      // Force refresh of studio data
       setRefreshKey(prev => prev + 1);
     } catch (error) {
       toast({
@@ -95,12 +92,51 @@ const StudioServices: React.FC = () => {
         duration: 3000,
       });
       
-      // Force refresh of studio data
       setRefreshKey(prev => prev + 1);
     } catch (error) {
       toast({
         title: "Error",
         description: "Failed to add item",
+        variant: "destructive",
+        duration: 3000,
+      });
+    }
+  };
+
+  const handleToggleService = (serviceId: string) => {
+    try {
+      toggleServiceEnabled(studioId || '', serviceId);
+      toast({
+        title: "Success",
+        description: "Service status updated",
+        duration: 3000,
+      });
+      
+      setRefreshKey(prev => prev + 1);
+    } catch (error) {
+      toast({
+        title: "Error",
+        description: "Failed to update service status",
+        variant: "destructive",
+        duration: 3000,
+      });
+    }
+  };
+
+  const handleToggleSubservice = (serviceId: string, subserviceId: string) => {
+    try {
+      toggleSubserviceEnabled(studioId || '', serviceId, subserviceId);
+      toast({
+        title: "Success",
+        description: "Subservice status updated",
+        duration: 3000,
+      });
+      
+      setRefreshKey(prev => prev + 1);
+    } catch (error) {
+      toast({
+        title: "Error",
+        description: "Failed to update subservice status",
         variant: "destructive",
         duration: 3000,
       });
@@ -138,15 +174,16 @@ const StudioServices: React.FC = () => {
           />
           
           <ServiceList 
-            key={refreshKey} // Force re-render when data changes
+            key={refreshKey}
             services={studio.services}
             searchTerm={searchTerm}
             onAddItem={handleAddItem}
+            onToggleService={handleToggleService}
+            onToggleSubservice={handleToggleSubservice}
           />
         </div>
       </div>
 
-      {/* Add Service Modal */}
       <AddServiceModal 
         isOpen={addServiceModalOpen}
         onClose={() => setAddServiceModalOpen(false)}

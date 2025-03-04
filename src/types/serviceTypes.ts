@@ -13,12 +13,14 @@ export interface Subservice {
   basePrice?: number;
   priceUnit?: string;
   items: ClothingItem[];
+  enabled: boolean;
 }
 
 export interface Service {
   id: string;
   name: string;
   subservices: Subservice[];
+  enabled: boolean;
 }
 
 export interface Studio {

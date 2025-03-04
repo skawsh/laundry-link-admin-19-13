@@ -1,16 +1,17 @@
-
 import { Service, Studio, Subservice, ClothingItem } from "@/types/serviceTypes";
 
 export const mockServices: Service[] = [
   {
     id: "service1",
     name: "Core Laundry Services",
+    enabled: true,
     subservices: [
       {
         id: "sub1",
         name: "Wash & Fold",
         basePrice: 59,
         priceUnit: "per Kg",
+        enabled: true,
         items: [
           {
             id: "item1",
@@ -54,6 +55,7 @@ export const mockServices: Service[] = [
         name: "Dry Cleaning",
         basePrice: 99,
         priceUnit: "per piece",
+        enabled: true,
         items: [
           {
             id: "item6",
@@ -83,6 +85,7 @@ export const mockServices: Service[] = [
         name: "Ironing",
         basePrice: 10,
         priceUnit: "per piece",
+        enabled: true,
         items: [
           {
             id: "item9",
@@ -105,12 +108,14 @@ export const mockServices: Service[] = [
   {
     id: "service2",
     name: "Premium Laundry Services",
+    enabled: true,
     subservices: [
       {
         id: "sub4",
         name: "Stain Removal",
         basePrice: 150,
         priceUnit: "per piece",
+        enabled: true,
         items: [
           {
             id: "item11",
@@ -133,6 +138,7 @@ export const mockServices: Service[] = [
         name: "Fabric Care",
         basePrice: 125,
         priceUnit: "per piece",
+        enabled: true,
         items: [
           {
             id: "item13",
@@ -154,7 +160,6 @@ export const mockServices: Service[] = [
   },
 ];
 
-// Update mockStudios to include numeric IDs that match the ones in the Studios.tsx file
 export const mockStudios: Studio[] = [
   {
     id: "1",
@@ -202,7 +207,6 @@ export const getStudioById = (studioId: string): Studio | undefined => {
   return mockStudios.find(studio => studio.id === studioId);
 };
 
-// Add new functions to manipulate services data
 export const addServiceToStudio = (studioId: string, newService: Omit<Service, "id">): Service => {
   const studio = getStudioById(studioId);
   if (!studio) {
@@ -212,7 +216,8 @@ export const addServiceToStudio = (studioId: string, newService: Omit<Service, "
   const serviceId = `service${Date.now()}`;
   const service: Service = {
     id: serviceId,
-    ...newService
+    ...newService,
+    enabled: true
   };
   
   studio.services.push(service);
@@ -237,7 +242,8 @@ export const addSubserviceToService = (
   const subserviceId = `sub${Date.now()}`;
   const subservice: Subservice = {
     id: subserviceId,
-    ...newSubservice
+    ...newSubservice,
+    enabled: true
   };
   
   service.subservices.push(subservice);
@@ -273,4 +279,46 @@ export const addItemToSubservice = (
   
   subservice.items.push(item);
   return item;
+};
+
+export const toggleServiceEnabled = (
+  studioId: string,
+  serviceId: string
+): Service => {
+  const studio = getStudioById(studioId);
+  if (!studio) {
+    throw new Error("Studio not found");
+  }
+  
+  const service = studio.services.find(s => s.id === serviceId);
+  if (!service) {
+    throw new Error("Service not found");
+  }
+  
+  service.enabled = !service.enabled;
+  return service;
+};
+
+export const toggleSubserviceEnabled = (
+  studioId: string,
+  serviceId: string,
+  subserviceId: string
+): Subservice => {
+  const studio = getStudioById(studioId);
+  if (!studio) {
+    throw new Error("Studio not found");
+  }
+  
+  const service = studio.services.find(s => s.id === serviceId);
+  if (!service) {
+    throw new Error("Service not found");
+  }
+  
+  const subservice = service.subservices.find(s => s.id === subserviceId);
+  if (!subservice) {
+    throw new Error("Subservice not found");
+  }
+  
+  subservice.enabled = !subservice.enabled;
+  return subservice;
 };
