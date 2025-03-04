@@ -30,46 +30,44 @@ const SubserviceView: React.FC<SubserviceViewProps> = ({
   };
   
   return (
-    <div className="border-l-2 border-gray-200 pl-4 ml-4">
+    <div className="border-l-2 border-gray-200 ml-6">
       <Collapsible
         open={subservice.isExpanded}
         onOpenChange={() => onToggleSubservice(serviceId, subservice.id)}
       >
         <CollapsibleTrigger asChild>
           <div 
-            className="flex items-center justify-between py-2.5 px-3 cursor-pointer hover:bg-gray-50 rounded-md transition-colors"
+            className="flex items-center justify-between py-3 pl-6 pr-4 cursor-pointer"
             onClick={handleToggleClick}
             aria-expanded={subservice.isExpanded}
             role="button"
             tabIndex={0}
           >
-            <div className="flex items-center gap-2">
-              <div>
-                {subservice.isExpanded ? (
-                  <ChevronDown className="h-4 w-4 text-gray-500" />
-                ) : (
-                  <ChevronRight className="h-4 w-4 text-gray-500" />
-                )}
-              </div>
+            <div className="flex items-center gap-3">
+              {subservice.isExpanded ? (
+                <ChevronDown className="h-5 w-5 text-gray-600" />
+              ) : (
+                <ChevronRight className="h-5 w-5 text-gray-600" />
+              )}
               <h4 className="font-medium text-gray-700">
                 {subservice.name}
                 <span className="sr-only">{serviceIndex}.{subserviceIndex}</span>
               </h4>
               {subservice.pricePerUnit && (
-                <span className="ml-1 text-sm text-gray-500">
+                <span className="text-gray-500 ml-1">
                   (₹{subservice.pricePerUnit} {subservice.unit})
                 </span>
               )}
-              <Badge variant="outline" className="ml-1 text-xs bg-gray-50">
-                {itemsCount} {itemsCount === 1 ? 'item' : 'items'}
-              </Badge>
             </div>
+            <Badge variant="outline" className="bg-gray-50 border-gray-200 text-gray-700">
+              {itemsCount} {itemsCount === 1 ? 'item' : 'items'}
+            </Badge>
           </div>
         </CollapsibleTrigger>
         
         <CollapsibleContent className="animate-accordion-down">
           {subservice.items && subservice.items.length > 0 && (
-            <div className="ml-6 my-2 space-y-2.5">
+            <div className="ml-12 my-3 space-y-3">
               {subservice.items.map((item, index) => (
                 <ClothingItemView 
                   key={item.id} 
