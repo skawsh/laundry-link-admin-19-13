@@ -17,30 +17,35 @@ export const mockServices: Service[] = [
             name: "Shirt",
             standardPrice: 10,
             expressPrice: 15,
+            icon: "shirt",
           },
           {
             id: "item2",
             name: "Pant",
             standardPrice: 20,
             expressPrice: 30,
+            icon: "pants",
           },
           {
             id: "item3",
             name: "Shorts",
             standardPrice: 30,
             expressPrice: 45,
+            icon: "shorts",
           },
           {
             id: "item4",
             name: "T-Shirt",
             standardPrice: 15,
             expressPrice: 25,
+            icon: "tshirt",
           },
           {
             id: "item5",
             name: "Jeans",
             standardPrice: 35,
             expressPrice: 50,
+            icon: "jeans",
           },
         ],
       },
@@ -55,18 +60,21 @@ export const mockServices: Service[] = [
             name: "Suit",
             standardPrice: 150,
             expressPrice: 250,
+            icon: "suit",
           },
           {
             id: "item7",
             name: "Blazer",
             standardPrice: 120,
             expressPrice: 180,
+            icon: "blazer",
           },
           {
             id: "item8",
             name: "Coat",
             standardPrice: 200,
             expressPrice: 300,
+            icon: "coat",
           },
         ],
       },
@@ -81,12 +89,14 @@ export const mockServices: Service[] = [
             name: "Shirt",
             standardPrice: 5,
             expressPrice: 8,
+            icon: "shirt",
           },
           {
             id: "item10",
             name: "Pant",
             standardPrice: 7,
             expressPrice: 12,
+            icon: "pants",
           },
         ],
       },
@@ -107,12 +117,14 @@ export const mockServices: Service[] = [
             name: "Silk Garment",
             standardPrice: 250,
             expressPrice: 350,
+            icon: "silk",
           },
           {
             id: "item12",
             name: "Wool Garment",
             standardPrice: 200,
             expressPrice: 300,
+            icon: "wool",
           },
         ],
       },
@@ -127,12 +139,14 @@ export const mockServices: Service[] = [
             name: "Cashmere",
             standardPrice: 300,
             expressPrice: 450,
+            icon: "cashmere",
           },
           {
             id: "item14",
             name: "Linen",
             standardPrice: 180,
             expressPrice: 260,
+            icon: "linen",
           },
         ],
       },
@@ -140,17 +154,48 @@ export const mockServices: Service[] = [
   },
 ];
 
+// Update mockStudios to include numeric IDs that match the ones in the Studios.tsx file
 export const mockStudios: Studio[] = [
   {
-    id: "studio1",
-    name: "City Center Laundry",
+    id: "1",
+    name: "Saiteja Laundry",
     services: mockServices,
   },
   {
-    id: "studio2",
-    name: "Premium Washers",
+    id: "2",
+    name: "Sparkle Clean Laundry",
     services: mockServices,
   },
+  {
+    id: "3",
+    name: "Fresh Fold Services",
+    services: mockServices,
+  },
+  {
+    id: "4",
+    name: "Royal Wash",
+    services: mockServices,
+  },
+  {
+    id: "5",
+    name: "Urban Laundromat",
+    services: mockServices,
+  },
+  {
+    id: "6",
+    name: "Quick & Clean",
+    services: mockServices,
+  },
+  {
+    id: "7",
+    name: "Wash Masters",
+    services: mockServices,
+  },
+  {
+    id: "8",
+    name: "Pristine Garments",
+    services: mockServices,
+  }
 ];
 
 export const getStudioById = (studioId: string): Studio | undefined => {
