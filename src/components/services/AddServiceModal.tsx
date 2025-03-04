@@ -27,13 +27,13 @@ const AddServiceModal: React.FC<AddServiceModalProps> = ({
   onAddService 
 }) => {
   const [serviceName, setServiceName] = useState("");
-  const [subservices, setSubservices] = useState<Array<{name: string, basePrice?: number, priceUnit?: string, items: []}>>(
-    [{ name: "", basePrice: 0, priceUnit: "per piece", items: [] }]
+  const [subservices, setSubservices] = useState<Array<Omit<Subservice, "id">>>(
+    [{ name: "", basePrice: 0, priceUnit: "per piece", items: [], enabled: true }]
   );
   const { toast } = useToast();
 
   const handleAddSubservice = () => {
-    setSubservices([...subservices, { name: "", basePrice: 0, priceUnit: "per piece", items: [] }]);
+    setSubservices([...subservices, { name: "", basePrice: 0, priceUnit: "per piece", items: [], enabled: true }]);
   };
 
   const handleRemoveSubservice = (index: number) => {
@@ -85,7 +85,7 @@ const AddServiceModal: React.FC<AddServiceModalProps> = ({
 
   const resetForm = () => {
     setServiceName("");
-    setSubservices([{ name: "", basePrice: 0, priceUnit: "per piece", items: [] }]);
+    setSubservices([{ name: "", basePrice: 0, priceUnit: "per piece", items: [], enabled: true }]);
     onClose();
   };
 

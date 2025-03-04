@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { ArrowLeft, Plus } from 'lucide-react';
@@ -58,7 +59,8 @@ const StudioServices: React.FC = () => {
     try {
       const newService = addServiceToStudio(studioId || '', {
         name: serviceName,
-        subservices: []
+        subservices: [],
+        enabled: true
       });
       
       subservices.forEach(subservice => {
