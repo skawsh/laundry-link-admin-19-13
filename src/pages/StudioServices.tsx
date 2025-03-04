@@ -3,18 +3,27 @@ import React, { useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { ArrowLeft, Plus } from 'lucide-react';
 import AdminLayout from '@/components/layout/AdminLayout';
-import { getStudioById } from '@/data/mockServiceData';
+import { 
+  getStudioById, 
+  addServiceToStudio, 
+  addSubserviceToService, 
+  addItemToSubservice 
+} from '@/data/mockServiceData';
 import ServiceList from '@/components/services/ServiceList';
 import SearchBox from '@/components/services/SearchBox';
+import AddServiceModal from '@/components/services/AddServiceModal';
 import { Button } from '@/components/ui/button';
 import { useToast } from '@/hooks/use-toast';
 import PageHeader from '@/components/ui/PageHeader';
+import { ClothingItem, Service, Subservice } from '@/types/serviceTypes';
 
 const StudioServices: React.FC = () => {
   const { studioId } = useParams<{ studioId: string }>();
   const navigate = useNavigate();
   const { toast } = useToast();
   const [searchTerm, setSearchTerm] = useState('');
+  const [addServiceModalOpen, setAddServiceModalOpen] = useState(false);
+  const [refreshKey, setRefreshKey] = useState(0); // Used to force re-fetch of studio data
 
   // Get studio data
   const studio = getStudioById(studioId || '');
@@ -38,15 +47,64 @@ const StudioServices: React.FC = () => {
   }
 
   const handleAddService = () => {
-    toast({
-      title: "Coming Soon",
-      description: "Add service functionality will be implemented soon.",
-      duration: 3000,
-    });
+    setAddServiceModalOpen(true);
   };
 
   const handleGoBack = () => {
     navigate(`/studios/details/${studioId}`);
+  };
+
+  const handleAddServiceSubmit = (serviceName: string, subservices: Omit<Subservice, "id">[]) => {
+    try {
+      // Create a new service
+      const newService = addServiceToStudio(studioId || '', {
+        name: serviceName,
+        subservices: []
+      });
+      
+      // Add all subservices
+      subservices.forEach(subservice => {
+        addSubserviceToService(studioId || '', newService.id, subservice);
+      });
+
+      toast({
+        title: "Success",
+        description: "Service added successfully",
+        duration: 3000,
+      });
+      
+      // Force refresh of studio data
+      setRefreshKey(prev => prev + 1);
+    } catch (error) {
+      toast({
+        title: "Error",
+        description: "Failed to add service",
+        variant: "destructive",
+        duration: 3000,
+      });
+    }
+  };
+
+  const handleAddItem = (serviceId: string, subserviceId: string, newItem: Omit<ClothingItem, "id">) => {
+    try {
+      addItemToSubservice(studioId || '', serviceId, subserviceId, newItem);
+      
+      toast({
+        title: "Success",
+        description: "Item added successfully",
+        duration: 3000,
+      });
+      
+      // Force refresh of studio data
+      setRefreshKey(prev => prev + 1);
+    } catch (error) {
+      toast({
+        title: "Error",
+        description: "Failed to add item",
+        variant: "destructive",
+        duration: 3000,
+      });
+    }
   };
 
   return (
@@ -80,11 +138,20 @@ const StudioServices: React.FC = () => {
           />
           
           <ServiceList 
+            key={refreshKey} // Force re-render when data changes
             services={studio.services}
             searchTerm={searchTerm}
+            onAddItem={handleAddItem}
           />
         </div>
       </div>
+
+      {/* Add Service Modal */}
+      <AddServiceModal 
+        isOpen={addServiceModalOpen}
+        onClose={() => setAddServiceModalOpen(false)}
+        onAddService={handleAddServiceSubmit}
+      />
     </AdminLayout>
   );
 };

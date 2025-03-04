@@ -1,5 +1,5 @@
 
-import { Service, Studio } from "@/types/serviceTypes";
+import { Service, Studio, Subservice, ClothingItem } from "@/types/serviceTypes";
 
 export const mockServices: Service[] = [
   {
@@ -200,4 +200,77 @@ export const mockStudios: Studio[] = [
 
 export const getStudioById = (studioId: string): Studio | undefined => {
   return mockStudios.find(studio => studio.id === studioId);
+};
+
+// Add new functions to manipulate services data
+export const addServiceToStudio = (studioId: string, newService: Omit<Service, "id">): Service => {
+  const studio = getStudioById(studioId);
+  if (!studio) {
+    throw new Error("Studio not found");
+  }
+  
+  const serviceId = `service${Date.now()}`;
+  const service: Service = {
+    id: serviceId,
+    ...newService
+  };
+  
+  studio.services.push(service);
+  return service;
+};
+
+export const addSubserviceToService = (
+  studioId: string, 
+  serviceId: string, 
+  newSubservice: Omit<Subservice, "id">
+): Subservice => {
+  const studio = getStudioById(studioId);
+  if (!studio) {
+    throw new Error("Studio not found");
+  }
+  
+  const service = studio.services.find(s => s.id === serviceId);
+  if (!service) {
+    throw new Error("Service not found");
+  }
+  
+  const subserviceId = `sub${Date.now()}`;
+  const subservice: Subservice = {
+    id: subserviceId,
+    ...newSubservice
+  };
+  
+  service.subservices.push(subservice);
+  return subservice;
+};
+
+export const addItemToSubservice = (
+  studioId: string,
+  serviceId: string,
+  subserviceId: string,
+  newItem: Omit<ClothingItem, "id">
+): ClothingItem => {
+  const studio = getStudioById(studioId);
+  if (!studio) {
+    throw new Error("Studio not found");
+  }
+  
+  const service = studio.services.find(s => s.id === serviceId);
+  if (!service) {
+    throw new Error("Service not found");
+  }
+  
+  const subservice = service.subservices.find(s => s.id === subserviceId);
+  if (!subservice) {
+    throw new Error("Subservice not found");
+  }
+  
+  const itemId = `item${Date.now()}`;
+  const item: ClothingItem = {
+    id: itemId,
+    ...newItem
+  };
+  
+  subservice.items.push(item);
+  return item;
 };
