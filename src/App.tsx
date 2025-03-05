@@ -59,9 +59,6 @@ const App = () => (
           <Route path="/order-details/:orderId" element={<OrderDetails />} />
           <Route path="/settings" element={<Settings />} />
           
-          {/* Placeholder route for remaining sections */}
-          <Route path="/tickets" element={<NotFound />} />
-          
           {/* Catch-all route */}
           <Route path="*" element={<NotFound />} />
         </Routes>

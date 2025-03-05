@@ -1,4 +1,3 @@
-
 import React, { useState } from "react";
 import { Link, useLocation } from "react-router-dom";
 import { 
@@ -7,7 +6,6 @@ import {
   Car, 
   ClipboardList, 
   DollarSign, 
-  Ticket, 
   Users, 
   Settings,
   BarChart2,
@@ -48,7 +46,6 @@ const navItems: NavItem[] = [
     ] 
   },
   { label: "Revenue", icon: DollarSign, path: "/revenue" },
-  { label: "Tickets", icon: Ticket, path: "/tickets" },
   { label: "Users", icon: Users, path: "/users" },
   { label: "Settings", icon: Settings, path: "/settings" },
 ];
