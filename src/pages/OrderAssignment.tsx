@@ -21,6 +21,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import {
+  ArrowLeft,
   ArrowRight,
   ShoppingBag,
   Clock,
@@ -61,6 +62,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
+import { Link } from 'react-router-dom';
 
 const ORDER_STATUS = {
   pending: { label: 'Pending', color: 'bg-yellow-500' },
@@ -116,47 +118,183 @@ interface Driver {
   rating: number;
   ordersCompleted: number;
   currentlyDelivering?: boolean;
+  phone: string;
+  email: string;
+  address: string;
+  vehicleType: string;
+  vehicleNumber: string;
 }
 
-const mockDrivers = [
-  { id: 'driver1', name: 'John Doe', available: true, location: 'San Francisco Downtown', rating: 4.8, ordersCompleted: 245 },
-  { id: 'driver2', name: 'Jane Smith', available: true, location: 'Mission District', rating: 4.9, ordersCompleted: 189 },
-  { id: 'driver3', name: 'Mike Johnson', available: false, location: 'Sunset District', rating: 4.7, ordersCompleted: 302 },
-  { id: 'driver4', name: 'Sarah Williams', available: true, location: 'Richmond District', rating: 4.6, ordersCompleted: 156 },
-  { id: 'driver5', name: 'David Lee', available: true, location: 'Marina District', rating: 4.9, ordersCompleted: 278 },
-  { id: 'driver6', name: 'Emily Chen', available: false, location: 'North Beach', rating: 4.8, ordersCompleted: 198 },
-  { id: 'driver7', name: 'Robert Taylor', available: true, location: 'SOMA', rating: 4.7, ordersCompleted: 231 },
-  { id: 'driver8', name: 'Lisa Wang', available: true, location: 'Hayes Valley', rating: 4.9, ordersCompleted: 167 },
+const mockDrivers: Driver[] = [
+  { 
+    id: 'driver1', 
+    name: 'Raj Kumar', 
+    available: true, 
+    location: 'Banjara Hills, Hyderabad', 
+    rating: 4.8, 
+    ordersCompleted: 245,
+    phone: '+91 9876543210',
+    email: 'raj.kumar@example.com',
+    address: '14-7-125, Road No. 12, Banjara Hills, Hyderabad',
+    vehicleType: 'Scooter',
+    vehicleNumber: 'TS 10 AB 1234'
+  },
+  { 
+    id: 'driver2', 
+    name: 'Priya Sharma', 
+    available: true, 
+    location: 'Jubilee Hills, Hyderabad', 
+    rating: 4.9, 
+    ordersCompleted: 189,
+    phone: '+91 9876543211',
+    email: 'priya.sharma@example.com',
+    address: '8-2-293/82/A, Jubilee Hills, Hyderabad',
+    vehicleType: 'Motorcycle',
+    vehicleNumber: 'TS 11 CD 5678'
+  },
+  { 
+    id: 'driver3', 
+    name: 'Arjun Reddy', 
+    available: false, 
+    location: 'Gachibowli, Hyderabad', 
+    rating: 4.7, 
+    ordersCompleted: 302,
+    phone: '+91 9876543212',
+    email: 'arjun.reddy@example.com',
+    address: '2-53/1, Gachibowli Main Road, Hyderabad',
+    vehicleType: 'Scooter',
+    vehicleNumber: 'TS 12 EF 9012'
+  },
+  { 
+    id: 'driver4', 
+    name: 'Ananya Patel', 
+    available: true, 
+    location: 'Ameerpet, Hyderabad', 
+    rating: 4.6, 
+    ordersCompleted: 156,
+    phone: '+91 9876543213',
+    email: 'ananya.patel@example.com',
+    address: '7-1-621/A, Ameerpet, Hyderabad',
+    vehicleType: 'Motorcycle',
+    vehicleNumber: 'TS 13 GH 3456'
+  },
+  { 
+    id: 'driver5', 
+    name: 'Vikram Singh', 
+    available: true, 
+    location: 'Hitech City, Hyderabad', 
+    rating: 4.9, 
+    ordersCompleted: 278,
+    phone: '+91 9876543214',
+    email: 'vikram.singh@example.com',
+    address: '4-98/3, Hitech City Main Road, Hyderabad',
+    vehicleType: 'Scooter',
+    vehicleNumber: 'TS 14 IJ 7890'
+  },
+  { 
+    id: 'driver6', 
+    name: 'Meera Iyer', 
+    available: false, 
+    location: 'Kukatpally, Hyderabad', 
+    rating: 4.8, 
+    ordersCompleted: 198,
+    phone: '+91 9876543215',
+    email: 'meera.iyer@example.com',
+    address: '3-6-254, KPHB Colony, Kukatpally, Hyderabad',
+    vehicleType: 'Motorcycle',
+    vehicleNumber: 'TS 15 KL 1234'
+  },
+  { 
+    id: 'driver7', 
+    name: 'Ramesh Rao', 
+    available: true, 
+    location: 'Madhapur, Hyderabad', 
+    rating: 4.7, 
+    ordersCompleted: 231,
+    phone: '+91 9876543216',
+    email: 'ramesh.rao@example.com',
+    address: '1-74/1, Ayyappa Society, Madhapur, Hyderabad',
+    vehicleType: 'Scooter',
+    vehicleNumber: 'TS 16 MN 5678'
+  },
+  { 
+    id: 'driver8', 
+    name: 'Deepika Nair', 
+    available: true, 
+    location: 'Kondapur, Hyderabad', 
+    rating: 4.9, 
+    ordersCompleted: 167,
+    phone: '+91 9876543217',
+    email: 'deepika.nair@example.com',
+    address: '5-12/9, Kondapur Main Road, Hyderabad',
+    vehicleType: 'Motorcycle',
+    vehicleNumber: 'TS 17 OP 9012'
+  },
+  { 
+    id: 'driver9', 
+    name: 'Sanjay Kapoor', 
+    available: true, 
+    location: 'Secunderabad, Hyderabad', 
+    rating: 4.8, 
+    ordersCompleted: 213,
+    phone: '+91 9876543218',
+    email: 'sanjay.kapoor@example.com',
+    address: '10-3-287, MG Road, Secunderabad, Hyderabad',
+    vehicleType: 'Scooter',
+    vehicleNumber: 'TS 18 QR 3456'
+  },
+  { 
+    id: 'driver10', 
+    name: 'Lakshmi Devi', 
+    available: true, 
+    location: 'Begumpet, Hyderabad', 
+    rating: 4.8, 
+    ordersCompleted: 190,
+    phone: '+91 9876543219',
+    email: 'lakshmi.devi@example.com',
+    address: '6-3-345, Begumpet Main Road, Hyderabad',
+    vehicleType: 'Motorcycle',
+    vehicleNumber: 'TS 19 ST 7890'
+  }
+];
+
+const hyderabadAddresses = [
+  "12-1-509, Road No. 2, Banjara Hills, Hyderabad",
+  "8-2-120/86, Jubilee Hills, Hyderabad",
+  "2-10/92, Financial District, Gachibowli, Hyderabad",
+  "7-1-397, Ameerpet Main Road, Hyderabad",
+  "4-51/17, Hitech City, Hyderabad",
+  "3-6-111, KPHB Phase 3, Kukatpally, Hyderabad",
+  "1-98/4, Ayyappa Society, Madhapur, Hyderabad",
+  "5-9/214, Kondapur Main Road, Hyderabad",
+  "10-3-156, Paradise Circle, Secunderabad, Hyderabad",
+  "6-3-248, Panjagutta, Hyderabad",
+  "9-1-87, Toli Chowki, Hyderabad",
+  "11-4-163, Masab Tank, Hyderabad"
+];
+
+const indianCustomers = [
+  "Ankit Sharma", "Neha Gupta", "Ravi Patel", "Divya Reddy",
+  "Siddharth Iyer", "Pooja Mehta", "Karthik Nair", "Aarti Kapoor",
+  "Vijay Kumar", "Shweta Singh", "Mohit Verma", "Swati Joshi",
+  "Rahul Malhotra", "Priyanka Desai", "Suresh Choudhary", "Nandini Rao"
 ];
 
 const generateMockOrders = (): Order[] => {
   const statuses = Object.keys(ORDER_STATUS) as Array<keyof typeof ORDER_STATUS>;
   const studios = [
-    "Clean Express", "Laundry Masters", "Fresh Fold", "Wash & Go", 
+    "Swift Wash", "Clean Express", "Fresh Fold", "Wash & Go", 
     "Premium Cleaners", "City Laundry", "SparkleWash", "Quick Clean",
     "Elite Laundry", "Eco Wash"
   ];
   
-  const customers = [
-    "Alice Cooper", "Bob Marley", "Charlie Brown", "Diana Ross",
-    "Edward Norton", "Fiona Apple", "George Clooney", "Hannah Montana",
-    "Ian McKellen", "Julia Roberts", "Kevin Hart", "Laura Palmer",
-    "Mark Twain", "Nancy Drew", "Oscar Wilde", "Penelope Cruz"
+  const indianPhoneNumbers = [
+    "+91 9876123456", "+91 9871234567", "+91 8876543210", "+91 7776543210",
+    "+91 9988776655", "+91 8866554433", "+91 7744332211", "+91 9900112233",
+    "+91 8877665544", "+91 7766554433", "+91 9865432170", "+91 8954321678"
   ];
   
-  const addresses = [
-    "123 Main St", "456 Oak Ave", "789 Pine Blvd", "101 Maple Ln",
-    "202 Cedar Dr", "303 Birch Ct", "404 Elm Rd", "505 Spruce Way",
-    "606 Walnut St", "707 Cherry Ave", "808 Aspen Dr", "909 Willow Ln"
-  ];
-
-  const phoneNumbers = [
-    "415-555-1234", "415-555-5678", "415-555-9012", "415-555-3456",
-    "415-555-7890", "415-555-2345", "415-555-6789", "415-555-0123",
-    "415-555-4567", "415-555-8901", "415-555-2345", "415-555-6789"
-  ];
-
-  const distances = ["0.8 miles", "1.2 miles", "2.5 miles", "3.7 miles", "1.5 miles", "2.8 miles", "0.5 miles", "4.2 miles"];
+  const distances = ["1.2 km", "2.5 km", "3.7 km", "0.8 km", "1.5 km", "2.8 km", "0.5 km", "4.2 km"];
   const priorities = ["low", "medium", "high"] as const;
   const washTypes = Object.keys(WASH_TYPES) as Array<keyof typeof WASH_TYPES>;
 
@@ -210,8 +348,8 @@ const generateMockOrders = (): Order[] => {
     orders.push({
       id: `ORD-${10000 + i}`,
       date: orderDate.toISOString(),
-      customer: customers[Math.floor(Math.random() * customers.length)],
-      address: addresses[Math.floor(Math.random() * addresses.length)] + ', San Francisco, CA',
+      customer: indianCustomers[Math.floor(Math.random() * indianCustomers.length)],
+      address: hyderabadAddresses[Math.floor(Math.random() * hyderabadAddresses.length)],
       status: status,
       studio: studios[Math.floor(Math.random() * studios.length)],
       items: items,
@@ -225,7 +363,7 @@ const generateMockOrders = (): Order[] => {
       rescheduleDate: rescheduleDate,
       priority: priorities[Math.floor(Math.random() * priorities.length)],
       distance: distances[Math.floor(Math.random() * distances.length)],
-      phoneNumber: phoneNumbers[Math.floor(Math.random() * phoneNumbers.length)]
+      phoneNumber: indianPhoneNumbers[Math.floor(Math.random() * indianPhoneNumbers.length)]
     });
   }
 
@@ -608,6 +746,15 @@ const OrderAssignment: React.FC = () => {
           subtitle="Assign drivers to orders and manage order dispatch"
         >
           <div className="flex items-center gap-2">
+            <Link to="/orders">
+              <Button 
+                variant="back" 
+                size="icon" 
+                className="mr-2"
+              >
+                <ArrowLeft className="h-4 w-4" />
+              </Button>
+            </Link>
             <Button 
               variant={selectMode ? "default" : "outline"} 
               size="sm"
