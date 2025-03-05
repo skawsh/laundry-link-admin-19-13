@@ -338,41 +338,57 @@ export const mockStudios: Studio[] = [
     id: "1",
     name: "Saiteja Laundry",
     services: mockServices,
+    location: "123 Main St, Mumbai, India",
+    status: "active"
   },
   {
     id: "2",
     name: "Sparkle Clean Laundry",
     services: mockServices,
+    location: "456 Park Avenue, Delhi, India",
+    status: "active"
   },
   {
     id: "3",
     name: "Fresh Fold Services",
     services: mockServices,
+    location: "789 Central Road, Bangalore, India",
+    status: "inactive"
   },
   {
     id: "4",
     name: "Royal Wash",
     services: mockServices,
+    location: "321 Queen Street, Hyderabad, India",
+    status: "active"
   },
   {
     id: "5",
     name: "Urban Laundromat",
     services: mockServices,
+    location: "987 Urban Complex, Chennai, India",
+    status: "inactive"
   },
   {
     id: "6",
     name: "Quick & Clean",
     services: mockServices,
+    location: "234 Fast Lane, Pune, India",
+    status: "active"
   },
   {
     id: "7",
     name: "Wash Masters",
     services: mockServices,
+    location: "567 Clean Street, Kolkata, India",
+    status: "active"
   },
   {
     id: "8",
     name: "Pristine Garments",
     services: mockServices,
+    location: "876 Garment Ave, Ahmedabad, India",
+    status: "inactive"
   }
 ];
 

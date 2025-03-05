@@ -27,4 +27,6 @@ export interface Studio {
   id: string;
   name: string;
   services: Service[];
+  location?: string;
+  status?: 'active' | 'inactive';
 }
