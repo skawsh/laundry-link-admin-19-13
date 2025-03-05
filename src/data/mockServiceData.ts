@@ -393,6 +393,14 @@ export const mockStudios: Studio[] = [
 ];
 
 export const getStudioById = (studioId: string): Studio | undefined => {
+  if (studioId === "global") {
+    return {
+      id: "global",
+      name: "Global Services",
+      services: mockServices,
+    };
+  }
+  
   return mockStudios.find(studio => studio.id === studioId);
 };
 

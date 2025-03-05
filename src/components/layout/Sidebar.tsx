@@ -1,3 +1,4 @@
+
 import React, { useState } from "react";
 import { Link, useLocation } from "react-router-dom";
 import { 
@@ -14,7 +15,8 @@ import {
   TrendingUp,
   PieChart,
   Truck,
-  UserCheck
+  UserCheck,
+  Package
 } from "lucide-react";
 
 interface SidebarProps {
@@ -31,6 +33,7 @@ interface NavItem {
 const navItems: NavItem[] = [
   { label: "Dashboard", icon: LayoutDashboard, path: "/" },
   { label: "Studios", icon: Building, path: "/studios" },
+  { label: "Services", icon: Package, path: "/services" },
   { label: "Drivers", icon: Car, path: "/drivers" },
   { label: "Orders", icon: ClipboardList, path: "/orders" },
   { 

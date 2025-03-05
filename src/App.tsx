@@ -26,6 +26,7 @@ import AddStudio from './pages/AddStudio';
 import DriverProfile from './pages/DriverProfile';
 import Index from './pages/Index';
 import Settings from './pages/Settings';
+import Services from './pages/Services';
 
 const queryClient = new QueryClient();
 
@@ -48,6 +49,7 @@ const App = () => (
           <Route path="/studios/overall-analytics" element={<StudioOverallAnalytics />} />
           <Route path="/studios/details/:studioId" element={<StudioDetails />} />
           <Route path="/studios/services/:studioId" element={<StudioServices />} />
+          <Route path="/services" element={<Services />} />
           <Route path="/services-analytics" element={<ServicesAnalytics />} />
           <Route path="/user-analytics" element={<UserAnalytics />} />
           <Route path="/delivery-analytics" element={<DeliveryAnalytics />} />
