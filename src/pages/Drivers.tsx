@@ -4,16 +4,10 @@ import AdminLayout from '@/components/layout/AdminLayout';
 import { 
   Search, User, Package, Clock, Info, MoreHorizontal,
   Phone, Calendar, Truck, UserCog, XCircle, Filter,
-  Users, CheckCircle2
+  Users, CheckCircle2, ChevronLeft
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogHeader,
-  DialogTitle,
-} from '@/components/ui/dialog';
+import PageHeader from '@/components/ui/PageHeader';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import { Badge } from '@/components/ui/badge';
 import { Separator } from '@/components/ui/separator';
@@ -305,7 +299,7 @@ const Drivers = () => {
     return activeDriversCount + inactiveDriversCount;
   }, [activeDriversCount, inactiveDriversCount]);
 
-  const [driverOrderAssignments, setDriverOrderAssignments] = useState<any[]>([]);
+  const [driverOrderAssignments, setDriverOrderAssignments] = useState<any[]>();
   
   useEffect(() => {
     const storeAssignments = getDriverAssignments();
@@ -400,11 +394,30 @@ const Drivers = () => {
     setDriverOrderAssignments(getDriverOrderAssignments);
   }, [getDriverOrderAssignments]);
 
+  const handleGoBack = () => {
+    navigate(-1);
+  };
+
   return (
     <AdminLayout>
       <div className="p-6">
-        <div className="flex justify-between items-center mb-6">
-          <h1 className="text-2xl font-bold text-gray-800">Driver Management</h1>
+        <PageHeader 
+          title="Driver Management"
+          subtitle="Manage and monitor your delivery staff"
+          backButton={
+            <Button 
+              variant="back" 
+              size="icon" 
+              onClick={handleGoBack}
+              className="mr-2"
+            >
+              <ChevronLeft className="h-5 w-5" />
+            </Button>
+          }
+          className="mb-6"
+        />
+
+        <div className="flex justify-end items-center mb-6">
           <div className="flex space-x-2">
             <div className="relative">
               <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4" />
