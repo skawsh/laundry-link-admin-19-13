@@ -1,4 +1,4 @@
-<lov-code>
+
 import React, { useState, useEffect, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import AdminLayout from '@/components/layout/AdminLayout';
@@ -253,7 +253,7 @@ const Drivers = () => {
     toast({
       title: "Driver status updated.",
       description: `Driver ${driverId} status has been updated.`,
-    })
+    });
   };
 
   const handleActionMenuItem = (action: string, driverId: number) => {
@@ -274,7 +274,7 @@ const Drivers = () => {
       toast({
         title: "Driver removed.",
         description: `Driver ${driverId} has been removed.`,
-      })
+      });
     }
   };
 
@@ -363,12 +363,16 @@ const Drivers = () => {
       };
     });
     
-    const mockAssignments = driverOrderAssignments.filter(driver => 
-      !formattedAssignments.some(a => a.id.toString() === driver.id.toString())
-    );
-    
-    setDriverOrderAssignments([...formattedAssignments, ...mockAssignments]);
-  }, [mockDrivers]);
+    if (driverOrderAssignments && driverOrderAssignments.length > 0) {
+      const mockAssignments = driverOrderAssignments.filter(driver => 
+        !formattedAssignments.some(a => a.id.toString() === driver.id.toString())
+      );
+      
+      setDriverOrderAssignments([...formattedAssignments, ...mockAssignments]);
+    } else {
+      setDriverOrderAssignments([...formattedAssignments]);
+    }
+  }, [mockDrivers, driverOrderAssignments]);
 
   const getDriverOrderAssignments = useMemo(() => {
     const assignments = mockDrivers.map(driver => {
@@ -432,6 +436,252 @@ const Drivers = () => {
 
   const handleGoBack = () => {
     navigate(-1);
+  };
+
+  // Driver profile dialog
+  const renderDriverProfile = () => {
+    if (!selectedDriver) return null;
+    
+    return (
+      <Dialog open={driverProfileOpen} onOpenChange={setDriverProfileOpen}>
+        <DialogContent className="max-w-3xl">
+          <DialogHeader>
+            <DialogTitle className="text-xl">Driver Profile</DialogTitle>
+            <DialogDescription>
+              Detailed information about {selectedDriver.name}
+            </DialogDescription>
+          </DialogHeader>
+          
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mt-4">
+            <div className="col-span-1">
+              <div className="bg-gray-100 p-6 rounded-lg flex flex-col items-center">
+                <div className="h-24 w-24 bg-gray-200 rounded-full flex items-center justify-center mb-4">
+                  <User className="h-12 w-12 text-gray-500" />
+                </div>
+                <h3 className="text-lg font-medium">{selectedDriver.name}</h3>
+                <p className="text-sm text-gray-500">{selectedDriver.phone}</p>
+                <Badge 
+                  variant={selectedDriver.status === 'active' ? 'default' : 'secondary'}
+                  className="mt-2"
+                >
+                  {selectedDriver.status === 'active' ? 'Active' : 'Inactive'}
+                </Badge>
+                
+                <div className="mt-4 w-full">
+                  <div className="flex items-center justify-between mb-2">
+                    <span className="text-sm text-gray-500">Rating</span>
+                    <span className="text-sm font-medium">{selectedDriver.rating} / 5.0</span>
+                  </div>
+                  <div className="flex items-center justify-between">
+                    <span className="text-sm text-gray-500">Total Orders</span>
+                    <span className="text-sm font-medium">{selectedDriver.totalOrders}</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+            
+            <div className="col-span-2">
+              <div className="bg-gray-50 p-6 rounded-lg h-full">
+                <h4 className="text-md font-medium mb-4">Contact Information</h4>
+                
+                <div className="space-y-4">
+                  <div className="flex items-start">
+                    <Mail className="h-5 w-5 text-gray-400 mr-3 mt-0.5" />
+                    <div>
+                      <p className="text-sm font-medium">Email Address</p>
+                      <p className="text-sm text-gray-600">{selectedDriver.email}</p>
+                    </div>
+                  </div>
+                  
+                  <div className="flex items-start">
+                    <MapPin className="h-5 w-5 text-gray-400 mr-3 mt-0.5" />
+                    <div>
+                      <p className="text-sm font-medium">Address</p>
+                      <p className="text-sm text-gray-600">{selectedDriver.address}</p>
+                    </div>
+                  </div>
+                  
+                  <div className="flex items-start">
+                    <AlertCircle className="h-5 w-5 text-gray-400 mr-3 mt-0.5" />
+                    <div>
+                      <p className="text-sm font-medium">Emergency Contact</p>
+                      <p className="text-sm text-gray-600">{selectedDriver.emergencyContact}</p>
+                    </div>
+                  </div>
+                  
+                  <Separator className="my-4" />
+                  
+                  <h4 className="text-md font-medium mb-4">Vehicle Information</h4>
+                  
+                  <div className="flex items-start">
+                    <Truck className="h-5 w-5 text-gray-400 mr-3 mt-0.5" />
+                    <div>
+                      <p className="text-sm font-medium">Vehicle Details</p>
+                      <p className="text-sm text-gray-600">{selectedDriver.vehicleInfo}</p>
+                    </div>
+                  </div>
+                  
+                  <div className="flex items-start">
+                    <CreditCard className="h-5 w-5 text-gray-400 mr-3 mt-0.5" />
+                    <div>
+                      <p className="text-sm font-medium">License Number</p>
+                      <p className="text-sm text-gray-600">{selectedDriver.licenseNumber}</p>
+                    </div>
+                  </div>
+                  
+                  <Separator className="my-4" />
+                  
+                  <div className="flex items-start">
+                    <Calendar className="h-5 w-5 text-gray-400 mr-3 mt-0.5" />
+                    <div>
+                      <p className="text-sm font-medium">Join Date</p>
+                      <p className="text-sm text-gray-600">{selectedDriver.joinDate}</p>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+          
+          <DialogFooter>
+            <Button 
+              variant="outline" 
+              onClick={() => setDriverProfileOpen(false)}
+            >
+              Close
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+    );
+  };
+
+  // Order details dialog
+  const renderOrderDetails = () => {
+    if (!selectedDriver) return null;
+    
+    const driverInfo = selectedDriver;
+    const assignedOrders = driverInfo.assignedOrders || [];
+    
+    return (
+      <Dialog open={orderDetailsOpen} onOpenChange={setOrderDetailsOpen}>
+        <DialogContent className="max-w-4xl">
+          <DialogHeader>
+            <DialogTitle className="text-xl">Orders for {driverInfo.name}</DialogTitle>
+            <DialogDescription>
+              Currently assigned orders and delivery details
+            </DialogDescription>
+          </DialogHeader>
+          
+          <div className="mt-4">
+            <div className="bg-gray-50 p-4 rounded-lg mb-4">
+              <div className="flex items-center">
+                <div className="h-10 w-10 bg-gray-200 rounded-full flex items-center justify-center">
+                  <User className="h-5 w-5 text-gray-500" />
+                </div>
+                <div className="ml-3">
+                  <h3 className="text-md font-medium">{driverInfo.name}</h3>
+                  <p className="text-sm text-gray-500">
+                    {driverInfo.currentTask === 'delivering' 
+                      ? `Currently delivering order ${driverInfo.currentOrder}` 
+                      : 'Currently not on delivery'}
+                  </p>
+                </div>
+                <Badge 
+                  variant={driverInfo.status === 'active' ? 'default' : 'secondary'}
+                  className="ml-auto"
+                >
+                  {driverInfo.status === 'active' ? 'Active' : 'Inactive'}
+                </Badge>
+              </div>
+            </div>
+            
+            {assignedOrders.length > 0 ? (
+              <div className="overflow-hidden border border-gray-200 rounded-lg">
+                <table className="min-w-full divide-y divide-gray-200">
+                  <thead className="bg-gray-50">
+                    <tr>
+                      <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                        Order ID
+                      </th>
+                      <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                        Customer
+                      </th>
+                      <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                        Status
+                      </th>
+                      <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                        Address
+                      </th>
+                    </tr>
+                  </thead>
+                  <tbody className="bg-white divide-y divide-gray-200">
+                    {assignedOrders.map((orderId: string) => {
+                      const orderDetails = mockOrders.find(o => o.id === orderId);
+                      if (!orderDetails) return null;
+                      
+                      return (
+                        <tr key={orderId}>
+                          <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
+                            {orderId}
+                          </td>
+                          <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                            {orderDetails.customer}
+                          </td>
+                          <td className="px-6 py-4 whitespace-nowrap">
+                            <Badge variant={orderDetails.status === 'in_delivery' ? 'default' : 'secondary'}>
+                              {orderDetails.status === 'in_delivery' ? 'In Delivery' : 'Picked Up'}
+                            </Badge>
+                          </td>
+                          <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                            {orderDetails.address}
+                          </td>
+                        </tr>
+                      );
+                    })}
+                    
+                    {/* Additional orders from driver assignment store */}
+                    {driverOrders.map((order) => (
+                      <tr key={order.id}>
+                        <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
+                          {order.id}
+                        </td>
+                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                          {order.customer}
+                        </td>
+                        <td className="px-6 py-4 whitespace-nowrap">
+                          <Badge variant={order.status === 'in_delivery' ? 'default' : 'secondary'}>
+                            {order.status === 'in_delivery' ? 'In Delivery' : 'Picked Up'}
+                          </Badge>
+                        </td>
+                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                          {order.address}
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            ) : (
+              <div className="text-center py-10 bg-gray-50 rounded-lg">
+                <Package className="h-10 w-10 text-gray-400 mx-auto mb-2" />
+                <h3 className="text-md font-medium text-gray-500">No orders assigned</h3>
+                <p className="text-sm text-gray-400 mt-1">This driver currently has no assigned orders</p>
+              </div>
+            )}
+            
+            <DialogFooter className="mt-6">
+              <Button 
+                variant="outline" 
+                onClick={() => setOrderDetailsOpen(false)}
+              >
+                Close
+              </Button>
+            </DialogFooter>
+          </div>
+        </DialogContent>
+      </Dialog>
+    );
   };
 
   return (
@@ -840,3 +1090,110 @@ const Drivers = () => {
                   
                   return (
                     <Card key={driver.id}>
+                      <CardHeader className="pb-2">
+                        <CardTitle className="text-md flex items-center gap-2">
+                          <User className="h-4 w-4 text-blue-500" />
+                          {driver.name}
+                        </CardTitle>
+                        <CardDescription>
+                          {driverOrders.length} orders assigned
+                        </CardDescription>
+                      </CardHeader>
+                      <CardContent>
+                        <div className="space-y-2">
+                          {driverOrders.map(order => (
+                            <div key={order.id} className="p-2 bg-gray-50 rounded-md">
+                              <div className="flex justify-between items-center">
+                                <span className="text-sm font-medium">{order.id}</span>
+                                <Badge variant={order.status === 'in_delivery' ? 'default' : 'secondary'} className="text-xs">
+                                  {order.status === 'in_delivery' ? 'In Delivery' : 'Picked Up'}
+                                </Badge>
+                              </div>
+                              <div className="text-xs text-gray-500 mt-1">
+                                {order.customer}
+                              </div>
+                            </div>
+                          ))}
+                        </div>
+                      </CardContent>
+                    </Card>
+                  );
+                })}
+              </div>
+            </div>
+          </TabsContent>
+
+          <TabsContent value="available">
+            <div className="bg-white rounded-lg shadow-subtle p-4">
+              <h3 className="text-lg font-medium text-gray-800 mb-4 flex items-center gap-2">
+                <CheckCircle2 className="h-5 w-5 text-green-500" />
+                Available Drivers
+              </h3>
+              
+              {availableDrivers.length > 0 ? (
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                  {availableDrivers.map(driver => (
+                    <div 
+                      key={driver.id} 
+                      className="border border-gray-200 rounded-lg p-4 hover:bg-gray-50 transition-colors"
+                      onClick={() => handleOpenDriverProfile(driver)}
+                    >
+                      <div className="flex items-center mb-2">
+                        <div className="h-10 w-10 bg-green-100 rounded-full flex items-center justify-center">
+                          <User className="h-5 w-5 text-green-600" />
+                        </div>
+                        <div className="ml-3">
+                          <h4 className="text-sm font-medium">{driver.name}</h4>
+                          <p className="text-xs text-gray-500">{driver.phone}</p>
+                        </div>
+                        <Badge className="ml-auto" variant="outline">
+                          {driver.assignedOrders.length} Orders
+                        </Badge>
+                      </div>
+                      
+                      <div className="text-xs text-gray-500 flex items-center">
+                        <MapPin className="h-3 w-3 mr-1" />
+                        {driver.location}
+                      </div>
+                      
+                      <div className="mt-2 pt-2 border-t border-gray-100 flex justify-between items-center">
+                        <div className="flex items-center">
+                          <Clock className="h-3 w-3 text-amber-500 mr-1" />
+                          <span className="text-xs">
+                            {driver.currentTask === 'delivering' ? 'On delivery' : 'Available'}
+                          </span>
+                        </div>
+                        <Button 
+                          size="sm" 
+                          variant="outline" 
+                          className="text-xs h-7 px-2"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            handleActionMenuItem('viewOrders', driver.id);
+                          }}
+                        >
+                          Details
+                        </Button>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              ) : (
+                <div className="text-center py-10 bg-gray-50 rounded-lg">
+                  <Users className="h-10 w-10 text-gray-400 mx-auto mb-2" />
+                  <h3 className="text-md font-medium text-gray-500">No available drivers</h3>
+                  <p className="text-sm text-gray-400 mt-1">All drivers are currently inactive or busy</p>
+                </div>
+              )}
+            </div>
+          </TabsContent>
+        </Tabs>
+        
+        {renderDriverProfile()}
+        {renderOrderDetails()}
+      </div>
+    </AdminLayout>
+  );
+};
+
+export default Drivers;
