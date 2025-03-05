@@ -57,7 +57,7 @@ const router = createBrowserRouter([
     element: <Drivers />,
   },
   {
-    path: "/drivers/:driverId",
+    path: "/driver-profile/:id",
     element: <DriverProfile />,
   },
   {
@@ -73,7 +73,7 @@ const router = createBrowserRouter([
     element: <Orders />,
   },
   {
-    path: "/orders/:orderId",
+    path: "/order-details/:orderId",
     element: <OrderDetails />,
   },
   {

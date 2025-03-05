@@ -1,4 +1,3 @@
-
 import React, { useState, useMemo } from 'react';
 import AdminLayout from '@/components/layout/AdminLayout';
 import { 
@@ -33,7 +32,8 @@ import {
   Filter,
   ShirtIcon,
   WashingMachine,
-  RefreshCcw
+  RefreshCcw,
+  CheckSquare
 } from "lucide-react";
 import { Separator } from "@/components/ui/separator";
 import { Badge } from "@/components/ui/badge";
@@ -50,8 +50,8 @@ import {
 import { toast } from "@/components/ui/use-toast";
 import DataTable from '@/components/ui/DataTable';
 import PageHeader from '@/components/ui/PageHeader';
+import { Checkbox } from "@/components/ui/checkbox";
 
-// Order status types
 const ORDER_STATUS = {
   pending: { label: 'Pending', color: 'bg-yellow-500' },
   in_progress: { label: 'In Progress', color: 'bg-blue-500' },
@@ -64,13 +64,11 @@ const ORDER_STATUS = {
   rescheduled: { label: 'Rescheduled', color: 'bg-orange-500' },
 };
 
-// Wash types
 const WASH_TYPES = {
   standard: { label: 'Standard Wash', icon: WashingMachine },
   quick: { label: 'Quick Wash', icon: ShirtIcon },
 };
 
-// Types for order data
 interface OrderItem {
   id: string;
   name: string;
@@ -100,7 +98,6 @@ interface Order {
   phoneNumber: string;
 }
 
-// Mock data for drivers
 const mockDrivers = [
   { id: 'driver1', name: 'John Doe', available: true, location: 'San Francisco Downtown', rating: 4.8, ordersCompleted: 245 },
   { id: 'driver2', name: 'Jane Smith', available: true, location: 'Mission District', rating: 4.9, ordersCompleted: 189 },
@@ -112,7 +109,6 @@ const mockDrivers = [
   { id: 'driver8', name: 'Lisa Wang', available: true, location: 'Hayes Valley', rating: 4.9, ordersCompleted: 167 },
 ];
 
-// Generate mock orders with wash types and different statuses
 const generateMockOrders = (): Order[] => {
   const statuses = Object.keys(ORDER_STATUS) as Array<keyof typeof ORDER_STATUS>;
   const studios = [
@@ -154,7 +150,6 @@ const generateMockOrders = (): Order[] => {
 
   const orders: Order[] = [];
 
-  // Generate 100 orders with realistic data
   for (let i = 1; i <= 100; i++) {
     const orderDate = getRandomDate(new Date(2023, 0, 1), new Date());
     const washType = washTypes[Math.floor(Math.random() * washTypes.length)];
@@ -174,7 +169,6 @@ const generateMockOrders = (): Order[] => {
     const statusIndex = Math.floor(Math.random() * statuses.length);
     const status = statuses[statusIndex];
 
-    // For rescheduled orders, add a reason and new date
     let rescheduleReason, rescheduleDate;
     if (status === 'rescheduled') {
       const reasons = [
@@ -190,7 +184,6 @@ const generateMockOrders = (): Order[] => {
       rescheduleDate = futureDate.toISOString();
     }
     
-    // Assign driver only for certain statuses
     const driver = ['in_progress', 'in_delivery', 'picked_up'].includes(status) ? 
       mockDrivers[Math.floor(Math.random() * mockDrivers.length)].name : null;
     
@@ -228,11 +221,11 @@ const OrderAssignment: React.FC = () => {
   const [selectedOrder, setSelectedOrder] = useState<Order | null>(null);
   const [showDriverSelection, setShowDriverSelection] = useState(false);
   const [washTypeFilter, setWashTypeFilter] = useState<string>('all');
+  const [selectedOrders, setSelectedOrders] = useState<Order[]>([]);
+  const [selectMode, setSelectMode] = useState(false);
 
-  // Filter orders based on tab selection, search query, and wash type
   const filteredOrders = useMemo(() => {
     return mockOrders.filter(order => {
-      // Filter by tab
       if (selectedTab === 'new' && order.status !== 'pending') {
         return false;
       }
@@ -243,7 +236,6 @@ const OrderAssignment: React.FC = () => {
         return false;
       }
       
-      // Filter by search query
       if (searchQuery) {
         const searchLower = searchQuery.toLowerCase();
         const matchesID = order.id.toLowerCase().includes(searchLower);
@@ -255,7 +247,6 @@ const OrderAssignment: React.FC = () => {
         }
       }
       
-      // Filter by wash type
       if (washTypeFilter !== 'all' && order.washType !== washTypeFilter) {
         return false;
       }
@@ -264,31 +255,30 @@ const OrderAssignment: React.FC = () => {
     });
   }, [mockOrders, selectedTab, searchQuery, washTypeFilter]);
 
-  // Available drivers (filter to only show available ones)
   const availableDrivers = useMemo(() => {
     return mockDrivers.filter(driver => driver.available);
   }, []);
 
   const handleAssignDriver = () => {
-    if (!selectedOrder || !selectedDriver) {
+    if (selectedOrders.length === 0 || !selectedDriver) {
       toast({
         title: "Error",
-        description: "Please select both an order and a driver",
+        description: "Please select both orders and a driver",
         variant: "destructive",
       });
       return;
     }
 
-    // In a real app, this would make an API call to assign the driver
     toast({
       title: "Driver Assigned",
-      description: `Driver ${selectedDriver} has been assigned to order ${selectedOrder.id}`,
+      description: `Driver ${selectedDriver} has been assigned to ${selectedOrders.length} order(s)`,
     });
 
-    // Reset selections
     setSelectedOrder(null);
+    setSelectedOrders([]);
     setSelectedDriver('');
     setShowDriverSelection(false);
+    setSelectMode(false);
   };
 
   const handleDriverSelect = (driverId: string) => {
@@ -296,12 +286,77 @@ const OrderAssignment: React.FC = () => {
   };
 
   const handleOrderSelect = (order: Order) => {
+    if (selectMode) {
+      return;
+    }
     setSelectedOrder(order);
+    setSelectedOrders([order]);
     setShowDriverSelection(true);
   };
 
-  // Define DataTable columns for each section
+  const toggleSelectMode = () => {
+    setSelectMode(!selectMode);
+    if (!selectMode) {
+      setSelectedOrder(null);
+      setSelectedOrders([]);
+    } else {
+      setSelectedOrders([]);
+    }
+  };
+
+  const toggleOrderSelection = (order: Order) => {
+    const orderIndex = selectedOrders.findIndex(o => o.id === order.id);
+    if (orderIndex >= 0) {
+      setSelectedOrders(prevOrders => prevOrders.filter(o => o.id !== order.id));
+    } else {
+      setSelectedOrders(prevOrders => [...prevOrders, order]);
+    }
+  };
+
+  const isOrderSelected = (orderId: string) => {
+    return selectedOrders.some(order => order.id === orderId);
+  };
+
+  const assignSelectedOrders = () => {
+    if (selectedOrders.length > 0) {
+      setShowDriverSelection(true);
+    } else {
+      toast({
+        title: "No Orders Selected",
+        description: "Please select at least one order to assign a driver",
+        variant: "destructive",
+      });
+    }
+  };
+
+  const selectColumn = {
+    header: (
+      <div className="flex items-center">
+        <Checkbox
+          checked={filteredOrders.length > 0 && selectedOrders.length === filteredOrders.length}
+          onCheckedChange={(checked) => {
+            if (checked) {
+              setSelectedOrders(filteredOrders);
+            } else {
+              setSelectedOrders([]);
+            }
+          }}
+        />
+      </div>
+    ),
+    accessor: (row: Order) => (
+      <div className="flex items-center">
+        <Checkbox
+          checked={isOrderSelected(row.id)}
+          onCheckedChange={() => toggleOrderSelection(row)}
+        />
+      </div>
+    ),
+    width: "40px",
+  };
+
   const newOrdersColumns = [
+    ...(selectMode ? [selectColumn] : []),
     {
       header: "Order ID",
       accessor: "id" as keyof Order,
@@ -375,6 +430,7 @@ const OrderAssignment: React.FC = () => {
   ];
 
   const readyOrdersColumns = [
+    ...(selectMode ? [selectColumn] : []),
     {
       header: "Order ID",
       accessor: "id" as keyof Order,
@@ -421,7 +477,7 @@ const OrderAssignment: React.FC = () => {
       header: "Ready Since",
       accessor: (row: Order) => {
         const readyDate = new Date(row.date);
-        readyDate.setHours(readyDate.getHours() + 4); // Simulate ready 4 hours later
+        readyDate.setHours(readyDate.getHours() + 4);
         return readyDate.toLocaleString();
       },
     },
@@ -443,6 +499,7 @@ const OrderAssignment: React.FC = () => {
   ];
 
   const rescheduledOrdersColumns = [
+    ...(selectMode ? [selectColumn] : []),
     {
       header: "Order ID",
       accessor: "id" as keyof Order,
@@ -502,28 +559,52 @@ const OrderAssignment: React.FC = () => {
           title="Order Assignment"
           subtitle="Assign drivers to orders and manage order dispatch"
         >
-          <Select
-            value={washTypeFilter}
-            onValueChange={setWashTypeFilter}
-          >
-            <SelectTrigger className="w-[180px]">
-              <SelectValue placeholder="Filter by Wash Type" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="all">All Wash Types</SelectItem>
-              <SelectItem value="standard">Standard Wash</SelectItem>
-              <SelectItem value="quick">Quick Wash</SelectItem>
-            </SelectContent>
-          </Select>
-          <Input
-            placeholder="Search orders..."
-            value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
-            className="max-w-sm"
-          />
+          <div className="flex items-center gap-2">
+            <Button 
+              variant={selectMode ? "default" : "outline"} 
+              size="sm"
+              onClick={toggleSelectMode}
+              className="flex items-center gap-1"
+            >
+              <CheckSquare className="h-4 w-4" />
+              {selectMode ? "Exit Select Mode" : "Select Multiple"}
+            </Button>
+            
+            {selectMode && (
+              <Button 
+                variant="default" 
+                size="sm"
+                onClick={assignSelectedOrders}
+                disabled={selectedOrders.length === 0}
+                className="flex items-center gap-1"
+              >
+                <UserPlus className="h-4 w-4" />
+                Assign Selected ({selectedOrders.length})
+              </Button>
+            )}
+            
+            <Select
+              value={washTypeFilter}
+              onValueChange={setWashTypeFilter}
+            >
+              <SelectTrigger className="w-[180px]">
+                <SelectValue placeholder="Filter by Wash Type" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">All Wash Types</SelectItem>
+                <SelectItem value="standard">Standard Wash</SelectItem>
+                <SelectItem value="quick">Quick Wash</SelectItem>
+              </SelectContent>
+            </Select>
+            <Input
+              placeholder="Search orders..."
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              className="max-w-sm"
+            />
+          </div>
         </PageHeader>
 
-        {/* Main order assignment tabs */}
         <div className="bg-white rounded-lg shadow-subtle mb-6">
           <Tabs defaultValue="new" onValueChange={setSelectedTab}>
             <TabsList className="mb-0 p-4 bg-gray-50 border-b border-gray-100 rounded-t-lg">
@@ -560,6 +641,7 @@ const OrderAssignment: React.FC = () => {
                 onSearch={setSearchQuery}
                 initialSearchQuery={searchQuery}
                 emptyMessage="No new orders found"
+                selectedRows={selectedOrders.map(order => order.id)}
               />
             </TabsContent>
 
@@ -582,6 +664,7 @@ const OrderAssignment: React.FC = () => {
                 onSearch={setSearchQuery}
                 initialSearchQuery={searchQuery}
                 emptyMessage="No orders ready for pickup"
+                selectedRows={selectedOrders.map(order => order.id)}
               />
             </TabsContent>
 
@@ -604,13 +687,13 @@ const OrderAssignment: React.FC = () => {
                 onSearch={setSearchQuery}
                 initialSearchQuery={searchQuery}
                 emptyMessage="No rescheduled orders found"
+                selectedRows={selectedOrders.map(order => order.id)}
               />
             </TabsContent>
           </Tabs>
         </div>
 
-        {/* Driver selection panel - shown when an order is selected */}
-        {showDriverSelection && selectedOrder && (
+        {showDriverSelection && (
           <Card className="mb-6">
             <CardHeader className="bg-gray-50 border-b border-gray-100">
               <CardTitle className="text-lg flex items-center gap-2">
@@ -618,53 +701,95 @@ const OrderAssignment: React.FC = () => {
                 Driver Assignment
               </CardTitle>
               <CardDescription>
-                Assign a driver to order {selectedOrder.id} for {selectedOrder.customer}
+                {selectedOrders.length > 1 
+                  ? `Assign a driver to ${selectedOrders.length} selected orders` 
+                  : selectedOrder 
+                    ? `Assign a driver to order ${selectedOrder.id} for ${selectedOrder.customer}`
+                    : selectedOrders.length === 1 
+                      ? `Assign a driver to order ${selectedOrders[0].id} for ${selectedOrders[0].customer}`
+                      : "Assign a driver to selected orders"
+                }
               </CardDescription>
             </CardHeader>
             <CardContent className="p-4">
               <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                 <div className="col-span-1">
                   <h3 className="font-medium mb-2">Order Details</h3>
-                  <div className="bg-gray-50 p-3 rounded-lg space-y-2">
-                    <div className="flex justify-between">
-                      <span className="text-sm text-gray-500">Order ID:</span>
-                      <span className="text-sm font-medium">{selectedOrder.id}</span>
+                  {selectedOrders.length > 1 ? (
+                    <div className="bg-gray-50 p-3 rounded-lg">
+                      <div className="flex justify-between mb-2">
+                        <span className="text-sm text-gray-500">Selected Orders:</span>
+                        <span className="text-sm font-medium">{selectedOrders.length}</span>
+                      </div>
+                      <div className="max-h-40 overflow-y-auto border border-gray-200 rounded-md mb-2">
+                        <table className="min-w-full divide-y divide-gray-200">
+                          <thead className="bg-gray-50">
+                            <tr>
+                              <th className="px-3 py-2 text-left text-xs font-medium text-gray-500">Order ID</th>
+                              <th className="px-3 py-2 text-left text-xs font-medium text-gray-500">Customer</th>
+                            </tr>
+                          </thead>
+                          <tbody className="bg-white divide-y divide-gray-200">
+                            {selectedOrders.map(order => (
+                              <tr key={order.id}>
+                                <td className="px-3 py-2 text-sm text-gray-700">{order.id}</td>
+                                <td className="px-3 py-2 text-sm text-gray-700">{order.customer}</td>
+                              </tr>
+                            ))}
+                          </tbody>
+                        </table>
+                      </div>
                     </div>
-                    <div className="flex justify-between">
-                      <span className="text-sm text-gray-500">Customer:</span>
-                      <span className="text-sm font-medium">{selectedOrder.customer}</span>
+                  ) : (
+                    <div className="bg-gray-50 p-3 rounded-lg space-y-2">
+                      {selectedOrder || selectedOrders.length === 1 ? (
+                        <>
+                          <div className="flex justify-between">
+                            <span className="text-sm text-gray-500">Order ID:</span>
+                            <span className="text-sm font-medium">{selectedOrder ? selectedOrder.id : selectedOrders[0].id}</span>
+                          </div>
+                          <div className="flex justify-between">
+                            <span className="text-sm text-gray-500">Customer:</span>
+                            <span className="text-sm font-medium">{selectedOrder ? selectedOrder.customer : selectedOrders[0].customer}</span>
+                          </div>
+                          <div className="flex justify-between">
+                            <span className="text-sm text-gray-500">Address:</span>
+                            <span className="text-sm font-medium">{selectedOrder ? selectedOrder.address : selectedOrders[0].address}</span>
+                          </div>
+                          <div className="flex justify-between">
+                            <span className="text-sm text-gray-500">Phone:</span>
+                            <span className="text-sm font-medium">{selectedOrder ? selectedOrder.phoneNumber : selectedOrders[0].phoneNumber}</span>
+                          </div>
+                          <div className="flex justify-between">
+                            <span className="text-sm text-gray-500">Studio:</span>
+                            <span className="text-sm font-medium">{selectedOrder ? selectedOrder.studio : selectedOrders[0].studio}</span>
+                          </div>
+                          <div className="flex justify-between">
+                            <span className="text-sm text-gray-500">Wash Type:</span>
+                            <span className="text-sm font-medium flex items-center">
+                              {(selectedOrder ? selectedOrder.washType : selectedOrders[0].washType) === 'standard' ? 
+                                <WashingMachine className="mr-1 h-3 w-3" /> : 
+                                <ShirtIcon className="mr-1 h-3 w-3" />
+                              }
+                              {WASH_TYPES[selectedOrder ? selectedOrder.washType : selectedOrders[0].washType].label}
+                            </span>
+                          </div>
+                          <div className="flex justify-between">
+                            <span className="text-sm text-gray-500">Total:</span>
+                            <span className="text-sm font-medium">${selectedOrder ? selectedOrder.total : selectedOrders[0].total}</span>
+                          </div>
+                          <div className="flex justify-between">
+                            <span className="text-sm text-gray-500">Distance:</span>
+                            <span className="text-sm font-medium">{selectedOrder ? selectedOrder.distance : selectedOrders[0].distance}</span>
+                          </div>
+                        </>
+                      ) : (
+                        <div className="text-center py-4 text-gray-500">
+                          No orders selected
+                        </div>
+                      )}
                     </div>
-                    <div className="flex justify-between">
-                      <span className="text-sm text-gray-500">Address:</span>
-                      <span className="text-sm font-medium">{selectedOrder.address}</span>
-                    </div>
-                    <div className="flex justify-between">
-                      <span className="text-sm text-gray-500">Phone:</span>
-                      <span className="text-sm font-medium">{selectedOrder.phoneNumber}</span>
-                    </div>
-                    <div className="flex justify-between">
-                      <span className="text-sm text-gray-500">Studio:</span>
-                      <span className="text-sm font-medium">{selectedOrder.studio}</span>
-                    </div>
-                    <div className="flex justify-between">
-                      <span className="text-sm text-gray-500">Wash Type:</span>
-                      <span className="text-sm font-medium flex items-center">
-                        {selectedOrder.washType === 'standard' ? 
-                          <WashingMachine className="mr-1 h-3 w-3" /> : 
-                          <ShirtIcon className="mr-1 h-3 w-3" />
-                        }
-                        {WASH_TYPES[selectedOrder.washType].label}
-                      </span>
-                    </div>
-                    <div className="flex justify-between">
-                      <span className="text-sm text-gray-500">Total:</span>
-                      <span className="text-sm font-medium">${selectedOrder.total}</span>
-                    </div>
-                    <div className="flex justify-between">
-                      <span className="text-sm text-gray-500">Distance:</span>
-                      <span className="text-sm font-medium">{selectedOrder.distance}</span>
-                    </div>
-                  </div>
+                  )}
                 </div>
 
                 <div className="col-span-2">
@@ -709,6 +834,7 @@ const OrderAssignment: React.FC = () => {
                   variant="outline"
                   onClick={() => {
                     setSelectedOrder(null);
+                    setSelectedOrders([]);
                     setSelectedDriver('');
                     setShowDriverSelection(false);
                   }}
@@ -716,7 +842,7 @@ const OrderAssignment: React.FC = () => {
                   Cancel
                 </Button>
                 <Button
-                  disabled={!selectedDriver}
+                  disabled={!selectedDriver || selectedOrders.length === 0}
                   onClick={handleAssignDriver}
                   className="flex items-center gap-1"
                 >
@@ -728,7 +854,6 @@ const OrderAssignment: React.FC = () => {
           </Card>
         )}
 
-        {/* Quick Stats */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
           <Card>
             <CardHeader className="pb-2">
@@ -853,7 +978,6 @@ const OrderAssignment: React.FC = () => {
   );
 };
 
-// Missing import
 const MapPin = ({ className }: { className?: string }) => (
   <svg 
     xmlns="http://www.w3.org/2000/svg" 
