@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import AdminLayout from '@/components/layout/AdminLayout';
@@ -47,6 +48,15 @@ import {
   TabsList,
   TabsTrigger,
 } from "@/components/ui/tabs";
+
+// Interface for mock order type
+interface MockOrder {
+  id: string;
+  driver: string;
+  status: string;
+  customer: string;
+  address: string;
+}
 
 const Drivers = () => {
   const navigate = useNavigate();
@@ -106,7 +116,8 @@ const Drivers = () => {
     // ... rest of mockDrivers array remains unchanged
   ]);
 
-  const [mockOrders, setMockOrders] = useMemo(() => [
+  // Fix the mockOrders definition to be an array
+  const mockOrders: MockOrder[] = useMemo(() => [
     { id: 'ORD-1234', driver: 'Ravi Kumar', status: 'in_delivery', customer: 'Arjun Reddy', address: 'Flat 301, Sunshine Apartments, Banjara Hills, Hyderabad' },
     { id: 'ORD-5678', driver: 'Ravi Kumar', status: 'picked_up', customer: 'Sneha Sharma', address: 'Villa 45, Jubilee Hills, Hyderabad' },
     { id: 'ORD-9012', driver: 'Ravi Kumar', status: 'in_delivery', customer: 'Vikram Desai', address: '123 Ameerpet Main Road, Hyderabad' },
@@ -259,7 +270,7 @@ const Drivers = () => {
     });
     
     return assignments.sort((a, b) => b.ordersAssigned - a.ordersAssigned);
-  }, [mockDrivers]);
+  }, [mockDrivers, mockOrders]);
 
   const availableDrivers = useMemo(() => {
     return mockDrivers.filter(driver => driver.status === 'active');
