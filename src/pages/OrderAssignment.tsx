@@ -53,6 +53,14 @@ import { toast } from "@/components/ui/use-toast";
 import DataTable from '@/components/ui/DataTable';
 import PageHeader from '@/components/ui/PageHeader';
 import { Checkbox } from "@/components/ui/checkbox";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
 
 const ORDER_STATUS = {
   pending: { label: 'Pending', color: 'bg-yellow-500' },
@@ -98,6 +106,16 @@ interface Order {
   priority: 'low' | 'medium' | 'high';
   distance: string;
   phoneNumber: string;
+}
+
+interface Driver {
+  id: string;
+  name: string;
+  available: boolean;
+  location: string;
+  rating: number;
+  ordersCompleted: number;
+  currentlyDelivering?: boolean;
 }
 
 const mockDrivers = [
@@ -225,6 +243,18 @@ const OrderAssignment: React.FC = () => {
   const [washTypeFilter, setWashTypeFilter] = useState<string>('all');
   const [selectedOrders, setSelectedOrders] = useState<Order[]>([]);
   const [selectMode, setSelectMode] = useState(false);
+  const [assignmentDialogOpen, setAssignmentDialogOpen] = useState(false);
+  const [orderIdsForToast, setOrderIdsForToast] = useState<string[]>([]);
+  const [assignedDriverName, setAssignedDriverName] = useState<string>('');
+
+  const driversWithStatus = useMemo(() => {
+    return mockDrivers.map(driver => ({
+      ...driver,
+      currentlyDelivering: mockOrders.some(order => 
+        order.status === 'in_delivery' && order.driver === driver.name
+      )
+    }));
+  }, [mockDrivers, mockOrders]);
 
   const filteredOrders = useMemo(() => {
     return mockOrders.filter(order => {
@@ -258,8 +288,8 @@ const OrderAssignment: React.FC = () => {
   }, [mockOrders, selectedTab, searchQuery, washTypeFilter]);
 
   const availableDrivers = useMemo(() => {
-    return mockDrivers.filter(driver => driver.available);
-  }, []);
+    return driversWithStatus.filter(driver => driver.available);
+  }, [driversWithStatus]);
 
   const handleAssignDriver = () => {
     if (selectedOrders.length === 0 || !selectedDriver) {
@@ -271,9 +301,15 @@ const OrderAssignment: React.FC = () => {
       return;
     }
 
+    const driverName = mockDrivers.find(d => d.id === selectedDriver)?.name || '';
+    const orderIds = selectedOrders.map(order => order.id);
+    
+    setOrderIdsForToast(orderIds);
+    setAssignedDriverName(driverName);
+
     toast({
       title: "Driver Assigned",
-      description: `Driver ${selectedDriver} has been assigned to ${selectedOrders.length} order(s)`,
+      description: `${driverName} has been assigned to ${orderIds.join(', ')}`,
     });
 
     setSelectedOrder(null);
@@ -281,6 +317,7 @@ const OrderAssignment: React.FC = () => {
     setSelectedDriver('');
     setShowDriverSelection(false);
     setSelectMode(false);
+    setAssignmentDialogOpen(false);
   };
 
   const handleDriverSelect = (driverId: string) => {
@@ -321,7 +358,7 @@ const OrderAssignment: React.FC = () => {
 
   const assignSelectedOrders = () => {
     if (selectedOrders.length > 0) {
-      setShowDriverSelection(true);
+      setAssignmentDialogOpen(true);
     } else {
       toast({
         title: "No Orders Selected",
@@ -993,6 +1030,109 @@ const OrderAssignment: React.FC = () => {
           </Card>
         </div>
       </div>
+
+      <Dialog open={assignmentDialogOpen} onOpenChange={setAssignmentDialogOpen}>
+        <DialogContent className="sm:max-w-[600px]">
+          <DialogHeader>
+            <DialogTitle className="text-xl flex items-center gap-2">
+              <Truck className="h-5 w-5 text-blue-600" />
+              Assign Driver to Orders
+            </DialogTitle>
+            <DialogDescription>
+              Select a driver to assign {selectedOrders.length} order{selectedOrders.length > 1 ? 's' : ''}
+            </DialogDescription>
+          </DialogHeader>
+          
+          <div className="py-4">
+            <div className="mb-4">
+              <h3 className="text-sm font-medium mb-2">Selected Orders</h3>
+              <div className="max-h-40 overflow-y-auto border border-gray-200 rounded-md mb-4">
+                <table className="min-w-full divide-y divide-gray-200">
+                  <thead className="bg-gray-50">
+                    <tr>
+                      <th className="px-3 py-2 text-left text-xs font-medium text-gray-500">Order ID</th>
+                      <th className="px-3 py-2 text-left text-xs font-medium text-gray-500">Customer</th>
+                      <th className="px-3 py-2 text-left text-xs font-medium text-gray-500">Address</th>
+                    </tr>
+                  </thead>
+                  <tbody className="bg-white divide-y divide-gray-200">
+                    {selectedOrders.map(order => (
+                      <tr key={order.id}>
+                        <td className="px-3 py-2 text-sm text-gray-700">{order.id}</td>
+                        <td className="px-3 py-2 text-sm text-gray-700">{order.customer}</td>
+                        <td className="px-3 py-2 text-sm text-gray-700">{order.address}</td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+            
+            <div>
+              <div className="flex justify-between items-center mb-2">
+                <h3 className="text-sm font-medium">Available Drivers</h3>
+                <Badge variant="outline" className="text-xs">
+                  {driversWithStatus.filter(d => d.available).length} Available / {driversWithStatus.length} Total
+                </Badge>
+              </div>
+              
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-3 max-h-60 overflow-y-auto">
+                {driversWithStatus.map((driver) => (
+                  <div 
+                    key={driver.id}
+                    className={`border p-3 rounded-lg cursor-pointer transition-colors ${
+                      !driver.available ? 'opacity-60 bg-gray-50' : 
+                      selectedDriver === driver.id ? 'border-blue-500 bg-blue-50' : 'border-gray-200 hover:border-blue-200'
+                    }`}
+                    onClick={() => driver.available && handleDriverSelect(driver.id)}
+                  >
+                    <div className="flex justify-between items-center mb-1">
+                      <span className="font-medium">{driver.name}</span>
+                      <div className="flex gap-1">
+                        {driver.currentlyDelivering && (
+                          <Badge variant="secondary" className="text-xs bg-amber-100 text-amber-800">
+                            Delivering
+                          </Badge>
+                        )}
+                        <Badge variant="secondary" className="text-xs">
+                          {driver.rating} ★
+                        </Badge>
+                      </div>
+                    </div>
+                    <div className="text-sm text-gray-500 flex items-center gap-1 mb-1">
+                      <Truck className="h-3 w-3" />
+                      {driver.ordersCompleted} deliveries completed
+                    </div>
+                    <div className="text-sm text-gray-500 flex items-center gap-1">
+                      <MapPin className="h-3 w-3" />
+                      {driver.location}
+                    </div>
+                    {!driver.available && (
+                      <Badge className="mt-2 w-full justify-center text-xs bg-red-100 text-red-800 hover:bg-red-100">
+                        Currently Unavailable
+                      </Badge>
+                    )}
+                  </div>
+                ))}
+              </div>
+            </div>
+          </div>
+          
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setAssignmentDialogOpen(false)}>
+              Cancel
+            </Button>
+            <Button 
+              disabled={!selectedDriver || selectedOrders.length === 0}
+              onClick={handleAssignDriver}
+              className="flex items-center gap-1"
+            >
+              <UserPlus className="h-4 w-4" />
+              Assign Driver
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </AdminLayout>
   );
 };
