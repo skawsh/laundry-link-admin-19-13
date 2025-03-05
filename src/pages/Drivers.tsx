@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useMemo } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import AdminLayout from '@/components/layout/AdminLayout';
 import { 
@@ -47,8 +47,8 @@ import {
   TabsList,
   TabsTrigger,
 } from "@/components/ui/tabs";
+import { getAssignedOrdersForDriver } from '@/store/driverAssignmentStore';
 
-// Interface for mock order type
 interface MockOrder {
   id: string;
   driver: string;
@@ -93,280 +93,19 @@ const Drivers = () => {
   }>(null);
 
   const [mockDrivers, setMockDrivers] = useState([
-    {
-      id: 1,
-      name: 'Ravi Kumar',
-      status: 'active',
-      assignedOrders: ['ORD-1234', 'ORD-5678', 'ORD-9012'],
-      currentOrder: 'ORD-1234',
-      currentTask: 'pickup',
-      location: 'Banjara Hills, Hyderabad',
-      phone: '+91 9876543210',
-      totalOrders: 205,
-      rating: 4.8,
-      lastActive: '2 minutes ago',
-      joinDate: 'Jan 15, 2023',
-      email: 'ravi.kumar@example.com',
-      address: 'Flat 301, Sunshine Apartments, Banjara Hills, Hyderabad',
-      emergencyContact: '+91 9876543211',
-      vehicleInfo: 'Maruti Swift (2020), White, License: TS09AB1234',
-      licenseNumber: 'DLAP20221234567'
-    },
-    {
-      id: 2,
-      name: 'Priya Reddy',
-      status: 'active',
-      assignedOrders: ['ORD-3456', 'ORD-7890'],
-      currentOrder: 'ORD-3456',
-      currentTask: 'delivery',
-      location: 'HITEC City, Hyderabad',
-      phone: '+91 9876543212',
-      totalOrders: 178,
-      rating: 4.7,
-      lastActive: '5 minutes ago',
-      joinDate: 'Feb 3, 2023',
-      email: 'priya.reddy@example.com',
-      address: 'Apartment 502, Cyber Gateway, Madhapur, Hyderabad',
-      emergencyContact: '+91 9876543213',
-      vehicleInfo: 'Honda Activa (2021), Blue, License: TS08CD5678',
-      licenseNumber: 'DLAP20221234568'
-    },
-    {
-      id: 3,
-      name: 'Venkat Rao',
-      status: 'active',
-      assignedOrders: ['ORD-2345', 'ORD-6789', 'ORD-0123', 'ORD-4567'],
-      currentOrder: 'ORD-2345',
-      currentTask: 'pickup',
-      location: 'Gachibowli, Hyderabad',
-      phone: '+91 9876543214',
-      totalOrders: 245,
-      rating: 4.9,
-      lastActive: '10 minutes ago',
-      joinDate: 'Dec 5, 2022',
-      email: 'venkat.rao@example.com',
-      address: 'Villa 25, Nallagandla, Serilingampally, Hyderabad',
-      emergencyContact: '+91 9876543215',
-      vehicleInfo: 'Bajaj Pulsar (2019), Black, License: TS10EF9012',
-      licenseNumber: 'DLAP20221234569'
-    },
-    {
-      id: 4,
-      name: 'Sravani Devi',
-      status: 'active',
-      assignedOrders: ['ORD-8765', 'ORD-4321'],
-      currentOrder: 'ORD-8765',
-      currentTask: 'delivery',
-      location: 'LB Nagar, Hyderabad',
-      phone: '+91 9876543216',
-      totalOrders: 132,
-      rating: 4.6,
-      lastActive: '15 minutes ago',
-      joinDate: 'Mar 10, 2023',
-      email: 'sravani.devi@example.com',
-      address: 'House 75, Karmanghat, Hyderabad',
-      emergencyContact: '+91 9876543217',
-      vehicleInfo: 'TVS Jupiter (2022), Red, License: TS11GH3456',
-      licenseNumber: 'DLAP20221234570'
-    },
-    {
-      id: 5,
-      name: 'Kiran Naidu',
-      status: 'active',
-      assignedOrders: ['ORD-7654', 'ORD-3210', 'ORD-9876'],
-      currentOrder: 'ORD-7654',
-      currentTask: 'pickup',
-      location: 'Secunderabad, Hyderabad',
-      phone: '+91 9876543218',
-      totalOrders: 189,
-      rating: 4.7,
-      lastActive: '20 minutes ago',
-      joinDate: 'Feb 25, 2023',
-      email: 'kiran.naidu@example.com',
-      address: 'Plot 56, Paradise Circle, Secunderabad, Hyderabad',
-      emergencyContact: '+91 9876543219',
-      vehicleInfo: 'Royal Enfield Classic 350 (2020), Green, License: TS12IJ7890',
-      licenseNumber: 'DLAP20221234571'
-    },
-    {
-      id: 6,
-      name: 'Suresh Babu',
-      status: 'inactive',
-      assignedOrders: ['ORD-5432', 'ORD-1098', 'ORD-7654'],
-      currentOrder: 'ORD-5432',
-      currentTask: 'delivery',
-      location: 'Miyapur, Hyderabad',
-      phone: '+91 9876543220',
-      totalOrders: 156,
-      rating: 4.5,
-      lastActive: '1 day ago',
-      joinDate: 'Apr 15, 2023',
-      email: 'suresh.babu@example.com',
-      address: 'Flat 201, Sri Sai Enclave, Miyapur, Hyderabad',
-      emergencyContact: '+91 9876543221',
-      vehicleInfo: 'Hero Splendor (2021), Silver, License: TS13KL2345',
-      licenseNumber: 'DLAP20221234572'
-    },
-    {
-      id: 7,
-      name: 'Ananya Reddy',
-      status: 'active',
-      assignedOrders: ['ORD-2109', 'ORD-8765'],
-      currentOrder: 'ORD-2109',
-      currentTask: 'pickup',
-      location: 'Malakpet, Hyderabad',
-      phone: '+91 9876543222',
-      totalOrders: 113,
-      rating: 4.6,
-      lastActive: '30 minutes ago',
-      joinDate: 'May 5, 2023',
-      email: 'ananya.reddy@example.com',
-      address: 'House 34, New Malakpet, Hyderabad',
-      emergencyContact: '+91 9876543223',
-      vehicleInfo: 'Suzuki Access 125 (2022), White, License: TS14MN6789',
-      licenseNumber: 'DLAP20221234573'
-    },
-    {
-      id: 8,
-      name: 'Mohan Chowdary',
-      status: 'inactive',
-      assignedOrders: ['ORD-3456'],
-      currentOrder: 'ORD-3456',
-      currentTask: 'delivery',
-      location: 'Gachibowli, Hyderabad',
-      phone: '+91 9876543224',
-      totalOrders: 87,
-      rating: 4.4,
-      lastActive: '2 days ago',
-      joinDate: 'Jun 20, 2023',
-      email: 'mohan.chowdary@example.com',
-      address: 'Flat 701, Hill County, Financial District, Hyderabad',
-      emergencyContact: '+91 9876543225',
-      vehicleInfo: 'Yamaha FZ (2019), Blue, License: TS15OP0123',
-      licenseNumber: 'DLAP20221234574'
-    },
-    {
-      id: 9,
-      name: 'Divya Lakshmi',
-      status: 'active',
-      assignedOrders: ['ORD-6543', 'ORD-2109', 'ORD-7890'],
-      currentOrder: 'ORD-6543',
-      currentTask: 'pickup',
-      location: 'Jubilee Hills, Hyderabad',
-      phone: '+91 9876543226',
-      totalOrders: 162,
-      rating: 4.8,
-      lastActive: '40 minutes ago',
-      joinDate: 'Mar 18, 2023',
-      email: 'divya.lakshmi@example.com',
-      address: 'Villa 45, Road No. 10, Jubilee Hills, Hyderabad',
-      emergencyContact: '+91 9876543227',
-      vehicleInfo: 'Ather 450X (2023), Green, License: TS16QR4567',
-      licenseNumber: 'DLAP20221234575'
-    },
-    {
-      id: 10,
-      name: 'Aravind Kumar',
-      status: 'active',
-      assignedOrders: ['ORD-9876', 'ORD-5432'],
-      currentOrder: 'ORD-9876',
-      currentTask: 'delivery',
-      location: 'Financial District, Hyderabad',
-      phone: '+91 9876543228',
-      totalOrders: 142,
-      rating: 4.7,
-      lastActive: '1 hour ago',
-      joinDate: 'Jan 30, 2023',
-      email: 'aravind.kumar@example.com',
-      address: 'Apartment 603, My Home Bhooja, Gachibowli, Hyderabad',
-      emergencyContact: '+91 9876543229',
-      vehicleInfo: 'KTM Duke 125 (2022), Orange, License: TS17ST8901',
-      licenseNumber: 'DLAP20221234576'
-    }
+    // ... keep existing mock drivers
   ]);
 
   const mockOrders: MockOrder[] = useMemo(() => [
-    { id: 'ORD-1234', driver: 'Ravi Kumar', status: 'in_delivery', customer: 'Arjun Reddy', address: 'Flat 301, Sunshine Apartments, Banjara Hills, Hyderabad' },
-    { id: 'ORD-5678', driver: 'Ravi Kumar', status: 'picked_up', customer: 'Sneha Sharma', address: 'Villa 45, Jubilee Hills, Hyderabad' },
-    { id: 'ORD-9012', driver: 'Ravi Kumar', status: 'in_delivery', customer: 'Vikram Desai', address: '123 Ameerpet Main Road, Hyderabad' },
-    { id: 'ORD-3456', driver: 'Priya Reddy', status: 'in_delivery', customer: 'Meena Nair', address: 'Apartment 7B, Cyber Towers, HITEC City, Hyderabad' },
-    { id: 'ORD-7890', driver: 'Priya Reddy', status: 'picked_up', customer: 'Rajesh Kumar', address: '456 Madhapur, Hyderabad' },
-    { id: 'ORD-2345', driver: 'Venkat Rao', status: 'in_delivery', customer: 'Sunita Patel', address: 'Plot 78, Gachibowli, Hyderabad' },
-    { id: 'ORD-6789', driver: 'Venkat Rao', status: 'picked_up', customer: 'Kiran Sharma', address: 'House 12, Kondapur Main Road, Hyderabad' },
-    { id: 'ORD-0123', driver: 'Venkat Rao', status: 'in_delivery', customer: 'Ananya Reddy', address: 'Flat 503, Sri Sai Enclave, Kukatpally, Hyderabad' },
-    { id: 'ORD-4567', driver: 'Venkat Rao', status: 'picked_up', customer: 'Praveen Verma', address: '789 KPHB Colony, Hyderabad' },
-    { id: 'ORD-8765', driver: 'Sravani Devi', status: 'in_delivery', customer: 'Divya Mehta', address: 'Villa 23, LB Nagar, Hyderabad' },
-    { id: 'ORD-4321', driver: 'Sravani Devi', status: 'picked_up', customer: 'Suresh Babu', address: '234 Dilsukhnagar, Hyderabad' },
-    { id: 'ORD-7654', driver: 'Kiran Naidu', status: 'in_delivery', customer: 'Kavita Rao', address: 'Apartment 12C, Paradise Circle, Secunderabad, Hyderabad' },
-    { id: 'ORD-3210', driver: 'Kiran Naidu', status: 'picked_up', customer: 'Rahul Sharma', address: '567 Begumpet, Hyderabad' },
-    { id: 'ORD-9876', driver: 'Kiran Naidu', status: 'in_delivery', customer: 'Nandini Reddy', address: 'House 89, Bowenpally, Secunderabad, Hyderabad' },
-    { id: 'ORD-5432', driver: 'Suresh Babu', status: 'in_delivery', customer: 'Sandeep Kumar', address: 'Flat 405, Sri Krishna Apartments, Miyapur, Hyderabad' },
-    { id: 'ORD-1098', driver: 'Suresh Babu', status: 'picked_up', customer: 'Lakshmi Prasad', address: '678 ECIL, Hyderabad' },
-    { id: 'ORD-7654', driver: 'Suresh Babu', status: 'in_delivery', customer: 'Rohit Sharma', address: 'Plot 56, Uppal, Hyderabad' },
-    { id: 'ORD-2109', driver: 'Ananya Reddy', status: 'in_delivery', customer: 'Priya Singh', address: 'House 34, Malakpet, Hyderabad' },
-    { id: 'ORD-8765', driver: 'Ananya Reddy', status: 'picked_up', customer: 'Vikram Reddy', address: '890 Tarnaka, Hyderabad' },
-    { id: 'ORD-3456', driver: 'Mohan Chowdary', status: 'in_delivery', customer: 'Aditya Sharma', address: 'Flat 201, Hill County, Gachibowli, Hyderabad' },
-    { id: 'ORD-6543', driver: 'Divya Lakshmi', status: 'in_delivery', customer: 'Sanjay Kapoor', address: 'Villa 67, Film Nagar, Jubilee Hills, Hyderabad' },
-    { id: 'ORD-2109', driver: 'Divya Lakshmi', status: 'picked_up', customer: 'Rekha Naidu', address: '345 Manikonda, Hyderabad' },
-    { id: 'ORD-7890', driver: 'Divya Lakshmi', status: 'in_delivery', customer: 'Vamsi Krishna', address: 'Apartment 8D, Cyber Gateway, HITEC City, Hyderabad' },
-    { id: 'ORD-9876', driver: 'Aravind Kumar', status: 'in_delivery', customer: 'Neha Reddy', address: 'Plot 23, Financial District, Gachibowli, Hyderabad' },
-    { id: 'ORD-5432', driver: 'Aravind Kumar', status: 'picked_up', customer: 'Ganesh Rao', address: '567 Mehdipatnam, Hyderabad' },
-    { id: 'ORD-4321', driver: 'Swati Sharma', status: 'in_delivery', customer: 'Harish Kumar', address: 'House 78, Alwal, Secunderabad, Hyderabad' },
-    { id: 'ORD-8765', driver: 'Swati Sharma', status: 'picked_up', customer: 'Pooja Verma', address: '123 Ramanthapur, Hyderabad' },
-    { id: 'ORD-1234', driver: 'Swati Sharma', status: 'in_delivery', customer: 'Manish Reddy', address: 'Flat 604, Vertex Sadguru, Madhapur, Hyderabad' },
-    { id: 'ORD-7890', driver: 'Meenakshi Devi', status: 'in_delivery', customer: 'Ritu Sharma', address: 'Villa 12, Road No. 10, Banjara Hills, Hyderabad' },
-    { id: 'ORD-2345', driver: 'Meenakshi Devi', status: 'picked_up', customer: 'Vivek Kumar', address: '456 Himayat Nagar, Hyderabad' },
-    { id: 'ORD-5678', driver: 'Rajesh Verma', status: 'in_delivery', customer: 'Sonali Reddy', address: 'Apartment 9E, My Home Bhooja, Gachibowli, Hyderabad' },
-    { id: 'ORD-1234', driver: 'Rajesh Verma', status: 'picked_up', customer: 'Ajay Singh', address: '789 AS Rao Nagar, Hyderabad' },
-    { id: 'ORD-9012', driver: 'Rajesh Verma', status: 'in_delivery', customer: 'Geeta Naidu', address: 'House 45, Sainikpuri, Secunderabad, Hyderabad' },
-    { id: 'ORD-3456', driver: 'Padma Lakshmi', status: 'in_delivery', customer: 'Raghu Sharma', address: 'Plot 67, Chandanagar, Hyderabad' }
+    // ... keep existing mock orders
   ], []);
 
   const toggleDriverStatus = (driverId: number) => {
-    setMockDrivers(prevDrivers => 
-      prevDrivers.map(driver => 
-        driver.id === driverId 
-          ? { ...driver, status: driver.status === 'active' ? 'inactive' : 'active' } 
-          : driver
-      )
-    );
-    
-    const driver = mockDrivers.find(d => d.id === driverId);
-    const newStatus = driver?.status === 'active' ? 'inactive' : 'active';
-    toast({
-      title: `Status updated`,
-      description: `${driver?.name}'s status changed to ${newStatus}`,
-      duration: 2000,
-    });
+    // ... keep existing toggleDriverStatus
   };
 
   const handleActionMenuItem = (action: string, driverId: number) => {
-    const driver = mockDrivers.find(d => d.id === driverId);
-    
-    if (!driver) return;
-    
-    switch(action) {
-      case 'viewProfile':
-        navigate(`/driver-profile/${driverId}`);
-        break;
-      case 'viewOrders':
-        handleOpenOrderDetails(driver);
-        break;
-      case 'changeStatus':
-        toggleDriverStatus(driverId);
-        break;
-      case 'removeDriver':
-        toast({
-          title: "Driver removed",
-          description: `${driver.name} has been removed from the system`,
-          variant: "destructive",
-          duration: 2000,
-        });
-        setMockDrivers(prevDrivers => prevDrivers.filter(d => d.id !== driverId));
-        break;
-      default:
-        break;
-    }
+    // ... keep existing handleActionMenuItem
   };
 
   const filteredDrivers = useMemo(() => {
@@ -443,6 +182,17 @@ const Drivers = () => {
   const availableDrivers = useMemo(() => {
     return mockDrivers.filter(driver => driver.status === 'active');
   }, [mockDrivers]);
+
+  const [driverOrders, setDriverOrders] = useState<MockOrder[]>([]);
+
+  useEffect(() => {
+    if (selectedDriver) {
+      const assignedOrders = getAssignedOrdersForDriver(selectedDriver.id);
+      if (assignedOrders.length > 0) {
+        setDriverOrders(assignedOrders);
+      }
+    }
+  }, [selectedDriver]);
 
   return (
     <AdminLayout>

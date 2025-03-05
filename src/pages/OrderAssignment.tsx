@@ -63,6 +63,7 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { Link } from 'react-router-dom';
+import { assignOrdersToDriver, getDriverAssignments } from '@/store/driverAssignmentStore';
 
 const ORDER_STATUS = {
   pending: { label: 'Pending', color: 'bg-yellow-500' },
@@ -444,6 +445,17 @@ const OrderAssignment: React.FC = () => {
     
     setOrderIdsForToast(orderIds);
     setAssignedDriverName(driverName);
+
+    const ordersForStore = selectedOrders.map(order => ({
+      id: order.id,
+      customer: order.customer,
+      address: order.address,
+      status: 'in_delivery',
+      date: order.date,
+      phoneNumber: order.phoneNumber
+    }));
+
+    assignOrdersToDriver(selectedDriver, driverName, ordersForStore);
 
     toast({
       title: "Driver Assigned",
