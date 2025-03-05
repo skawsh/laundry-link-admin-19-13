@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect, useRef } from 'react';
 import { Plus, ChevronDown, Search, Filter, Star, MoreHorizontal, X, ArrowUpDown, CreditCard, Settings, Package, Trash2, Frown, AlertCircle, CheckCircle, BarChart } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
@@ -213,13 +212,6 @@ interface NewStudioFormData {
   services: number;
 }
 
-// Define a type for our table columns to match what DataTable expects
-interface TableColumn<T> {
-  header: string;
-  accessor: ((row: T, index: number) => React.ReactNode) | keyof T;
-  width?: string;
-}
-
 const Studios: React.FC = () => {
   const [studios, setStudios] = useState<Studio[]>(initialStudios);
   const [filteredStudios, setFilteredStudios] = useState<Studio[]>(initialStudios);
@@ -354,7 +346,6 @@ const Studios: React.FC = () => {
     
     updateStudioStatus(studioToDeactivate.id, 'inactive');
     
-    // Show success dialog instead of toast
     setSuccessDialogInfo({
       title: "Studio Disabled",
       message: `${studioToDeactivate.name} has been successfully disabled.`
@@ -523,37 +514,37 @@ const Studios: React.FC = () => {
     return type.charAt(0).toUpperCase() + type.slice(1);
   };
 
-  const columns: TableColumn<Studio>[] = [
+  const columns = [
     {
       header: 'S.NO',
-      accessor: (row: Studio) => row.id,
+      accessor: (row: Studio, index: number) => row.id,
       width: '70px'
     },
     {
       header: 'Studio ID',
-      accessor: (row: Studio) => row.studioId,
+      accessor: (row: Studio, index: number) => row.studioId,
       width: '120px'
     },
     {
       header: 'Studio Name',
-      accessor: (row: Studio) => row.name
+      accessor: (row: Studio, index: number) => row.name
     },
     {
       header: 'Owner Name',
-      accessor: (row: Studio) => row.ownerName
+      accessor: (row: Studio, index: number) => row.ownerName
     },
     {
       header: 'Primary Contact',
-      accessor: (row: Studio) => row.contactNumber
+      accessor: (row: Studio, index: number) => row.contactNumber
     },
     {
       header: 'Services',
-      accessor: (row: Studio) => row.services,
+      accessor: (row: Studio, index: number) => row.services,
       width: '100px'
     },
     {
       header: 'Rating',
-      accessor: (row: Studio) => (
+      accessor: (row: Studio, index: number) => (
         <div className="flex items-center">
           <span className="font-medium">{row.rating}</span>
           <span className="ml-1 text-yellow-500">★</span>
@@ -563,7 +554,7 @@ const Studios: React.FC = () => {
     },
     {
       header: 'Status',
-      accessor: (row: Studio) => (
+      accessor: (row: Studio, index: number) => (
         <ToggleSwitch
           isEnabled={row.status === 'active'}
           onChange={() => toggleStudioStatus(row.id)}
@@ -573,7 +564,7 @@ const Studios: React.FC = () => {
     },
     {
       header: 'Actions',
-      accessor: (row: Studio) => (
+      accessor: (row: Studio, index: number) => (
         <div className="flex justify-center">
           <div 
             className="relative"
@@ -846,43 +837,30 @@ const Studios: React.FC = () => {
       <DataTable
         columns={columns}
         data={filteredStudios}
-        recordsPerPage={10}
-        className="bg-white border-none shadow-subtle rounded-lg"
+        keyField="id"
+        emptyMessage="No studios found"
       />
       
-      {/* Deactivate Confirmation Dialog */}
       <ConfirmationDialog
         open={isDeactivateDialogOpen}
+        onOpenChange={setIsDeactivateDialogOpen}
+        onConfirm={confirmDeactivation}
         title="Disable Studio?"
         description={`Are you sure you want to disable ${studioToDeactivate?.name}? The studio will no longer be shown to customers.`}
-        onCancel={() => {
-          setIsDeactivateDialogOpen(false);
-          setStudioToDeactivate(null);
-        }}
-        onConfirm={confirmDeactivation}
         confirmText="Disable"
         cancelText="Cancel"
-        icon={<AlertCircle className="h-6 w-6 text-yellow-500" />}
-        variant="warning"
       />
       
-      {/* Delete Confirmation Dialog */}
       <ConfirmationDialog
         open={isDeleteDialogOpen}
+        onOpenChange={setIsDeleteDialogOpen}
+        onConfirm={executeDeleteStudio}
         title="Delete Studio?"
         description={`Are you sure you want to delete ${studioToDelete?.name}? This action cannot be undone.`}
-        onCancel={() => {
-          setIsDeleteDialogOpen(false);
-          setStudioToDelete(null);
-        }}
-        onConfirm={executeDeleteStudio}
         confirmText="Delete"
         cancelText="Cancel"
-        icon={<Trash2 className="h-6 w-6 text-red-500" />}
-        variant="destructive"
       />
       
-      {/* Success Dialog */}
       <Dialog open={isSuccessDialogOpen} onOpenChange={setIsSuccessDialogOpen}>
         <DialogContent className="sm:max-w-md">
           <DialogHeader>
