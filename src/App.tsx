@@ -21,6 +21,7 @@ import OrderDetails from './pages/OrderDetails';
 import AddStudio from './pages/AddStudio';
 import DriverProfile from './pages/DriverProfile';
 import Index from './pages/Index';
+import Settings from './pages/Settings';
 
 const queryClient = new QueryClient();
 
@@ -48,10 +49,10 @@ const App = () => (
           <Route path="/revenue" element={<Revenue />} />
           <Route path="/users" element={<Users />} />
           <Route path="/order-details/:orderId" element={<OrderDetails />} />
+          <Route path="/settings" element={<Settings />} />
           
           {/* Placeholder route for remaining sections */}
           <Route path="/tickets" element={<NotFound />} />
-          <Route path="/settings" element={<NotFound />} />
           
           {/* Catch-all route */}
           <Route path="*" element={<NotFound />} />
