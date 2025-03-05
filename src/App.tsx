@@ -20,6 +20,7 @@ import NotFound from "./pages/NotFound";
 import OrderDetails from './pages/OrderDetails';
 import AddStudio from './pages/AddStudio';
 import DriverProfile from './pages/DriverProfile';
+import Index from './pages/Index';
 
 const queryClient = new QueryClient();
 
@@ -30,7 +31,8 @@ const App = () => (
       <Sonner />
       <BrowserRouter>
         <Routes>
-          <Route path="/" element={<Dashboard />} />
+          <Route path="/" element={<Index />} />
+          <Route path="/dashboard" element={<Dashboard />} />
           <Route path="/studios" element={<Studios />} />
           <Route path="/studios/add" element={<AddStudio />} />
           <Route path="/studios/payments" element={<StudioPayments />} />
