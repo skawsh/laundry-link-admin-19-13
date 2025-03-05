@@ -47,7 +47,7 @@ import {
   TabsList,
   TabsTrigger,
 } from "@/components/ui/tabs";
-import { getAssignedOrdersForDriver } from '@/store/driverAssignmentStore';
+import { getAssignedOrdersForDriver, getDriverAssignments } from '@/store/driverAssignmentStore';
 
 interface MockOrder {
   id: string;
@@ -305,15 +305,65 @@ const Drivers = () => {
     return activeDriversCount + inactiveDriversCount;
   }, [activeDriversCount, inactiveDriversCount]);
 
-  const driverOrderAssignments = useMemo(() => {
+  const [driverOrderAssignments, setDriverOrderAssignments] = useState<any[]>([]);
+  
+  useEffect(() => {
+    const storeAssignments = getDriverAssignments();
+    
+    const formattedAssignments = storeAssignments.map(assignment => {
+      const mockDriver = mockDrivers.find(d => d.id.toString() === assignment.driverId) || {
+        id: parseInt(assignment.driverId),
+        name: assignment.driverName,
+        phone: "N/A",
+        email: `${assignment.driverName.toLowerCase().replace(' ', '.')}@example.com`,
+        status: "active",
+        totalOrders: assignment.orders.length,
+        currentTask: assignment.orders.length > 0 ? "delivering" : "idle",
+        currentOrder: assignment.orders.length > 0 ? assignment.orders[0].id : "",
+        assignedOrders: assignment.orders.map((o: any) => o.id),
+        location: "Unknown",
+        rating: 4.5,
+        joinDate: "Unknown",
+      };
+      
+      return {
+        ...mockDriver,
+        ordersAssigned: assignment.orders.length,
+        assignedOrdersDetails: assignment.orders
+      };
+    });
+    
+    const mockAssignments = driverOrderAssignments.filter(driver => 
+      !formattedAssignments.some(a => a.id.toString() === driver.id.toString())
+    );
+    
+    setDriverOrderAssignments([...formattedAssignments, ...mockAssignments]);
+  }, [mockDrivers]);
+
+  const getDriverOrderAssignments = useMemo(() => {
     const assignments = mockDrivers.map(driver => {
       const ordersAssigned = mockOrders.filter(order => 
         order.driver === driver.name
       ).length;
       
+      const storeOrders = getAssignedOrdersForDriver(driver.id.toString());
+      const totalOrdersAssigned = ordersAssigned + storeOrders.length;
+      
       return {
         ...driver,
-        ordersAssigned
+        ordersAssigned: totalOrdersAssigned,
+        assignedOrdersDetails: [
+          ...mockOrders.filter(order => order.driver === driver.name),
+          ...storeOrders.map(order => ({
+            id: order.id,
+            driver: driver.name,
+            status: order.status,
+            customer: order.customer,
+            address: order.address,
+            phoneNumber: order.phoneNumber,
+            date: order.date
+          }))
+        ]
       };
     });
     
@@ -345,6 +395,10 @@ const Drivers = () => {
       }
     }
   }, [selectedDriver]);
+
+  useEffect(() => {
+    setDriverOrderAssignments(getDriverOrderAssignments);
+  }, [getDriverOrderAssignments]);
 
   return (
     <AdminLayout>

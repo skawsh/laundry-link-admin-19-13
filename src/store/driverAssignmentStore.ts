@@ -57,6 +57,7 @@ export const assignOrdersToDriver = (
     });
   }
 
+  console.log("Updated driver assignments:", driverAssignments);
   return driverAssignments;
 };
 
