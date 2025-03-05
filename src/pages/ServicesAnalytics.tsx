@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { ArrowLeft, DollarSign, TrendingUp, BarChart2, ShoppingBag, Clock, ArrowUpRight, Calendar, MapPin, Users, ChevronDown } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
@@ -94,12 +93,31 @@ const seasonalTrendsData = [
   { month: 'Dec', value: 115, baseline: 100 },
 ];
 
+const locationRevenueData = [
+  { name: 'Hitech City', value: 375000 },
+  { name: 'Gachibowli', value: 310000 },
+  { name: 'Madhapur', value: 295000 },
+  { name: 'Banjara Hills', value: 340000 },
+  { name: 'Kondapur', value: 230000 },
+  { name: 'Kukatpally', value: 215000 },
+  { name: 'Ameerpet', value: 185000 },
+];
+
 const COLORS = ['#0088FE', '#00C49F', '#FFBB28', '#FF8042', '#8884d8'];
 
 const ServicesAnalytics: React.FC = () => {
   const navigate = useNavigate();
   const [timeRange, setTimeRange] = useState('last30days');
   const [selectedLocation, setSelectedLocation] = useState('all');
+
+  const customTooltipFormatter = (value: any, name: any) => {
+    if (typeof name === 'string') {
+      if (name.includes('Price')) {
+        return [`₹${value}`, name];
+      }
+    }
+    return [`${value}`, name];
+  };
 
   return (
     <AdminLayout>
@@ -232,10 +250,7 @@ const ServicesAnalytics: React.FC = () => {
                     <XAxis dataKey="service" />
                     <YAxis yAxisId="left" orientation="left" label={{ value: 'Price (₹)', angle: -90, position: 'insideLeft' }} />
                     <YAxis yAxisId="right" orientation="right" domain={[-10, 10]} label={{ value: 'Change (%)', angle: 90, position: 'insideRight' }} />
-                    <Tooltip formatter={(value, name) => [
-                      name.includes('Price') ? `₹${value}` : `${value}%`,
-                      name
-                    ]} />
+                    <Tooltip formatter={customTooltipFormatter} />
                     <Legend />
                     <Bar yAxisId="left" dataKey="originalPrice" fill="#8884d8" name="Original Price (₹)" />
                     <Bar yAxisId="left" dataKey="newPrice" fill="#82ca9d" name="New Price (₹)" />
@@ -522,15 +537,7 @@ const ServicesAnalytics: React.FC = () => {
                   <ResponsiveContainer width="100%" height="100%">
                     <PieChart>
                       <Pie
-                        data={[
-                          { name: 'Hitech City', value: 375000 },
-                          { name: 'Gachibowli', value: 310000 },
-                          { name: 'Madhapur', value: 295000 },
-                          { name: 'Banjara Hills', value: 340000 },
-                          { name: 'Kondapur', value: 230000 },
-                          { name: 'Kukatpally', value: 215000 },
-                          { name: 'Ameerpet', value: 185000 },
-                        ]}
+                        data={locationRevenueData}
                         cx="50%"
                         cy="50%"
                         labelLine={false}
@@ -539,7 +546,7 @@ const ServicesAnalytics: React.FC = () => {
                         dataKey="value"
                         label={({ name, percent }) => `${name} ${(percent * 100).toFixed(0)}%`}
                       >
-                        {studioLocationData.map((entry, index) => (
+                        {locationRevenueData.map((entry, index) => (
                           <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
                         ))}
                       </Pie>
