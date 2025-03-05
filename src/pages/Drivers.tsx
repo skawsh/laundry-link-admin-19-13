@@ -99,11 +99,145 @@ const Drivers = () => {
   }>(null);
 
   const [mockDrivers, setMockDrivers] = useState([
-    // ... keep existing mock drivers
+    {
+      id: 1,
+      name: "Rajesh Kumar",
+      phone: "+91 98765 43210",
+      email: "rajesh.kumar@example.com",
+      status: "active",
+      totalOrders: 156,
+      currentTask: "delivering",
+      currentOrder: "ORD-7890",
+      assignedOrders: ["ORD-7890", "ORD-7891"],
+      location: "Gachibowli, Hyderabad",
+      rating: 4.8,
+      joinDate: "12 Jan 2023",
+      address: "123 Jubilee Hills, Hyderabad",
+      emergencyContact: "+91 87654 32109 (Brother)",
+      vehicleInfo: "Hero Splendor Plus (TS 01 AB 1234)",
+      licenseNumber: "DLHYD20230987654"
+    },
+    {
+      id: 2,
+      name: "Priya Sharma",
+      phone: "+91 87654 32109",
+      email: "priya.sharma@example.com",
+      status: "active",
+      totalOrders: 143,
+      currentTask: "idle",
+      currentOrder: "",
+      assignedOrders: [],
+      location: "Madhapur, Hyderabad",
+      rating: 4.9,
+      joinDate: "05 Mar 2023",
+      address: "456 KPHB Colony, Hyderabad",
+      emergencyContact: "+91 76543 21098 (Husband)",
+      vehicleInfo: "TVS XL (TS 02 CD 5678)",
+      licenseNumber: "DLHYD20239876543"
+    },
+    {
+      id: 3,
+      name: "Vikram Singh",
+      phone: "+91 76543 21098",
+      email: "vikram.singh@example.com",
+      status: "inactive",
+      totalOrders: 87,
+      currentTask: "off-duty",
+      currentOrder: "",
+      assignedOrders: [],
+      location: "Kondapur, Hyderabad",
+      rating: 4.5,
+      joinDate: "18 May 2023",
+      address: "789 Miyapur, Hyderabad",
+      emergencyContact: "+91 65432 10987 (Wife)",
+      vehicleInfo: "Bajaj Pulsar (TS 03 EF 9012)",
+      licenseNumber: "DLHYD20238765432"
+    },
+    {
+      id: 4,
+      name: "Ananya Patel",
+      phone: "+91 65432 10987",
+      email: "ananya.patel@example.com",
+      status: "active",
+      totalOrders: 112,
+      currentTask: "delivering",
+      currentOrder: "ORD-7892",
+      assignedOrders: ["ORD-7892", "ORD-7893"],
+      location: "Kukatpally, Hyderabad",
+      rating: 4.7,
+      joinDate: "23 Jul 2023",
+      address: "101 ECIL, Hyderabad",
+      emergencyContact: "+91 54321 09876 (Father)",
+      vehicleInfo: "Honda Activa (TS 04 GH 3456)",
+      licenseNumber: "DLHYD20237654321"
+    },
+    {
+      id: 5,
+      name: "Sanjay Reddy",
+      phone: "+91 54321 09876",
+      email: "sanjay.reddy@example.com",
+      status: "active",
+      totalOrders: 78,
+      currentTask: "idle",
+      currentOrder: "",
+      assignedOrders: [],
+      location: "Secunderabad, Hyderabad",
+      rating: 4.6,
+      joinDate: "09 Sep 2023",
+      address: "222 Uppal, Hyderabad",
+      emergencyContact: "+91 43210 98765 (Mother)",
+      vehicleInfo: "Bajaj Chetak (TS 05 IJ 7890)",
+      licenseNumber: "DLHYD20236543210"
+    },
+    {
+      id: 6,
+      name: "Meera Joshi",
+      phone: "+91 43210 98765",
+      email: "meera.joshi@example.com",
+      status: "inactive",
+      totalOrders: 45,
+      currentTask: "off-duty",
+      currentOrder: "",
+      assignedOrders: [],
+      location: "Banjara Hills, Hyderabad",
+      rating: 4.4,
+      joinDate: "14 Nov 2023",
+      address: "333 Manikonda, Hyderabad",
+      emergencyContact: "+91 32109 87654 (Sister)",
+      vehicleInfo: "Hero Pleasure (TS 06 KL 1234)",
+      licenseNumber: "DLHYD20235432109"
+    }
   ]);
 
   const mockOrders = useMemo(() => [
-    // ... keep existing mock orders
+    {
+      id: "ORD-7890",
+      driver: "Rajesh Kumar",
+      status: "in_delivery",
+      customer: "Aditya Mehta",
+      address: "504, Cyber Towers, Hitech City, Hyderabad"
+    },
+    {
+      id: "ORD-7891",
+      driver: "Rajesh Kumar",
+      status: "picked_up",
+      customer: "Kavita Reddy",
+      address: "201, Devi Homes, Madhapur, Hyderabad"
+    },
+    {
+      id: "ORD-7892",
+      driver: "Ananya Patel",
+      status: "in_delivery",
+      customer: "Ravi Teja",
+      address: "302, Sri Apartments, Jubilee Hills, Hyderabad"
+    },
+    {
+      id: "ORD-7893",
+      driver: "Ananya Patel",
+      status: "picked_up",
+      customer: "Sunita Sharma",
+      address: "123, Lake View Apartments, Kondapur, Hyderabad"
+    }
   ], []);
 
   const toggleDriverStatus = (driverId: number) => {
