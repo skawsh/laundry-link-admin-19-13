@@ -1,4 +1,4 @@
-<lov-code>
+
 import React, { useState, useEffect, useRef } from 'react';
 import { Plus, ChevronDown, Search, Filter, Star, MoreHorizontal, X, ArrowUpDown, CreditCard, Settings, Package, Trash2, Frown, AlertCircle, CheckCircle, BarChart } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
@@ -355,6 +355,7 @@ const Studios: React.FC = () => {
     setIsSuccessDialogOpen(true);
     
     setStudioToDeactivate(null);
+    setIsDeactivateDialogOpen(false);
   };
 
   const viewStudioDetails = (studio: Studio) => {
@@ -442,6 +443,7 @@ const Studios: React.FC = () => {
     });
     
     setStudioToDelete(null);
+    setIsDeleteDialogOpen(false);
   };
 
   const handleSearch = (query: string) => {
@@ -607,7 +609,7 @@ const Studios: React.FC = () => {
                   onClick={() => openStudioAnalytics(row.id)}
                   className="flex items-center w-full text-left px-4 py-2.5 text-sm text-gray-700 hover:bg-gray-100"
                 >
-                  <ChevronDown className="h-4 w-4 mr-2 text-gray-500" />
+                  <BarChart className="h-4 w-4 mr-2 text-gray-500" />
                   <span>View Analytics</span>
                 </button>
                 
@@ -814,3 +816,86 @@ const Studios: React.FC = () => {
                 searchResults.map((studio) => (
                   <button
                     key={studio.id}
+                    className="block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-50"
+                    onClick={() => selectSearchResult(studio)}
+                  >
+                    <div>
+                      <span className="font-medium">{studio.name}</span>
+                      <span className="text-gray-500 ml-2">({studio.studioId})</span>
+                    </div>
+                    <div className="text-xs text-gray-500 mt-1">
+                      {studio.ownerName} • {studio.contactNumber}
+                    </div>
+                  </button>
+                ))
+              ) : (
+                <div className="px-4 py-2 text-sm text-gray-500">No results found</div>
+              )}
+            </div>
+          )}
+        </div>
+      </div>
+      
+      <DataTable
+        columns={columns}
+        data={filteredStudios}
+        recordsPerPage={10}
+        className="bg-white border-none shadow-subtle rounded-lg"
+      />
+      
+      {/* Deactivate Confirmation Dialog */}
+      <ConfirmationDialog
+        isOpen={isDeactivateDialogOpen}
+        title="Disable Studio?"
+        description={`Are you sure you want to disable ${studioToDeactivate?.name}? The studio will no longer be shown to customers.`}
+        onCancel={() => {
+          setIsDeactivateDialogOpen(false);
+          setStudioToDeactivate(null);
+        }}
+        onConfirm={confirmDeactivation}
+        confirmText="Disable"
+        cancelText="Cancel"
+        icon={<AlertCircle className="h-6 w-6 text-yellow-500" />}
+        variant="warning"
+      />
+      
+      {/* Delete Confirmation Dialog */}
+      <ConfirmationDialog
+        isOpen={isDeleteDialogOpen}
+        title="Delete Studio?"
+        description={`Are you sure you want to delete ${studioToDelete?.name}? This action cannot be undone.`}
+        onCancel={() => {
+          setIsDeleteDialogOpen(false);
+          setStudioToDelete(null);
+        }}
+        onConfirm={executeDeleteStudio}
+        confirmText="Delete"
+        cancelText="Cancel"
+        icon={<Trash2 className="h-6 w-6 text-red-500" />}
+        variant="destructive"
+      />
+      
+      {/* Success Dialog */}
+      <Dialog open={isSuccessDialogOpen} onOpenChange={setIsSuccessDialogOpen}>
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <CheckCircle className="h-5 w-5 text-green-500" />
+              {successDialogInfo.title}
+            </DialogTitle>
+            <DialogDescription>
+              {successDialogInfo.message}
+            </DialogDescription>
+          </DialogHeader>
+          <DialogFooter>
+            <Button onClick={() => setIsSuccessDialogOpen(false)}>
+              Close
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+    </AdminLayout>
+  );
+};
+
+export default Studios;
