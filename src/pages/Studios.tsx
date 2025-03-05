@@ -213,6 +213,13 @@ interface NewStudioFormData {
   services: number;
 }
 
+// Define a type for our table columns to match what DataTable expects
+interface TableColumn<T> {
+  header: string;
+  accessor: ((row: T, index: number) => React.ReactNode) | keyof T;
+  width?: string;
+}
+
 const Studios: React.FC = () => {
   const [studios, setStudios] = useState<Studio[]>(initialStudios);
   const [filteredStudios, setFilteredStudios] = useState<Studio[]>(initialStudios);
@@ -516,32 +523,32 @@ const Studios: React.FC = () => {
     return type.charAt(0).toUpperCase() + type.slice(1);
   };
 
-  const columns = [
+  const columns: TableColumn<Studio>[] = [
     {
       header: 'S.NO',
-      accessor: 'id' as keyof Studio,
+      accessor: (row: Studio) => row.id,
       width: '70px'
     },
     {
       header: 'Studio ID',
-      accessor: 'studioId' as keyof Studio,
+      accessor: (row: Studio) => row.studioId,
       width: '120px'
     },
     {
       header: 'Studio Name',
-      accessor: 'name' as keyof Studio,
+      accessor: (row: Studio) => row.name
     },
     {
       header: 'Owner Name',
-      accessor: 'ownerName' as keyof Studio,
+      accessor: (row: Studio) => row.ownerName
     },
     {
       header: 'Primary Contact',
-      accessor: 'contactNumber' as keyof Studio,
+      accessor: (row: Studio) => row.contactNumber
     },
     {
       header: 'Services',
-      accessor: 'services' as keyof Studio,
+      accessor: (row: Studio) => row.services,
       width: '100px'
     },
     {
@@ -845,7 +852,7 @@ const Studios: React.FC = () => {
       
       {/* Deactivate Confirmation Dialog */}
       <ConfirmationDialog
-        isOpen={isDeactivateDialogOpen}
+        open={isDeactivateDialogOpen}
         title="Disable Studio?"
         description={`Are you sure you want to disable ${studioToDeactivate?.name}? The studio will no longer be shown to customers.`}
         onCancel={() => {
@@ -861,7 +868,7 @@ const Studios: React.FC = () => {
       
       {/* Delete Confirmation Dialog */}
       <ConfirmationDialog
-        isOpen={isDeleteDialogOpen}
+        open={isDeleteDialogOpen}
         title="Delete Studio?"
         description={`Are you sure you want to delete ${studioToDelete?.name}? This action cannot be undone.`}
         onCancel={() => {
