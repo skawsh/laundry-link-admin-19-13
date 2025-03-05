@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import AdminLayout from '@/components/layout/AdminLayout';
 import { 
@@ -57,6 +57,11 @@ interface MockOrder {
   address: string;
 }
 
+interface DriverOrderDisplay extends MockOrder {
+  phoneNumber?: string;
+  date?: string;
+}
+
 const Drivers = () => {
   const navigate = useNavigate();
   const [orderDetailsOpen, setOrderDetailsOpen] = useState(false);
@@ -75,6 +80,7 @@ const Drivers = () => {
     }
   });
   const [selectedDriver, setSelectedDriver] = useState<null | {
+    id?: number;
     name: string;
     totalOrders: number;
     currentTask: string;
@@ -96,7 +102,7 @@ const Drivers = () => {
     // ... keep existing mock drivers
   ]);
 
-  const mockOrders: MockOrder[] = useMemo(() => [
+  const mockOrders = useMemo(() => [
     // ... keep existing mock orders
   ], []);
 
@@ -129,6 +135,7 @@ const Drivers = () => {
 
   const handleOpenOrderDetails = (driver: any) => {
     setSelectedDriver({
+      id: driver.id,
       name: driver.name,
       totalOrders: driver.totalOrders,
       currentTask: driver.currentTask,
@@ -183,13 +190,24 @@ const Drivers = () => {
     return mockDrivers.filter(driver => driver.status === 'active');
   }, [mockDrivers]);
 
-  const [driverOrders, setDriverOrders] = useState<MockOrder[]>([]);
+  const [driverOrders, setDriverOrders] = useState<DriverOrderDisplay[]>([]);
 
   useEffect(() => {
-    if (selectedDriver) {
-      const assignedOrders = getAssignedOrdersForDriver(selectedDriver.id);
+    if (selectedDriver && selectedDriver.id !== undefined) {
+      const assignedOrders = getAssignedOrdersForDriver(selectedDriver.id.toString());
+      
       if (assignedOrders.length > 0) {
-        setDriverOrders(assignedOrders);
+        const formattedOrders: DriverOrderDisplay[] = assignedOrders.map(order => ({
+          id: order.id,
+          customer: order.customer,
+          address: order.address,
+          status: order.status,
+          driver: selectedDriver.name,
+          phoneNumber: order.phoneNumber,
+          date: order.date
+        }));
+        
+        setDriverOrders(formattedOrders);
       }
     }
   }, [selectedDriver]);
