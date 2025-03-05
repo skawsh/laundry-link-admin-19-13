@@ -33,7 +33,9 @@ import {
   ShirtIcon,
   WashingMachine,
   RefreshCcw,
-  CheckSquare
+  CheckSquare,
+  Check,
+  Square
 } from "lucide-react";
 import { Separator } from "@/components/ui/separator";
 import { Badge } from "@/components/ui/badge";
@@ -329,9 +331,15 @@ const OrderAssignment: React.FC = () => {
     }
   };
 
+  const serialNumberColumn = {
+    header: "#",
+    accessor: (_: Order, index: number) => <span>{index + 1}</span>,
+    width: "60px",
+  };
+
   const selectColumn = {
     header: (
-      <div className="flex items-center">
+      <div className="flex items-center justify-center">
         <Checkbox
           checked={filteredOrders.length > 0 && selectedOrders.length === filteredOrders.length}
           onCheckedChange={(checked) => {
@@ -345,18 +353,19 @@ const OrderAssignment: React.FC = () => {
       </div>
     ),
     accessor: (row: Order) => (
-      <div className="flex items-center">
+      <div className="flex items-center justify-center">
         <Checkbox
           checked={isOrderSelected(row.id)}
           onCheckedChange={() => toggleOrderSelection(row)}
         />
       </div>
     ),
-    width: "40px",
+    width: "60px",
   };
 
   const newOrdersColumns = [
-    ...(selectMode ? [selectColumn] : []),
+    serialNumberColumn,
+    selectColumn,
     {
       header: "Order ID",
       accessor: "id" as keyof Order,
@@ -430,7 +439,8 @@ const OrderAssignment: React.FC = () => {
   ];
 
   const readyOrdersColumns = [
-    ...(selectMode ? [selectColumn] : []),
+    serialNumberColumn,
+    selectColumn,
     {
       header: "Order ID",
       accessor: "id" as keyof Order,
@@ -499,7 +509,8 @@ const OrderAssignment: React.FC = () => {
   ];
 
   const rescheduledOrdersColumns = [
-    ...(selectMode ? [selectColumn] : []),
+    serialNumberColumn,
+    selectColumn,
     {
       header: "Order ID",
       accessor: "id" as keyof Order,
@@ -566,16 +577,24 @@ const OrderAssignment: React.FC = () => {
               onClick={toggleSelectMode}
               className="flex items-center gap-1"
             >
-              <CheckSquare className="h-4 w-4" />
-              {selectMode ? "Exit Select Mode" : "Select Multiple"}
+              {selectMode ? (
+                <>
+                  <Check className="h-4 w-4" />
+                  Exit Select Mode
+                </>
+              ) : (
+                <>
+                  <CheckSquare className="h-4 w-4" />
+                  Select Multiple
+                </>
+              )}
             </Button>
             
-            {selectMode && (
+            {selectedOrders.length > 0 && (
               <Button 
                 variant="default" 
                 size="sm"
                 onClick={assignSelectedOrders}
-                disabled={selectedOrders.length === 0}
                 className="flex items-center gap-1"
               >
                 <UserPlus className="h-4 w-4" />
