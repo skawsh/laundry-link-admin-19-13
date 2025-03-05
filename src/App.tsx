@@ -3,7 +3,7 @@ import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { BrowserRouter, Routes, Route } from "react-router-dom";
+import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import Dashboard from "./pages/Dashboard";
 import Studios from "./pages/Studios";
 import StudioPayments from "./pages/StudioPayments";
@@ -36,7 +36,8 @@ const App = () => (
       <Sonner />
       <BrowserRouter>
         <Routes>
-          <Route path="/" element={<Index />} />
+          <Route path="/" element={<Navigate to="/dashboard" replace />} />
+          <Route path="/index" element={<Index />} />
           <Route path="/dashboard" element={<Dashboard />} />
           <Route path="/studios" element={<Studios />} />
           <Route path="/studios/add" element={<AddStudio />} />
