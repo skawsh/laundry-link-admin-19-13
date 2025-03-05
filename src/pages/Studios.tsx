@@ -1,5 +1,6 @@
+<lov-code>
 import React, { useState, useEffect, useRef } from 'react';
-import { Plus, ChevronDown, Search, Filter, Star, MoreHorizontal, X, ArrowUpDown, CreditCard, Settings, Package, Trash2, Frown, AlertCircle, CheckCircle } from 'lucide-react';
+import { Plus, ChevronDown, Search, Filter, Star, MoreHorizontal, X, ArrowUpDown, CreditCard, Settings, Package, Trash2, Frown, AlertCircle, CheckCircle, BarChart } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import AdminLayout from '../components/layout/AdminLayout';
 import PageHeader from '../components/ui/PageHeader';
@@ -633,20 +634,33 @@ const Studios: React.FC = () => {
         subtitle="Manage all laundry studios on your platform"
       >
         <div className="flex items-center space-x-3">
-          <button
+          <Button
             onClick={resetFilters}
-            className="flex items-center px-3 py-2 text-sm bg-white border border-gray-200 rounded-md text-gray-700 hover:bg-gray-50 transition-colors"
+            variant="outline"
+            size="sm"
+            className="flex items-center"
           >
             <Filter className="h-4 w-4 mr-2" />
             <span>Reset Filters</span>
-          </button>
-          <button
+          </Button>
+          <Button
+            onClick={() => navigate("/studios/overall-analytics")}
+            variant="secondary"
+            size="sm"
+            className="flex items-center"
+          >
+            <BarChart className="h-4 w-4 mr-2" />
+            <span>Overall Analytics</span>
+          </Button>
+          <Button
             onClick={openAddStudioPage}
-            className="flex items-center bg-admin-primary text-white px-4 py-2 rounded-md hover:bg-opacity-90 transition-colors"
+            variant="default"
+            size="sm"
+            className="flex items-center"
           >
             <Plus className="h-4 w-4 mr-2" />
             <span>Add New Studio</span>
-          </button>
+          </Button>
         </div>
       </PageHeader>
       
@@ -800,335 +814,3 @@ const Studios: React.FC = () => {
                 searchResults.map((studio) => (
                   <button
                     key={studio.id}
-                    className="block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-50"
-                    onClick={() => selectSearchResult(studio)}
-                  >
-                    <div className="font-medium">{studio.name}</div>
-                    <div className="text-xs text-gray-500 flex justify-between">
-                      <span>{studio.studioId}</span>
-                      <span>{studio.contactNumber}</span>
-                    </div>
-                  </button>
-                ))
-              ) : (
-                <div className="px-4 py-2 text-sm text-gray-500">No matching studios found</div>
-              )}
-            </div>
-          )}
-        </div>
-      </div>
-      
-      <DataTable
-        columns={columns}
-        data={filteredStudios}
-        keyField="id"
-        searchPlaceholder="Search studios..."
-        emptyMessage="No studios found"
-      />
-      
-      {isViewStudioModalOpen && selectedStudio && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-          <div className="bg-white rounded-lg shadow-lg w-full max-w-lg p-6 max-h-[90vh] overflow-y-auto">
-            <div className="flex justify-between items-center mb-4">
-              <h3 className="text-lg font-semibold">Studio Details</h3>
-              <button onClick={() => setIsViewStudioModalOpen(false)} className="text-gray-500 hover:text-gray-700">
-                <X className="h-5 w-5" />
-              </button>
-            </div>
-            
-            <div className="mb-6">
-              <div className="flex justify-between items-center">
-                <h2 className="text-xl font-semibold">{selectedStudio.name}</h2>
-                <StatusBadge status={selectedStudio.status} />
-              </div>
-              <p className="text-sm text-gray-500 mt-1">ID: {selectedStudio.studioId}</p>
-              <p className="text-sm text-gray-500 mt-1">{selectedStudio.address}</p>
-            </div>
-            
-            <div className="grid grid-cols-2 gap-4 mb-6">
-              <div>
-                <p className="text-sm text-gray-500">Owner</p>
-                <p className="font-medium">{selectedStudio.ownerName}</p>
-              </div>
-              <div>
-                <p className="text-sm text-gray-500">Contact</p>
-                <p className="font-medium">{selectedStudio.contactNumber}</p>
-              </div>
-              <div>
-                <p className="text-sm text-gray-500">Email</p>
-                <p className="font-medium">{selectedStudio.email || "N/A"}</p>
-              </div>
-              <div>
-                <p className="text-sm text-gray-500">Joined Date</p>
-                <p className="font-medium">{selectedStudio.joinedDate ? new Date(selectedStudio.joinedDate).toLocaleDateString() : "N/A"}</p>
-              </div>
-            </div>
-            
-            <div className="border-t border-gray-200 pt-4 mb-6">
-              <h4 className="font-medium mb-2">Performance Metrics</h4>
-              <div className="grid grid-cols-2 gap-4">
-                <div className="bg-gray-50 p-3 rounded">
-                  <p className="text-sm text-gray-500">Total Orders</p>
-                  <p className="text-lg font-semibold">{selectedStudio.totalOrders?.toLocaleString() || "0"}</p>
-                </div>
-                <div className="bg-gray-50 p-3 rounded">
-                  <p className="text-sm text-gray-500">Total Revenue</p>
-                  <p className="text-lg font-semibold">₹{selectedStudio.revenue?.toLocaleString() || "0"}</p>
-                </div>
-                <div className="bg-gray-50 p-3 rounded">
-                  <p className="text-sm text-gray-500">Services Offered</p>
-                  <p className="text-lg font-semibold">{selectedStudio.services}</p>
-                </div>
-                <div className="bg-gray-50 p-3 rounded">
-                  <p className="text-sm text-gray-500">Avg. Sack Value</p>
-                  <p className="text-lg font-semibold">₹{selectedStudio.avgSackValue || "0"}</p>
-                </div>
-              </div>
-            </div>
-            
-            {selectedStudio.serviceTimes && (
-              <div className="border-t border-gray-200 pt-4 mb-6">
-                <h4 className="font-medium mb-2">Service Timings</h4>
-                <div className="space-y-2">
-                  {selectedStudio.serviceTimes.map((service, index) => (
-                    <div key={index} className="flex justify-between items-center p-2 rounded bg-gray-50">
-                      <span className="font-medium">{service.type === 'Combined Wash' ? 'Both' : service.type}</span>
-                      <span className="text-sm text-gray-700">{service.time}</span>
-                    </div>
-                  ))}
-                </div>
-              </div>
-            )}
-            
-            <div className="flex justify-end space-x-3">
-              <button
-                onClick={() => {
-                  setIsViewStudioModalOpen(false);
-                  editStudio(selectedStudio);
-                }}
-                className="px-4 py-2 text-sm text-admin-primary border border-admin-primary rounded-md hover:bg-admin-primary hover:text-white transition-colors"
-              >
-                Edit Studio
-              </button>
-              <button
-                onClick={() => {
-                  setIsViewStudioModalOpen(false);
-                  openStudioAnalytics(selectedStudio.id);
-                }}
-                className="px-4 py-2 text-sm bg-admin-primary text-white rounded-md hover:bg-opacity-90 transition-colors"
-              >
-                View Analytics
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
-      
-      {isEditStudioModalOpen && selectedStudio && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-          <div className="bg-white rounded-lg shadow-lg w-full max-w-lg p-6 max-h-[90vh] overflow-y-auto">
-            <div className="flex justify-between items-center mb-4">
-              <h3 className="text-lg font-semibold">Edit Studio</h3>
-              <button onClick={() => setIsEditStudioModalOpen(false)} className="text-gray-500 hover:text-gray-700">
-                <X className="h-5 w-5" />
-              </button>
-            </div>
-            
-            <div className="space-y-4">
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Studio ID
-                </label>
-                <input
-                  type="text"
-                  value={selectedStudio.studioId}
-                  disabled
-                  className="block w-full border border-gray-200 rounded-md py-2 px-3 text-sm placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-primary/20 bg-gray-50"
-                />
-              </div>
-              
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Studio Name
-                </label>
-                <input
-                  type="text"
-                  value={selectedStudio.name}
-                  onChange={(e) => setSelectedStudio({...selectedStudio, name: e.target.value})}
-                  className="block w-full border border-gray-200 rounded-md py-2 px-3 text-sm placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-primary/20"
-                />
-              </div>
-              
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Owner Name
-                </label>
-                <input
-                  type="text"
-                  value={selectedStudio.ownerName}
-                  onChange={(e) => setSelectedStudio({...selectedStudio, ownerName: e.target.value})}
-                  className="block w-full border border-gray-200 rounded-md py-2 px-3 text-sm placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-primary/20"
-                />
-              </div>
-              
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Contact Number
-                </label>
-                <input
-                  type="text"
-                  value={selectedStudio.contactNumber}
-                  onChange={(e) => setSelectedStudio({...selectedStudio, contactNumber: e.target.value})}
-                  className="block w-full border border-gray-200 rounded-md py-2 px-3 text-sm placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-primary/20"
-                />
-              </div>
-              
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Email Address
-                </label>
-                <input
-                  type="email"
-                  value={selectedStudio.email || ''}
-                  onChange={(e) => setSelectedStudio({...selectedStudio, email: e.target.value})}
-                  className="block w-full border border-gray-200 rounded-md py-2 px-3 text-sm placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-primary/20"
-                />
-              </div>
-              
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Address
-                </label>
-                <textarea
-                  value={selectedStudio.address || ''}
-                  onChange={(e) => setSelectedStudio({...selectedStudio, address: e.target.value})}
-                  rows={3}
-                  className="block w-full border border-gray-200 rounded-md py-2 px-3 text-sm placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-primary/20"
-                />
-              </div>
-              
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Number of Services
-                </label>
-                <input
-                  type="number"
-                  value={selectedStudio.services}
-                  onChange={(e) => setSelectedStudio({...selectedStudio, services: parseInt(e.target.value) || 0})}
-                  className="block w-full border border-gray-200 rounded-md py-2 px-3 text-sm placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-primary/20"
-                  min="0"
-                />
-              </div>
-              
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Status
-                </label>
-                <div className="flex items-center space-x-4">
-                  <label className="flex items-center">
-                    <input
-                      type="radio"
-                      checked={selectedStudio.status === 'active'}
-                      onChange={() => setSelectedStudio({...selectedStudio, status: 'active'})}
-                      className="h-4 w-4 text-admin-primary focus:ring-admin-primary"
-                    />
-                    <span className="ml-2 text-sm text-gray-700">Active</span>
-                  </label>
-                  <label className="flex items-center">
-                    <input
-                      type="radio"
-                      checked={selectedStudio.status === 'inactive'}
-                      onChange={() => setSelectedStudio({...selectedStudio, status: 'inactive'})}
-                      className="h-4 w-4 text-admin-primary focus:ring-admin-primary"
-                    />
-                    <span className="ml-2 text-sm text-gray-700">Inactive</span>
-                  </label>
-                </div>
-              </div>
-              
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Average Sack Value
-                </label>
-                <input
-                  type="number"
-                  value={selectedStudio.avgSackValue || 0}
-                  onChange={(e) => setSelectedStudio({...selectedStudio, avgSackValue: parseInt(e.target.value) || 0})}
-                  className="block w-full border border-gray-200 rounded-md py-2 px-3 text-sm placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-primary/20"
-                  min="0"
-                />
-              </div>
-            </div>
-            
-            <div className="flex justify-end space-x-3 mt-6">
-              <button
-                onClick={() => setIsEditStudioModalOpen(false)}
-                className="px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 rounded-md transition-colors"
-              >
-                Cancel
-              </button>
-              <button
-                onClick={saveEditedStudio}
-                className="px-4 py-2 text-sm bg-admin-primary text-white rounded-md hover:bg-opacity-90 transition-colors"
-              >
-                Save Changes
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
-      
-      <ConfirmationDialog
-        open={isDeleteDialogOpen}
-        onOpenChange={setIsDeleteDialogOpen}
-        onConfirm={executeDeleteStudio}
-        title="Delete Studio"
-        description={
-          <div className="flex items-center space-x-2">
-            <Frown className="h-5 w-5 text-gray-500" />
-            <span>Are you sure you want to delete {studioToDelete?.name}?</span>
-          </div>
-        }
-        confirmText="Delete"
-        confirmWithTimer={5}
-      />
-      
-      <ConfirmationDialog
-        open={isDeactivateDialogOpen}
-        onOpenChange={setIsDeactivateDialogOpen}
-        onConfirm={confirmDeactivation}
-        title="Deactivate Studio"
-        description={
-          <div className="flex items-center space-x-2">
-            <AlertCircle className="h-5 w-5 text-amber-500" />
-            <span>Are you sure you want to deactivate {studioToDeactivate?.name}?</span>
-          </div>
-        }
-        confirmText="OK"
-        cancelText="Cancel"
-      />
-      
-      {/* Success Dialog */}
-      <Dialog open={isSuccessDialogOpen} onOpenChange={setIsSuccessDialogOpen}>
-        <DialogContent className="sm:max-w-[425px]">
-          <DialogHeader>
-            <DialogTitle>{successDialogInfo.title}</DialogTitle>
-            <DialogDescription>
-              <div className="flex items-center space-x-2 mt-2">
-                <CheckCircle className="h-5 w-5 text-green-500" />
-                <span>{successDialogInfo.message}</span>
-              </div>
-            </DialogDescription>
-          </DialogHeader>
-          <DialogFooter>
-            <Button onClick={() => setIsSuccessDialogOpen(false)}>
-              Close
-            </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
-    </AdminLayout>
-  );
-};
-
-export default Studios;

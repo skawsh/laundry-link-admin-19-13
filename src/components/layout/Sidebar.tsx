@@ -9,7 +9,8 @@ import {
   DollarSign, 
   Ticket, 
   Users, 
-  Settings 
+  Settings,
+  BarChart
 } from "lucide-react";
 
 interface SidebarProps {
@@ -28,6 +29,7 @@ const navItems: NavItem[] = [
   { label: "Drivers", icon: Car, path: "/drivers" },
   { label: "Orders", icon: ClipboardList, path: "/orders" },
   { label: "Revenue", icon: DollarSign, path: "/revenue" },
+  { label: "Services Analytics", icon: BarChart, path: "/services-analytics" },
   { label: "Tickets", icon: Ticket, path: "/tickets" },
   { label: "Users", icon: Users, path: "/users" },
   { label: "Settings", icon: Settings, path: "/settings" },
