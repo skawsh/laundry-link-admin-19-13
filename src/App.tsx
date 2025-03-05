@@ -13,6 +13,8 @@ import StudioDetails from "./pages/StudioDetails";
 import StudioServices from "./pages/StudioServices";
 import StudioOverallAnalytics from "./pages/StudioOverallAnalytics";
 import ServicesAnalytics from "./pages/ServicesAnalytics";
+import UserAnalytics from "./pages/UserAnalytics";
+import DeliveryAnalytics from "./pages/DeliveryAnalytics";
 import Drivers from "./pages/Drivers";
 import Orders from "./pages/Orders";
 import OrderAssignment from "./pages/OrderAssignment";
@@ -46,6 +48,8 @@ const App = () => (
           <Route path="/studios/details/:studioId" element={<StudioDetails />} />
           <Route path="/studios/services/:studioId" element={<StudioServices />} />
           <Route path="/services-analytics" element={<ServicesAnalytics />} />
+          <Route path="/user-analytics" element={<UserAnalytics />} />
+          <Route path="/delivery-analytics" element={<DeliveryAnalytics />} />
           <Route path="/drivers" element={<Drivers />} />
           <Route path="/driver-profile/:id" element={<DriverProfile />} />
           <Route path="/orders" element={<Orders />} />
