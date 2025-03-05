@@ -8,6 +8,14 @@ import {
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import PageHeader from '@/components/ui/PageHeader';
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogFooter,
+  DialogTitle,
+} from '@/components/ui/dialog';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import { Badge } from '@/components/ui/badge';
 import { Separator } from '@/components/ui/separator';
@@ -235,11 +243,37 @@ const Drivers = () => {
   ], []);
 
   const toggleDriverStatus = (driverId: number) => {
-    // ... keep existing toggleDriverStatus
+    setMockDrivers(prevDrivers =>
+      prevDrivers.map(driver =>
+        driver.id === driverId ? { ...driver, status: driver.status === 'active' ? 'inactive' : 'active' } : driver
+      )
+    );
+    toast({
+      title: "Driver status updated.",
+      description: `Driver ${driverId} status has been updated.`,
+    })
   };
 
   const handleActionMenuItem = (action: string, driverId: number) => {
-    // ... keep existing handleActionMenuItem
+    if (action === 'viewProfile') {
+      const driver = mockDrivers.find(d => d.id === driverId);
+      if (driver) {
+        handleOpenDriverProfile(driver);
+      }
+    } else if (action === 'viewOrders') {
+      const driver = mockDrivers.find(d => d.id === driverId);
+      if (driver) {
+        handleOpenOrderDetails(driver);
+      }
+    } else if (action === 'changeStatus') {
+      toggleDriverStatus(driverId);
+    } else if (action === 'removeDriver') {
+      setMockDrivers(prevDrivers => prevDrivers.filter(driver => driver.id !== driverId));
+      toast({
+        title: "Driver removed.",
+        description: `Driver ${driverId} has been removed.`,
+      })
+    }
   };
 
   const filteredDrivers = useMemo(() => {
@@ -805,276 +839,4 @@ const Drivers = () => {
                   return (
                     <Card key={driver.id}>
                       <CardHeader className="pb-2">
-                        <CardTitle className="text-md flex items-center gap-2">
-                          <User className="h-4 w-4 text-blue-500" />
-                          {driver.name}
-                        </CardTitle>
-                        <CardDescription>
-                          {driverOrders.length} orders assigned
-                        </CardDescription>
-                      </CardHeader>
-                      <CardContent>
-                        <div className="space-y-2 max-h-48 overflow-y-auto">
-                          {driverOrders.slice(0, 5).map((order, index) => (
-                            <div key={index} className="border rounded-md p-2 text-sm">
-                              <div className="flex justify-between items-center mb-1">
-                                <span className="font-medium">{order.id}</span>
-                                <Badge variant="outline" className={order.status === 'in_delivery' ? 'text-green-600' : 'text-blue-600'}>
-                                  {order.status === 'in_delivery' ? 'Delivering' : 'Picked up'}
-                                </Badge>
-                              </div>
-                              <div className="text-gray-500 text-xs">
-                                {order.customer}
-                              </div>
-                              <div className="text-gray-500 text-xs truncate">
-                                {order.address}
-                              </div>
-                            </div>
-                          ))}
-                          {driverOrders.length > 5 && (
-                            <Button variant="ghost" size="sm" className="w-full text-xs">
-                              View all {driverOrders.length} orders
-                            </Button>
-                          )}
-                        </div>
-                      </CardContent>
-                    </Card>
-                  );
-                })}
-              </div>
-            </div>
-          </TabsContent>
-
-          <TabsContent value="available">
-            <div className="bg-white rounded-lg shadow-subtle overflow-hidden mb-6">
-              <div className="p-4 border-b border-gray-100">
-                <div className="flex justify-between items-center">
-                  <h3 className="text-lg font-medium text-gray-800 flex items-center gap-2">
-                    <CheckCircle2 className="h-5 w-5 text-green-500" />
-                    Available Drivers
-                  </h3>
-                  <Badge variant="outline" className="flex items-center">
-                    {availableDrivers.length} Drivers Available
-                  </Badge>
-                </div>
-                <p className="text-sm text-gray-500 mt-1">
-                  Drivers currently available for new order assignments
-                </p>
-              </div>
-              
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 p-4">
-                {availableDrivers.map((driver) => {
-                  const driverOrders = mockOrders.filter(order => order.driver === driver.name);
-                  const activeOrders = driverOrders.filter(order => order.status === 'in_delivery').length;
-                  
-                  return (
-                    <div 
-                      key={driver.id} 
-                      className="border rounded-lg p-4 hover:border-blue-200 transition-colors"
-                    >
-                      <div className="flex items-center justify-between mb-3">
-                        <div className="flex items-center">
-                          <div className="h-10 w-10 bg-gray-200 rounded-full flex items-center justify-center mr-3">
-                            <User className="h-5 w-5 text-gray-500" />
-                          </div>
-                          <div>
-                            <h4 className="text-sm font-medium">{driver.name}</h4>
-                            <p className="text-xs text-gray-500">{driver.phone}</p>
-                          </div>
-                        </div>
-                        <Badge className="bg-green-100 text-green-800 hover:bg-green-100">
-                          Available
-                        </Badge>
-                      </div>
-                      
-                      <div className="grid grid-cols-2 gap-2 mb-3">
-                        <div className="bg-gray-50 rounded p-2 text-center">
-                          <div className="text-lg font-semibold">{driverOrders.length}</div>
-                          <div className="text-xs text-gray-500">Total Orders</div>
-                        </div>
-                        <div className="bg-gray-50 rounded p-2 text-center">
-                          <div className="text-lg font-semibold">{activeOrders}</div>
-                          <div className="text-xs text-gray-500">Active Deliveries</div>
-                        </div>
-                      </div>
-                      
-                      <div className="text-xs text-gray-500 mb-1">Current Location</div>
-                      <div className="text-sm mb-3 flex items-center">
-                        <svg 
-                          xmlns="http://www.w3.org/2000/svg" 
-                          viewBox="0 0 24 24" 
-                          fill="none" 
-                          stroke="currentColor" 
-                          strokeWidth="2" 
-                          strokeLinecap="round" 
-                          strokeLinejoin="round" 
-                          className="h-3 w-3 mr-1 text-gray-500"
-                        >
-                          <path d="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0 1 16 0Z"/>
-                          <circle cx="12" cy="10" r="3"/>
-                        </svg>
-                        {driver.location}
-                      </div>
-                      
-                      <Button size="sm" variant="outline" className="w-full">
-                        Assign Order
-                      </Button>
-                    </div>
-                  );
-                })}
-              </div>
-            </div>
-          </TabsContent>
-        </Tabs>
-
-        <Dialog open={orderDetailsOpen} onOpenChange={setOrderDetailsOpen}>
-          <DialogContent className="max-w-lg">
-            <DialogHeader>
-              <DialogTitle>Order Details</DialogTitle>
-              <DialogDescription>
-                Details for {selectedDriver?.name}'s current assignments
-              </DialogDescription>
-            </DialogHeader>
-            
-            <div className="space-y-4 mt-4">
-              <div className="bg-gray-50 p-4 rounded-lg">
-                <h3 className="text-sm font-medium text-gray-700 mb-2 flex items-center">
-                  <Truck className="h-4 w-4 mr-2" />
-                  Current Status
-                </h3>
-                <div className="grid grid-cols-2 gap-4">
-                  <div>
-                    <p className="text-xs text-gray-500">Current Order</p>
-                    <p className="text-sm font-medium">{selectedDriver?.currentOrder}</p>
-                  </div>
-                  <div>
-                    <p className="text-xs text-gray-500">Current Task</p>
-                    <p className="text-sm font-medium capitalize">{selectedDriver?.currentTask}</p>
-                  </div>
-                </div>
-              </div>
-              
-              <div>
-                <h3 className="text-sm font-medium text-gray-700 mb-2 flex items-center">
-                  <Package className="h-4 w-4 mr-2" />
-                  Assigned Orders ({selectedDriver?.assignedOrders.length})
-                </h3>
-                <div className="grid grid-cols-3 gap-2 mt-2">
-                  {selectedDriver?.assignedOrders.map((order, index) => (
-                    <div key={index} className="bg-gray-50 p-2 rounded text-sm">
-                      {order}
-                    </div>
-                  ))}
-                </div>
-              </div>
-              
-              <Separator />
-              
-              <div className="grid grid-cols-2 gap-4">
-                <div>
-                  <p className="text-xs text-gray-500">Total Orders</p>
-                  <p className="text-sm font-medium">{selectedDriver?.totalOrders}</p>
-                </div>
-                <div>
-                  <p className="text-xs text-gray-500">Active Since</p>
-                  <p className="text-sm font-medium">
-                    <Calendar className="h-3 w-3 inline mr-1" />
-                    {selectedDriver?.joinDate}
-                  </p>
-                </div>
-              </div>
-            </div>
-          </DialogContent>
-        </Dialog>
-
-        <Dialog open={driverProfileOpen} onOpenChange={setDriverProfileOpen}>
-          <DialogContent className="max-w-lg">
-            <DialogHeader>
-              <DialogTitle>Driver Profile</DialogTitle>
-              <DialogDescription>
-                Detailed information about {selectedDriver?.name}
-              </DialogDescription>
-            </DialogHeader>
-            
-            <div className="space-y-4 mt-4">
-              <div className="flex items-center">
-                <div className="h-16 w-16 bg-gray-200 rounded-full flex items-center justify-center mr-4">
-                  <User className="h-8 w-8 text-gray-500" />
-                </div>
-                <div>
-                  <h3 className="text-lg font-semibold">{selectedDriver?.name}</h3>
-                  <div className="flex items-center mt-1">
-                    <Badge variant={selectedDriver?.status === 'active' ? 'default' : 'secondary'} className="mr-2">
-                      {selectedDriver?.status === 'active' ? 'Active' : 'Inactive'}
-                    </Badge>
-                  </div>
-                </div>
-              </div>
-              
-              <Separator />
-              
-              <div className="grid grid-cols-2 gap-4">
-                <div>
-                  <h4 className="text-sm font-medium text-gray-500 mb-1 flex items-center">
-                    <Phone className="h-3.5 w-3.5 mr-1" />
-                    Phone Number
-                  </h4>
-                  <p className="text-sm">{selectedDriver?.phone}</p>
-                </div>
-                <div>
-                  <h4 className="text-sm font-medium text-gray-500 mb-1 flex items-center">
-                    <Calendar className="h-3.5 w-3.5 mr-1" />
-                    Joined
-                  </h4>
-                  <p className="text-sm">{selectedDriver?.joinDate}</p>
-                </div>
-              </div>
-              
-              <div>
-                <h4 className="text-sm font-medium text-gray-500 mb-1">Email Address</h4>
-                <p className="text-sm">{selectedDriver?.email}</p>
-              </div>
-              
-              <div>
-                <h4 className="text-sm font-medium text-gray-500 mb-1">Home Address</h4>
-                <p className="text-sm">{selectedDriver?.address}</p>
-              </div>
-              
-              <Separator />
-              
-              <div>
-                <h4 className="text-sm font-medium text-gray-500 mb-1">Vehicle Information</h4>
-                <p className="text-sm">{selectedDriver?.vehicleInfo}</p>
-              </div>
-              
-              <div>
-                <h4 className="text-sm font-medium text-gray-500 mb-1">License Number</h4>
-                <p className="text-sm">{selectedDriver?.licenseNumber}</p>
-              </div>
-              
-              <div>
-                <h4 className="text-sm font-medium text-gray-500 mb-1">Emergency Contact</h4>
-                <p className="text-sm">{selectedDriver?.emergencyContact}</p>
-              </div>
-              
-              <Separator />
-              
-              <div className="grid grid-cols-2 gap-4">
-                <div className="bg-gray-50 p-3 rounded-lg text-center">
-                  <p className="text-sm font-medium text-gray-900">{selectedDriver?.totalOrders}</p>
-                  <p className="text-xs text-gray-500">Total Orders</p>
-                </div>
-                <div className="bg-gray-50 p-3 rounded-lg text-center">
-                  <p className="text-sm font-medium text-gray-900">{selectedDriver?.assignedOrders?.length || 0}</p>
-                  <p className="text-xs text-gray-500">Current Orders</p>
-                </div>
-              </div>
-            </div>
-          </DialogContent>
-        </Dialog>
-      </div>
-    </AdminLayout>
-  );
-};
-
-export default Drivers;
+                        <CardTitle className="text-md flex items-center gap
