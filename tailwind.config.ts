@@ -63,18 +63,20 @@ export default {
 					border: "hsl(var(--sidebar-border))",
 					ring: "hsl(var(--sidebar-ring))"
 				},
-				// Custom admin colors
+				// Updated admin colors with more vibrant and modern palette
 				admin: {
-					primary: "#2A4365",
-					secondary: "#CBD5E0",
+					primary: "#3B5998", // Updated to a richer blue
+					secondary: "#E2E8F0", // Lighter gray
 					accent: "#4A5568",
-					background: "#F7FAFC",
+					background: "#F8FAFC", // Lighter background
 					card: "#FFFFFF",
-					hover: "#EDF2F7",
-					success: "#38A169",
-					danger: "#E53E3E",
-					warning: "#DD6B20",
-					info: "#3182CE"
+					hover: "#F1F5F9", // Softer hover
+					success: "#10B981", // Modern green
+					danger: "#EF4444", // Modern red
+					warning: "#F59E0B", // Modern amber
+					info: "#3B82F6",   // Modern blue
+					light: "#F1F5F9",  // Very light blue/gray for subtle backgrounds
+					dark: "#1E293B"    // Darker shade for contrast
 				}
 			},
 			borderRadius: {
@@ -110,6 +112,10 @@ export default {
 				"slide-in": {
 					"0%": { transform: "translateX(-10px)", opacity: "0" },
 					"100%": { transform: "translateX(0)", opacity: "1" }
+				},
+				"scale-in": {
+					"0%": { transform: "scale(0.95)", opacity: "0" },
+					"100%": { transform: "scale(1)", opacity: "1" }
 				}
 			},
 			animation: {
@@ -117,7 +123,8 @@ export default {
 				"accordion-up": "accordion-up 0.2s ease-out",
 				"fade-in": "fade-in 0.3s ease-out",
 				"fade-out": "fade-out 0.3s ease-out",
-				"slide-in": "slide-in 0.3s ease-out"
+				"slide-in": "slide-in 0.3s ease-out",
+				"scale-in": "scale-in 0.2s ease-out"
 			},
 			fontFamily: {
 				sans: [
@@ -134,9 +141,10 @@ export default {
 				]
 			},
 			boxShadow: {
-				subtle: "0 2px 6px rgba(0, 0, 0, 0.05)",
-				card: "0 4px 12px rgba(0, 0, 0, 0.05)",
-				elevated: "0 8px 24px rgba(0, 0, 0, 0.08)"
+				subtle: "0 2px 10px rgba(0, 0, 0, 0.04)",
+				card: "0 4px 16px rgba(0, 0, 0, 0.06)",
+				elevated: "0 10px 30px rgba(0, 0, 0, 0.08)",
+				glow: "0 0 15px rgba(59, 89, 152, 0.2)"
 			}
 		}
 	},

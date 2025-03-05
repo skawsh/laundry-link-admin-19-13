@@ -81,11 +81,11 @@ const Sidebar: React.FC<SidebarProps> = ({ isOpen }) => {
       <div className={`flex items-center justify-center h-16 border-b ${isOpen ? "px-4" : "px-0"}`}>
         {isOpen ? (
           <div className="flex items-center space-x-2">
-            <span className="font-bold text-lg text-admin-primary">Admin Panel</span>
+            <span className="font-bold text-lg text-admin-primary">Laundry Link</span>
           </div>
         ) : (
           <div className="flex justify-center items-center">
-            <span className="font-bold text-xl text-admin-primary">AP</span>
+            <span className="font-bold text-xl text-admin-primary">LL</span>
           </div>
         )}
       </div>
@@ -103,10 +103,10 @@ const Sidebar: React.FC<SidebarProps> = ({ isOpen }) => {
                   <div className="flex flex-col">
                     <button
                       onClick={() => toggleItem(item.label)}
-                      className={`flex items-center justify-between py-2 px-3 rounded-md transition-all duration-200 w-full ${
+                      className={`flex items-center justify-between py-2 px-3 rounded-lg transition-all duration-200 w-full ${
                         isActive
-                          ? "bg-admin-primary text-white"
-                          : "text-gray-700 hover:bg-gray-100"
+                          ? "bg-admin-primary text-white shadow-subtle"
+                          : "text-gray-700 hover:bg-admin-light"
                       }`}
                     >
                       <div className="flex items-center">
@@ -125,7 +125,7 @@ const Sidebar: React.FC<SidebarProps> = ({ isOpen }) => {
                     </button>
                     
                     {isOpen && isExpanded && hasChildren && (
-                      <ul className="pl-4 mt-1 space-y-1">
+                      <ul className="pl-4 mt-1 space-y-1 animate-fade-in">
                         {item.children.map((child) => {
                           const isChildActive = location.pathname === child.path || 
                             (child.path !== "/" && location.pathname.startsWith(child.path));
@@ -134,10 +134,10 @@ const Sidebar: React.FC<SidebarProps> = ({ isOpen }) => {
                             <li key={child.label}>
                               <Link
                                 to={child.path}
-                                className={`flex items-center py-2 px-3 rounded-md transition-all duration-200 ${
+                                className={`flex items-center py-2 px-3 rounded-lg transition-all duration-200 ${
                                   isChildActive
-                                    ? "bg-admin-primary/90 text-white"
-                                    : "text-gray-700 hover:bg-gray-100"
+                                    ? "bg-admin-primary/90 text-white shadow-subtle"
+                                    : "text-gray-700 hover:bg-admin-light"
                                 }`}
                               >
                                 <child.icon className={`h-4 w-4 ${isChildActive ? "text-white" : "text-gray-500"}`} />
@@ -154,10 +154,10 @@ const Sidebar: React.FC<SidebarProps> = ({ isOpen }) => {
                 ) : (
                   <Link
                     to={item.path}
-                    className={`flex items-center py-2 px-3 rounded-md transition-all duration-200 ${
+                    className={`flex items-center py-2 px-3 rounded-lg transition-all duration-200 ${
                       isActive
-                        ? "bg-admin-primary text-white"
-                        : "text-gray-700 hover:bg-gray-100"
+                        ? "bg-admin-primary text-white shadow-subtle"
+                        : "text-gray-700 hover:bg-admin-light"
                     }`}
                   >
                     <item.icon className={`h-5 w-5 ${isActive ? "text-white" : "text-gray-500"}`} />
@@ -177,7 +177,7 @@ const Sidebar: React.FC<SidebarProps> = ({ isOpen }) => {
       <div className="p-4 border-t">
         {isOpen ? (
           <div className="flex items-center space-x-3">
-            <div className="h-8 w-8 rounded-full bg-admin-primary flex items-center justify-center text-white font-medium">
+            <div className="h-8 w-8 rounded-full bg-admin-primary flex items-center justify-center text-white font-medium shadow-subtle">
               A
             </div>
             <div>
@@ -187,7 +187,7 @@ const Sidebar: React.FC<SidebarProps> = ({ isOpen }) => {
           </div>
         ) : (
           <div className="flex justify-center">
-            <div className="h-8 w-8 rounded-full bg-admin-primary flex items-center justify-center text-white font-medium">
+            <div className="h-8 w-8 rounded-full bg-admin-primary flex items-center justify-center text-white font-medium shadow-subtle">
               A
             </div>
           </div>
