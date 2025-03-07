@@ -8,11 +8,12 @@ import AddServiceModal from '@/components/services/AddServiceModal';
 import { Button } from '@/components/ui/button';
 import { useToast } from '@/hooks/use-toast';
 import PageHeader from '@/components/ui/PageHeader';
-import { Service, Subservice } from '@/types/serviceTypes';
+import { Service, Subservice, ClothingItem } from '@/types/serviceTypes';
 import { Plus } from 'lucide-react';
 import { 
   addServiceToStudio, 
   addSubserviceToService,
+  addItemToSubservice,
   toggleServiceEnabled,
   toggleSubserviceEnabled
 } from '@/data/mockServiceData';
@@ -60,13 +61,28 @@ const Services: React.FC = () => {
     }
   };
 
-  const handleAddItem = (serviceId: string, subserviceId: string, newItem: any) => {
-    // Placeholder for the interface, but functionality not needed now
-    toast({
-      title: "Coming Soon",
-      description: "Add item functionality will be implemented soon.",
-      duration: 3000,
-    });
+  const handleAddItem = (serviceId: string, subserviceId: string, newItem: Omit<ClothingItem, "id">) => {
+    try {
+      // For global services, we'll use a dummy studioId
+      const dummyStudioId = "global";
+      addItemToSubservice(dummyStudioId, serviceId, subserviceId, newItem);
+      
+      toast({
+        title: "Success",
+        description: "Item added successfully",
+        duration: 3000,
+      });
+      
+      setServices([...mockServices]);
+      setRefreshKey(prev => prev + 1);
+    } catch (error) {
+      toast({
+        title: "Error",
+        description: "Failed to add item",
+        variant: "destructive",
+        duration: 3000,
+      });
+    }
   };
 
   const handleToggleService = (serviceId: string) => {
