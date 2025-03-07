@@ -3,7 +3,15 @@ import React, { useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { ArrowLeft, Plus } from 'lucide-react';
 import AdminLayout from '@/components/layout/AdminLayout';
-import { getStudioById, addServiceToStudio, addSubserviceToService, addItemToSubservice, toggleServiceEnabled, toggleSubserviceEnabled } from '@/data/mockServiceData';
+import { 
+  getStudioById, 
+  addServiceToStudio, 
+  addSubserviceToService, 
+  addItemToSubservice, 
+  toggleServiceEnabled, 
+  toggleSubserviceEnabled,
+  editClothingItem
+} from '@/data/mockServiceData';
 import ServiceList from '@/components/services/ServiceList';
 import SearchBox from '@/components/services/SearchBox';
 import AddServiceModal from '@/components/services/AddServiceModal';
@@ -91,6 +99,25 @@ const StudioServices: React.FC = () => {
     }
   };
 
+  const handleEditItem = (serviceId: string, subserviceId: string, itemId: string, updatedItem: Partial<ClothingItem>) => {
+    try {
+      editClothingItem(studioId || '', serviceId, subserviceId, itemId, updatedItem);
+      toast({
+        title: "Success",
+        description: "Item updated successfully",
+        duration: 3000
+      });
+      setRefreshKey(prev => prev + 1);
+    } catch (error) {
+      toast({
+        title: "Error",
+        description: "Failed to update item",
+        variant: "destructive",
+        duration: 3000
+      });
+    }
+  };
+
   const handleToggleService = (serviceId: string) => {
     try {
       toggleServiceEnabled(studioId || '', serviceId);
@@ -159,6 +186,7 @@ const StudioServices: React.FC = () => {
             services={studio.services}
             searchTerm={searchTerm}
             onAddItem={handleAddItem}
+            onEditItem={handleEditItem}
             onToggleService={handleToggleService}
             onToggleSubservice={handleToggleSubservice}
           />

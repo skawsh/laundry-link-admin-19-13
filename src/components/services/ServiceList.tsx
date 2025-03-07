@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { Service, Subservice, ClothingItem } from '@/types/serviceTypes';
 import { PlusCircle, ChevronRight, ChevronDown, Edit, Trash, Plus } from 'lucide-react';
@@ -8,11 +7,13 @@ import { useToast } from '@/hooks/use-toast';
 import { Switch } from '@/components/ui/switch';
 import { Label } from '@/components/ui/label';
 import AddItemModal from './AddItemModal';
+import EditItemModal from './EditItemModal';
 
 interface ServiceListProps {
   services: Service[];
   searchTerm: string;
   onAddItem: (serviceId: string, subserviceId: string, item: any) => void;
+  onEditItem?: (serviceId: string, subserviceId: string, itemId: string, updatedItem: Partial<ClothingItem>) => void;
   onToggleService: (serviceId: string) => void;
   onToggleSubservice: (serviceId: string, subserviceId: string) => void;
 }
@@ -21,6 +22,7 @@ const ServiceList: React.FC<ServiceListProps> = ({
   services,
   searchTerm,
   onAddItem,
+  onEditItem,
   onToggleService,
   onToggleSubservice
 }) => {
@@ -28,8 +30,10 @@ const ServiceList: React.FC<ServiceListProps> = ({
   const [expandedSubservices, setExpandedSubservices] = useState<Record<string, boolean>>({});
   const [filteredServices, setFilteredServices] = useState<Service[]>(services);
   const [isAddItemModalOpen, setIsAddItemModalOpen] = useState(false);
+  const [isEditItemModalOpen, setIsEditItemModalOpen] = useState(false);
   const [selectedServiceId, setSelectedServiceId] = useState<string | null>(null);
   const [selectedSubserviceId, setSelectedSubserviceId] = useState<string | null>(null);
+  const [selectedItem, setSelectedItem] = useState<ClothingItem | null>(null);
   
   const { toast } = useToast();
 
@@ -132,6 +136,29 @@ const ServiceList: React.FC<ServiceListProps> = ({
     if (selectedServiceId && selectedSubserviceId) {
       onAddItem(selectedServiceId, selectedSubserviceId, newItem);
       setIsAddItemModalOpen(false);
+    }
+  };
+
+  const handleEditItem = (serviceId: string, subserviceId: string, item: ClothingItem) => {
+    if (!onEditItem) {
+      toast({
+        title: "Coming Soon",
+        description: "Edit item functionality will be implemented soon.",
+        duration: 3000
+      });
+      return;
+    }
+    
+    setSelectedServiceId(serviceId);
+    setSelectedSubserviceId(subserviceId);
+    setSelectedItem(item);
+    setIsEditItemModalOpen(true);
+  };
+
+  const handleEditItemSubmit = (itemId: string, updatedItem: Partial<ClothingItem>) => {
+    if (selectedServiceId && selectedSubserviceId && onEditItem) {
+      onEditItem(selectedServiceId, selectedSubserviceId, itemId, updatedItem);
+      setIsEditItemModalOpen(false);
     }
   };
 
@@ -247,9 +274,22 @@ const ServiceList: React.FC<ServiceListProps> = ({
                           {subservice.items.map(item => (
                             <div key={item.id} className="px-3 py-2 bg-gray-50 rounded-md flex justify-between items-center">
                               <span className="text-sm font-medium">{item.name}</span>
-                              <div className="flex space-x-4">
+                              <div className="flex items-center space-x-4">
                                 <div className="text-sm">Standard: ₹{item.standardPrice}</div>
                                 <div className="text-sm text-amber-600">Express: ₹{item.expressPrice}</div>
+                                
+                                {onEditItem && (
+                                  <Button 
+                                    variant="ghost" 
+                                    size="icon"
+                                    onClick={(e) => {
+                                      e.stopPropagation();
+                                      handleEditItem(service.id, subservice.id, item);
+                                    }}
+                                  >
+                                    <Edit className="h-4 w-4 text-gray-500" />
+                                  </Button>
+                                )}
                               </div>
                             </div>
                           ))}
@@ -288,6 +328,15 @@ const ServiceList: React.FC<ServiceListProps> = ({
         onClose={() => setIsAddItemModalOpen(false)}
         onAddItem={handleAddItemSubmit}
       />
+
+      {selectedItem && (
+        <EditItemModal
+          isOpen={isEditItemModalOpen}
+          onClose={() => setIsEditItemModalOpen(false)}
+          item={selectedItem}
+          onEditItem={handleEditItemSubmit}
+        />
+      )}
     </div>
   );
 };

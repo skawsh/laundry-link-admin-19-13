@@ -15,7 +15,8 @@ import {
   addSubserviceToService,
   addItemToSubservice,
   toggleServiceEnabled,
-  toggleSubserviceEnabled
+  toggleSubserviceEnabled,
+  editClothingItem
 } from '@/data/mockServiceData';
 
 const Services: React.FC = () => {
@@ -79,6 +80,30 @@ const Services: React.FC = () => {
       toast({
         title: "Error",
         description: "Failed to add item",
+        variant: "destructive",
+        duration: 3000,
+      });
+    }
+  };
+
+  const handleEditItem = (serviceId: string, subserviceId: string, itemId: string, updatedItem: Partial<ClothingItem>) => {
+    try {
+      // For global services, we'll use a dummy studioId
+      const dummyStudioId = "global";
+      editClothingItem(dummyStudioId, serviceId, subserviceId, itemId, updatedItem);
+      
+      toast({
+        title: "Success",
+        description: "Item updated successfully",
+        duration: 3000,
+      });
+      
+      setServices([...mockServices]);
+      setRefreshKey(prev => prev + 1);
+    } catch (error) {
+      toast({
+        title: "Error",
+        description: "Failed to update item",
         variant: "destructive",
         duration: 3000,
       });
@@ -158,6 +183,7 @@ const Services: React.FC = () => {
             services={services}
             searchTerm={searchTerm}
             onAddItem={handleAddItem}
+            onEditItem={handleEditItem}
             onToggleService={handleToggleService}
             onToggleSubservice={handleToggleSubservice}
           />
